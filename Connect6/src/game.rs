@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Player {
     Black,
     White,
@@ -20,7 +20,7 @@ impl Player {
 }
 
 #[derive(Copy, Clone)]
-pub struct Row(char);
+pub struct Row(pub char);
 
 impl Row {
     pub fn to_char(&self) -> char {
@@ -37,7 +37,7 @@ impl Row {
 }
 
 #[derive(Copy, Clone)]
-pub struct Col(char);
+pub struct Col(pub char);
 
 impl Col {
     pub fn to_char(&self) -> char {
@@ -54,10 +54,10 @@ impl Col {
 }
 
 #[derive(Copy, Clone)]
-pub struct Pos(Row, Col);
+pub struct Pos(pub Row, pub Col);
 
 impl Pos {
-    pub fn with_str(query: &String) -> Option<Pos> {
+    pub fn from(query: &String) -> Option<Pos> {
         if query.len() != 2 {
             return None;
         }
@@ -124,7 +124,7 @@ impl Game {
     }
 
     pub fn play(&mut self, query: String) -> Result<PlayResult, &'static str> {
-        let position = match Pos::with_str(&query) {
+        let position = match Pos::from(&query) {
             Some(pos) => pos,
             None => return Err("Invalid Query")
         };
