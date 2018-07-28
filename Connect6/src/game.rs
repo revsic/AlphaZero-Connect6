@@ -1,4 +1,4 @@
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Player {
     Black,
     White,
@@ -21,24 +21,29 @@ impl Game {
     }
 
     pub fn set(&mut self, row: char, column: char, player: Player) -> bool {
-        if row >= 'a' && row <= 's'
-            && column >= 'A' && column <= 'S' {
-            let row_c = row as usize - 0x61;
-            let col_c = column as usize - 0x41;
+        if row < 'a' && row > 's' && column < 'A' && column > 'S' {
+            return false
+        }
 
-            self.board[row_c][col_c] = player;
-            true
+        let row_c = row as usize - 0x61;
+        let col_c = row as usize - 0x41;
+
+        if self.board[row_c][col_c] != Player::None {
+            return false
         }
-        else {
-            false
-        }
+
+        self.board[row_c][col_c] = player;
+        true
     }
 
     pub fn print(&self) {
+        fn idx2alpha(idx: usize) -> char {
+            return ('a' as u8 + idx as u8) as char
+        }
+
         println!("0 A B C D E F G H I J K L M N O P Q R S");
         for i in 0..19 {
-            let alpha: char = ('a' as u8 + i as u8) as char;
-            print!("{} ", alpha);
+            print!("{} ", idx2alpha(i));
             for j in 0..19 {
                 match self.board[i][j] {
                     Player::Black => print!("X "),
