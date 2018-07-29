@@ -19,7 +19,7 @@ impl Player {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Row(pub char);
 
 impl Row {
@@ -36,7 +36,7 @@ impl Row {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Col(pub char);
 
 impl Col {
@@ -53,11 +53,11 @@ impl Col {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Pos(pub Row, pub Col);
 
 impl Pos {
-    pub fn from(query: &String) -> Option<Pos> {
+    pub fn from(query: &str) -> Option<Pos> {
         if query.len() != 2 {
             return None;
         }
@@ -92,13 +92,22 @@ impl Pos {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct PlayResult {
-    player: Player,
-    num_remain: i32,
-    position: Pos,
+    pub player: Player,
+    pub num_remain: i32,
+    pub position: Pos,
 }
 
 impl PlayResult {
+    pub fn new() -> PlayResult {
+        PlayResult {
+            player: Player::None,
+            num_remain: 0,
+            position: Pos::from("aA").unwrap(),
+        }
+    }
+
     fn with_game(game: &Game, position: Pos) -> PlayResult {
         PlayResult {
             player: game.turn,
@@ -109,9 +118,9 @@ impl PlayResult {
 }
 
 pub struct Game {
-    turn: Player,
-    num_remain: i32,
-    board: [[Player; 19]; 19],
+    pub turn: Player,
+    pub num_remain: i32,
+    pub board: [[Player; 19]; 19],
 }
 
 impl Game {
@@ -123,20 +132,20 @@ impl Game {
         }
     }
 
-    pub fn play(&mut self, query: String) -> Result<PlayResult, &'static str> {
-        let position = match Pos::from(&query) {
+    pub fn play(&mut self, query: &str) -> Result<PlayResult, &'static str> {
+        let position = match Pos::from(query) {
             Some(pos) => pos,
             None => return Err("Invalid Query")
         };
 
         let player = self.turn;
-        let ok = self.set(position, player);
-        if !ok {
+        if !self.set(position, player) {
             return Err("Already set position");
         }
 
-        let result = PlayResult::with_game(self, position);
         self.num_remain -= 1;
+        let result = PlayResult::with_game(self, position);
+
         if self.num_remain <= 0 {
             self.num_remain = 2;
             self.turn.mut_switch();

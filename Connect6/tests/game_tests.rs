@@ -112,10 +112,10 @@ mod pos_tests {
         }}
     }
 
-    fn gen_pos() -> (Pos, char, char) {
+    pub fn gen_pos() -> (Pos, char, char) {
         let mut rng = thread_rng();
         let mut gen_char = |base: u8| -> char {
-            let idx: u8 = rng.gen_range(0, 19) + 1;
+            let idx: u8 = rng.gen_range(0, 19);
             (idx + base) as char
         };
 
@@ -123,8 +123,8 @@ mod pos_tests {
         let rnd_col = gen_char(0x41);
         let query = concat_char!(rnd_row, rnd_col);
 
-        let pos = match Pos::from(&query) {
-            None => panic!("internal exception at pos_tests::gen_pos"),
+        let pos = match Pos::from(query.as_str()) {
+            None => panic!(format!("internal exception at pos_tests::gen_pos : ({}, {})", rnd_row, rnd_col)),
             Some(pos) => pos
         };
 
@@ -133,30 +133,20 @@ mod pos_tests {
 
     #[test]
     fn test_from() {
-        fn validate(query: &String, row: char, col: char) {
+        fn validate(query: &str, row: char, col: char) {
             match Pos::from(query) {
                 None => assert!(false),
                 Some(pos) => assert_eq!(pos.to_char(), (row, col))
             }
         }
 
-        let query = String::from("aA");
-        validate(&query, 'a', 'A');
+        validate("aA", 'a', 'A');
+        validate("sS", 's', 'S');
 
-        let query = String::from("sS");
-        validate(&query, 's', 'S');
-
-        let query = String::from("zZ");
-        assert!(Pos::from(&query).is_none());
-
-        let query = String::from("Aa");
-        assert!(Pos::from(&query).is_none());
-
-        let query = String::from("11");
-        assert!(Pos::from(&query).is_none());
-
-        let query = String::from("aAaAaA");
-        assert!(Pos::from(&query).is_none());
+        assert!(Pos::from("zZ").is_none());
+        assert!(Pos::from("Aa").is_none());
+        assert!(Pos::from("11").is_none());
+        assert!(Pos::from("aAaA").is_none());
     }
 
     #[test]
@@ -184,5 +174,61 @@ mod pos_tests {
 
         let pos = Pos(row, col);
         assert_eq!(pos.validate(), row.validate() && col.validate());
+    }
+}
+
+#[cfg(test)]
+mod game_tests {
+    use pos_tests::gen_pos;
+    use connect6::game::*;
+
+    #[test]
+    fn test_set() {
+        let mut game = Game::new();
+
+        let (pos, _, _) = gen_pos();
+        let (row, col) = pos.to_usize();
+
+        assert_eq!(game.board[row][col], Player::None);
+        assert!(game.set(pos, Player::White));
+        assert_eq!(game.board[row][col], Player::White);
+        assert!(! game.set(pos, Player::Black));
+
+        let pos = Pos(Row('z'), Col('Z'));
+        assert!(! game.set(pos, Player::Black));
+    }
+
+    #[test]
+    fn test_play() {
+        let mut game = Game::new();
+        let result = match game.play("aA") {
+            Ok(res) => res,
+            Err(_) => {
+                assert!(false);
+                PlayResult::new()
+            },
+        };
+
+        let expected = PlayResult {
+            player: Player::Black,
+            num_remain: 0,
+            position: Pos::from("aA").unwrap(),
+        };
+
+        assert_eq!(result, expected);
+        assert_eq!(game.turn, Player::White);
+        assert_eq!(game.num_remain, 2);
+        assert_eq!(game.board[0][0], Player::Black);
+
+        match game.play("aA") {
+            Ok(_) => assert!(false),
+            Err(e) => assert_eq!(e, "Already set position"),
+        };
+
+        match game.play("AA") {
+            Ok(_) => assert!(false),
+            Err(e) => assert_eq!(e, "Invalid Query"),
+        };
+
     }
 }
