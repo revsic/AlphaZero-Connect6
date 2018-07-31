@@ -97,18 +97,12 @@ impl Cumulative {
     }
 }
 
-struct Status<'a> {
-    table: &'a [[Player; 19]; 19],
-    row: usize,
-    col: usize,
-}
-
-fn search<'a>(status: Status<'a>) -> Player {
+fn search(table: &[[Player; 19]; 19]) -> Player {
     let path = [Path::Right, Path::Down, Path::RightDown, Path::LeftDown];
     let mut black = [[Cumulative::new(); 19]; 19];
     let mut white = [[Cumulative::new(); 19]; 19];
 
-    match status.table[0][0] {
+    match table[0][0] {
         Player::None => (),
         Player::White => white[0][0] = Cumulative::one(),
         Player::Black => black[0][0] = Cumulative::one(),
@@ -116,7 +110,7 @@ fn search<'a>(status: Status<'a>) -> Player {
 
     for row in 0..19 {
         for col in 0..19 {
-            if status.table[row][col] == Player::None {
+            if table[row][col] == Player::None {
                 continue;
             }
 
@@ -126,16 +120,15 @@ fn search<'a>(status: Status<'a>) -> Player {
                     Some(coord) => coord
                 };
 
-                let applier =
-                    |board: &mut [[Cumulative; 19]; 19]| -> bool {
-                        *board[row][col].mut_get(p) = board[r][c].get(p) + 1;
-                        p.at_least(row, col) && board[row][col].get(p) >= 6
-                    };
+                let applier = |board: &mut [[Cumulative; 19]; 19]| -> bool {
+                    *board[row][col].mut_get(p) = board[r][c].get(p) + 1;
+                    p.at_least(row, col) && board[row][col].get(p) >= 6
+                };
 
-                match status.table[row][col] {
+                match table[row][col] {
                     Player::None => (),
-                    Player::White => if applier(&mut white) { return Player::White },
-                    Player::Black => if applier(&mut black) { return Player::Black },
+                    Player::White => if applier(&mut white) { return Player::White; },
+                    Player::Black => if applier(&mut black) { return Player::Black; },
                 }
             }
         }
@@ -145,11 +138,5 @@ fn search<'a>(status: Status<'a>) -> Player {
 }
 
 pub fn run(game: &Game) -> Player {
-    let status = Status {
-        table: game.get_board(),
-        row: 0,
-        col: 0,
-    };
-
-    search(status)
+    search(&game.get_board())
 }
