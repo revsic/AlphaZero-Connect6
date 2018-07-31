@@ -112,7 +112,7 @@ impl Game {
     }
 
     pub fn is_game_end(&self) -> Player {
-        use super::winner_searcher::run;
-        run(self)
+        use super::winner_searcher::search;
+        search(&self.board)
     }
 }

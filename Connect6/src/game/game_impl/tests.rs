@@ -66,3 +66,9 @@ fn test_print() {
 //        game.print();
     assert!(true);
 }
+
+#[test]
+fn test_is_game_end() {
+    let game = Game::new();
+    assert_eq!(game.is_game_end(), Player::None);
+}
