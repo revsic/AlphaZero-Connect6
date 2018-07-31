@@ -1,4 +1,4 @@
-use super::{Player, Game};
+use super::Player;
 
 #[cfg(test)]
 mod tests;
@@ -20,7 +20,7 @@ impl Path {
         }
     }
 
-    fn validate(&self, row: usize, col: usize) -> bool {
+    fn validate(&self, row: i32, col: i32) -> bool {
         match self {
             &Path::Right => col > 0,
             &Path::Down => row > 0,
@@ -31,11 +31,11 @@ impl Path {
 
     fn apply(&self, row: usize, col: usize) -> Option<(usize, usize)> {
         let (dr, dc) = self.delta();
-        let row = (row as i32 + dr) as usize;
-        let col = (col as i32 + dc) as usize;
+        let row = row as i32 + dr;
+        let col = col as i32 + dc;
 
         if self.validate(row, col) {
-            Some((row, col))
+            Some((row as usize, col as usize))
         } else {
             None
         }
@@ -97,7 +97,7 @@ impl Cumulative {
     }
 }
 
-fn search(table: &[[Player; 19]; 19]) -> Player {
+pub fn search(table: &[[Player; 19]; 19]) -> Player {
     let path = [Path::Right, Path::Down, Path::RightDown, Path::LeftDown];
     let mut black = [[Cumulative::new(); 19]; 19];
     let mut white = [[Cumulative::new(); 19]; 19];
@@ -135,8 +135,4 @@ fn search(table: &[[Player; 19]; 19]) -> Player {
     }
 
     Player::None
-}
-
-pub fn run(game: &Game) -> Player {
-    search(&game.get_board())
 }
