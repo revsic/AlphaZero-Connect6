@@ -10,47 +10,6 @@ enum Path {
     LeftDown,
 }
 
-impl Path {
-    fn delta(&self) -> (i32, i32) {
-        match self {
-            &Path::Right => (0, -1),
-            &Path::Down => (-1, 0),
-            &Path::RightDown => (-1, -1),
-            &Path::LeftDown => (-1, 1),
-        }
-    }
-
-    fn validate(&self, row: i32, col: i32) -> bool {
-        match self {
-            &Path::Right => col > 0,
-            &Path::Down => row > 0,
-            &Path::RightDown => row > 0 && col > 0,
-            &Path::LeftDown => row > 0 && col < 18,
-        }
-    }
-
-    fn apply(&self, row: usize, col: usize) -> Option<(usize, usize)> {
-        let (dr, dc) = self.delta();
-        let row = row as i32 + dr;
-        let col = col as i32 + dc;
-
-        if self.validate(row, col) {
-            Some((row as usize, col as usize))
-        } else {
-            None
-        }
-    }
-
-    fn at_least(&self, row: usize, col: usize) -> bool {
-        match self {
-            &Path::Right => col >= 5,
-            &Path::Down => row >= 5,
-            &Path::RightDown => row >= 5 && col >= 5,
-            &Path::LeftDown => row >= 5 && col <= 13,
-        }
-    }
-}
-
 #[derive(Copy, Clone)]
 struct Cumulative {
     right: i32,
@@ -69,15 +28,6 @@ impl Cumulative {
         }
     }
 
-    fn one() -> Cumulative {
-        Cumulative {
-            right: 1,
-            down: 1,
-            right_down: 1,
-            left_down: 1,
-        }
-    }
-
     fn get(&self, path: &Path) -> i32 {
         match path {
             &Path::Right => self.right,
@@ -87,7 +37,7 @@ impl Cumulative {
         }
     }
 
-    fn mut_get(&mut self, path: &Path) -> &mut i32 {
+    fn get_mut(&mut self, path: &Path) -> &mut i32 {
         match path {
             &Path::Right => &mut self.right,
             &Path::Down => &mut self.down,
@@ -97,40 +47,82 @@ impl Cumulative {
     }
 }
 
-pub fn search(table: &[[Player; 19]; 19]) -> Player {
-    let path = [Path::Right, Path::Down, Path::RightDown, Path::LeftDown];
-    let mut black = [[Cumulative::new(); 19]; 19];
-    let mut white = [[Cumulative::new(); 19]; 19];
+struct Block {
+    flag: usize,
+    mem: [[Cumulative; 21]; 2],
+}
 
-    match table[0][0] {
-        Player::None => (),
-        Player::White => white[0][0] = Cumulative::one(),
-        Player::Black => black[0][0] = Cumulative::one(),
+impl Block {
+    fn new() -> Block {
+        Block {
+            flag: 0,
+            mem: [[Cumulative::new(); 21]; 2],
+        }
+    }
+
+    fn as_tuple(&self) -> (&[Cumulative; 21], &[Cumulative; 21]) {
+        let f = self.flag;
+        (&self.mem[f], &self.mem[1 - f])
+    }
+
+    fn get_prev(&self, col: usize, path: &Path) -> &Cumulative {
+        let (prev, now) = self.as_tuple();
+        match path {
+            &Path::Right => &now[col - 1],
+            &Path::Down => &prev[col],
+            &Path::RightDown => &prev[col - 1],
+            &Path::LeftDown => &prev[col + 1],
+        }
+    }
+
+    fn update_now<F>(&mut self, update: F)
+        where F: Fn(&mut [Cumulative; 21])
+    {
+        let f = self.flag;
+        let now = &mut self.mem[1 - f];
+        update(now);
+    }
+
+    fn update_row(&mut self) {
+        self.flag = 1 - self.flag;
+        let now = &mut self.mem[1 - self.flag];
+
+        for i in 0..21 {
+            now[i] = Cumulative::new();
+        }
+    }
+}
+
+pub fn search(table: &[[Player; 19]; 19]) -> Player {
+    let mut black = Block::new();
+    let mut white = Block::new();
+
+    fn path_iter(block: &mut Block, col: usize) -> bool {
+        let col = col + 1;
+        let paths = [Path::Right, Path::Down, Path::RightDown, Path::LeftDown];
+
+        for path in paths.iter() {
+            let updated = block.get_prev(col, path).get(path) + 1;
+            if updated >= 6 { return true; }
+
+            block.update_now(
+                |now| *now[col].get_mut(path) = updated);
+        }
+        false
     }
 
     for row in 0..19 {
+        black.update_row();
+        white.update_row();
+
         for col in 0..19 {
-            if table[row][col] == Player::None {
-                continue;
-            }
-
-            for p in path.iter() {
-                let (r, c) = match p.apply(row, col) {
-                    None => continue,
-                    Some(coord) => coord
-                };
-
-                let applier = |board: &mut [[Cumulative; 19]; 19]| -> bool {
-                    *board[row][col].mut_get(p) = board[r][c].get(p) + 1;
-                    p.at_least(row, col) && board[row][col].get(p) >= 6
-                };
-
-                match table[row][col] {
-                    Player::None => (),
-                    Player::White => if applier(&mut white) { return Player::White; },
-                    Player::Black => if applier(&mut black) { return Player::Black; },
-                }
-            }
+            match table[row][col] {
+                Player::None => continue,
+                Player::Black =>
+                    if path_iter(&mut black, col) { return Player::Black; },
+                Player::White =>
+                    if path_iter(&mut white, col) { return Player::White; },
+            };
         }
     }
 
