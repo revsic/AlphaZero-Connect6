@@ -3,16 +3,7 @@ use super::*;
 #[test]
 fn test_with_start() {
     let mut agent = Agent::with_start();
-
-    agent.to_thread.send(Query::Terminate)
-        .expect("test_with_start : couldn't terminate");
-
-    agent.is_game_end.set(true);
-    if let Some(handle) = agent.main_thread.take() {
-        handle.join()
-            .expect("test_with_start : handle join fail");
-    }
-
+    agent.terminate();
     assert!(true);
 }
 

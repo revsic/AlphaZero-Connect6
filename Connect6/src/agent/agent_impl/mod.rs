@@ -93,6 +93,17 @@ impl Agent {
 
         Ok(result)
     }
+
+    pub fn terminate(&mut self) {
+        self.to_thread.send(Query::Terminate)
+            .expect("test_with_start : couldn't terminate");
+
+        self.is_game_end.set(true);
+        if let Some(handle) = self.main_thread.take() {
+            handle.join()
+                .expect("test_with_start : handle join fail");
+        }
+    }
 }
 
 impl Drop for Agent {
