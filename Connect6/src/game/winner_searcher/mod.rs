@@ -10,7 +10,7 @@ enum Path {
     LeftDown,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 struct Cumulative {
     right: i32,
     down: i32,
