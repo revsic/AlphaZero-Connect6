@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 
+use std::cell::Cell;
 use std::sync::{Arc, RwLock, mpsc};
 use std::thread;
 
@@ -11,12 +12,13 @@ enum Query {
     Terminate,
 }
 
-enum GameResult {
+pub enum GameResult {
     GameEnd(Player),
     Status(Result<PlayResult, &'static str>),
 }
 
-struct Agent {
+pub struct Agent {
+    is_game_end: Cell<bool>,
     game: Arc<RwLock<Game>>,
     to_thread: mpsc::Sender<Query>,
     from_thread: mpsc::Receiver<GameResult>,
@@ -24,12 +26,13 @@ struct Agent {
 }
 
 impl Agent {
-    fn with_start() -> Agent {
+    pub fn with_start() -> Agent {
         let game = Arc::new(RwLock::new(Game::new()));
         let (to_thread, from_user) = mpsc::channel::<Query>();
         let (to_user, from_thread) = mpsc::channel::<GameResult>();
 
         Agent {
+            is_game_end: Cell::new(false),
             game: game.clone(),
             to_thread,
             from_thread,
@@ -38,8 +41,8 @@ impl Agent {
                     let query = match from_user.recv() {
                         Ok(q) => q,
                         Err(_) => {
-                            let err = GameResult::Status(Err("Agent::main_thread - recv err"));
-                            to_user.send(err).expect("Agent::main_thread - recv, send both err");
+                            let err = GameResult::Status(Err("agent::main_thread - recv err"));
+                            to_user.send(err).expect("agent::main_thread - recv, send both err");
                             continue
                         },
                     };
@@ -50,30 +53,29 @@ impl Agent {
                     };
 
                     let mut ref_game = game.write()
-                        .expect("Agent::main_thread RwLock of game is posioned");
+                        .expect("agent::main_thread RwLock of game is posioned");
 
                     let res = ref_game.play(msg.as_str());
-                    let winner = ref_game.is_game_end();
-
-                    if winner == Player::None {
-                        to_user.send(GameResult::Status(res))
-                            .expect("Agent::main_thread - err in sending status");
-                    }
-                    else {
-                        to_user.send(GameResult::GameEnd(winner))
-                            .expect("Agent::main_thread - err in sending game end");
-                        break;
+                    match ref_game.is_game_end() {
+                        Player::None =>
+                            to_user.send(GameResult::Status(res))
+                                .expect("agent::main_thread - err in sending status"),
+                        player => {
+                            to_user.send(GameResult::GameEnd(player))
+                                .expect("agent::main_thread - err in sending game end");
+                            break;
+                        }
                     }
                 }
             })),
         }
     }
 
-    fn get_game(&self) -> Arc<RwLock<Game>> {
+    pub fn get_game(&self) -> Arc<RwLock<Game>> {
         self.game.clone()
     }
 
-    fn play(&self, query: &String) -> Result<GameResult, &'static str> {
+    pub fn play(&self, query: &String) -> Result<GameResult, &'static str> {
         let pos_query = Query::Position(query.clone());
         match self.to_thread.send(pos_query) {
             Ok(_) => (),
@@ -85,12 +87,20 @@ impl Agent {
             Err(_) => return Err("Agent::play - recv fail"),
         };
 
+        if let GameResult::GameEnd(_) = result {
+            self.is_game_end.set(true);
+        }
+
         Ok(result)
     }
 }
 
 impl Drop for Agent {
     fn drop(&mut self) {
+        if self.is_game_end.get() {
+            return;
+        }
+
         self.to_thread.send(Query::Terminate)
             .expect("agent.drop - send terminate code fail");
 
