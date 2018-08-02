@@ -13,21 +13,21 @@ macro_rules! play_with_stdio {
         let mut stdout = io::stdout();
 
         let mut agent_io = AgentIO::new(
-            &mut stdin as &mut io::Read,
-            &mut stdout as &mut io::Write,
+            &mut stdin,
+            &mut stdout,
         );
         agent_io.play();
     }
 }
 
-struct AgentIO<'a> {
+pub struct AgentIO<'a> {
     agent: Agent,
     reader: &'a mut io::Read,
     writer: &'a mut io::Write,
 }
 
 impl<'a> AgentIO<'a> {
-    fn new(reader: &'a mut io::Read, writer: &'a mut io::Write) -> AgentIO<'a> {
+    pub fn new(reader: &'a mut io::Read, writer: &'a mut io::Write) -> AgentIO<'a> {
         AgentIO {
             agent: Agent::with_start(),
             reader,
@@ -41,7 +41,7 @@ impl<'a> AgentIO<'a> {
         game.print(self.writer)
     }
 
-    fn play(&mut self) -> Player {
+    pub fn play(&mut self) -> Player {
         let game = self.agent.get_game();
 
         let mut player = Player::Black;
@@ -78,7 +78,7 @@ impl<'a> AgentIO<'a> {
                 Ok(result) => result,
             };
 
-            let game_play = match game_result {
+            let play_result = match game_result {
                 GameResult::GameEnd(player) => {
                     let msg = format!("{:?} - win\n", player);
                     self.writer.write(msg.as_bytes())
@@ -89,20 +89,10 @@ impl<'a> AgentIO<'a> {
                 GameResult::Status(status) => status,
             };
 
-            let game_result = match game_play {
-                Err(e) => {
-                    self.writer.write(e.as_bytes())
-                        .expect("agent_io::play - write err of game_result fail");
-
-                    continue
-                },
-                Ok(result) => result,
-            };
-
             let msg = format!("{:?} - remain {} - pos {:?}\n",
-                              game_result.player,
-                              game_result.num_remain,
-                              game_result.position);
+                              play_result.player,
+                              play_result.num_remain,
+                              play_result.position);
             self.writer.write(msg.as_bytes())
                 .expect("agent_io::play - write result msg fail");
 
