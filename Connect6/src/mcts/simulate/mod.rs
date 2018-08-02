@@ -4,31 +4,33 @@ use super::super::game::*;
 mod tests;
 
 pub struct Root {
+    pub turn: Player,
+    pub num_remain: i32,
+    pub board: [[Player; 19]; 19],
+    pub possible: Vec<(usize, usize)>,
+}
+
+pub struct SimulateBack {
     turn: Player,
     num_remain: i32,
+    pos: Option<(usize, usize)>,
     board: [[Player; 19]; 19],
     possible: Vec<(usize, usize)>,
 }
 
 pub struct Simulate<'a> {
-    turn: Player,
-    num_remain: i32,
-    pos: Option<(usize, usize)>,
-    board: &'a mut [[Player; 19]; 19],
-    possible: &'a mut Vec<(usize, usize)>,
+    pub turn: Player,
+    pub num_remain: i32,
+    pub pos: Option<(usize, usize)>,
+    pub board: &'a mut [[Player; 19]; 19],
+    pub possible: &'a mut Vec<(usize, usize)>,
 }
 
 impl Root {
     pub fn from_game(game: &Game) -> Root {
-        let possible = {
-            let lower: Vec<usize> = (0..19).map(|x| x + 0x61).collect();
-            let upper: Vec<usize> = (0..19).map(|x| x + 0x41).collect();
-
-            lower.iter().cloned()
-                 .flat_map(
-                     |x| upper.iter().map(move |y| (x, *y)))
-                 .collect()
-        };
+        let possible: Vec<(usize, usize)> = (0..19)
+            .flat_map(|x| (0..19).map(move |y| (x, y)))
+            .collect();
 
         Root {
             turn: game.get_turn(),
@@ -54,10 +56,14 @@ impl<'a> Simulate<'a> {
         if row >= 19 || col >= 19 {
             return false;
         }
-        if self.board[row][col] == Player::None {
+        if self.board[row][col] != Player::None {
             return false;
         }
         true
+    }
+
+    pub fn is_game_end(&self) -> Player {
+        search(self.board)
     }
 
     pub fn simulate(&mut self, row: usize, col: usize) -> Simulate {
@@ -83,6 +89,38 @@ impl<'a> Simulate<'a> {
             board: self.board,
             possible: self.possible,
         }
+    }
+
+    pub fn simulate_mut(&mut self, row: usize, col: usize) {
+        let pos = (row, col);
+        let item = self.possible.iter()
+            .position(|x| *x == pos);
+        self.possible.remove(item.unwrap());
+
+        self.board[row][col] = self.turn;
+
+        self.num_remain -= 1;
+        if self.num_remain <= 0 {
+            self.num_remain = 2;
+            self.turn.mut_switch();
+        }
+    }
+
+    pub fn backup(&mut self) -> SimulateBack {
+        SimulateBack {
+            turn: self.turn,
+            num_remain: self.num_remain,
+            pos: self.pos,
+            board: *self.board,
+            possible: self.possible.clone(),
+        }
+    }
+
+    pub fn recover(&mut self, backup: SimulateBack) {
+        self.turn = backup.turn;
+        self.num_remain = backup.num_remain;
+        *self.board = backup.board;
+        *self.possible = backup.possible;
     }
 }
 
