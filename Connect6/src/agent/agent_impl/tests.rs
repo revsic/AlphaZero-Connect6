@@ -18,23 +18,7 @@ fn test_get_game() {
     }
 
     let query = String::from("aA");
-    let result = match agent.play(&query) {
-        Ok(result) => result,
-        Err(_) => {
-            assert!(false);
-            GameResult::GameEnd(Player::None)
-        },
-    };
-
-    let result = match result {
-        GameResult::Status(result) => result,
-        GameResult::GameEnd(_) => {
-            assert!(false);
-            Err("test_get_game : assertion fail")
-        },
-    };
-
-    match result {
+    match agent.play(&query) {
         Ok(_) => assert!(false),
         Err(err) => assert_eq!(err, "Already set position"),
     };
@@ -43,42 +27,29 @@ fn test_get_game() {
 #[test]
 fn test_play() {
     let agent = Agent::with_start();
-
-    let play = |query: &str| -> Result<PlayResult, &'static str> {
-        let play_result = match agent.play(&String::from(query)) {
-            Ok(result) => result,
-            Err(err) => return Err(err),
-        };
-
-        match play_result {
-            GameResult::GameEnd(_) => Err("get_result, already finished"),
-            GameResult::Status(result) => result
-        }
-    };
+    let play = |query: &str| agent.play(&String::from(query));
 
     let mut num_remain = 1;
-    let mut player = Player::White;
+    let mut player = Player::Black;
 
     let mut auto_player = |query: &str| {
         let mut chars = query.chars();
         let row = chars.next().unwrap();
         let col = chars.next().unwrap();
 
+        num_remain -= 1;
         assert_eq!(play(query), Ok(
-            PlayResult { player, num_remain, position: (row, col) }
+            GameResult::Status(PlayResult { player, num_remain, position: (row, col) })
         ));
 
-        num_remain -= 1;
-        if num_remain < 0 {
-            num_remain = 1;
+        if num_remain <= 0 {
+            num_remain = 2;
             player.mut_switch();
         }
     };
 
     // black
-    assert_eq!(play("aA"), Ok(
-        PlayResult { player: Player::Black, num_remain: 0, position: ('a', 'A') }
-    ));
+    auto_player("aA");
 
     // white
     assert_eq!(play("aA"), Err("Already set position"));
@@ -97,5 +68,5 @@ fn test_play() {
     }
 
     auto_player("aF"); // white
-    assert_eq!(play("aG"), Err("get_result, already finished"));
+    assert_eq!(play("aG"), Ok(GameResult::GameEnd(Player::White)));
 }

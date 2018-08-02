@@ -12,16 +12,22 @@ enum Query {
     Terminate,
 }
 
-pub enum GameResult {
+enum InnerResult {
     GameEnd(Player),
     Status(Result<PlayResult, &'static str>),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum GameResult {
+    GameEnd(Player),
+    Status(PlayResult),
 }
 
 pub struct Agent {
     is_game_end: Cell<bool>,
     game: Arc<RwLock<Game>>,
     to_thread: mpsc::Sender<Query>,
-    from_thread: mpsc::Receiver<GameResult>,
+    from_thread: mpsc::Receiver<InnerResult>,
     main_thread: Option<thread::JoinHandle<()>>,
 }
 
@@ -29,7 +35,7 @@ impl Agent {
     pub fn with_start() -> Agent {
         let game = Arc::new(RwLock::new(Game::new()));
         let (to_thread, from_user) = mpsc::channel::<Query>();
-        let (to_user, from_thread) = mpsc::channel::<GameResult>();
+        let (to_user, from_thread) = mpsc::channel::<InnerResult>();
 
         Agent {
             is_game_end: Cell::new(false),
@@ -41,7 +47,7 @@ impl Agent {
                     let query = match from_user.recv() {
                         Ok(q) => q,
                         Err(_) => {
-                            let err = GameResult::Status(Err("agent::main_thread - recv err"));
+                            let err = InnerResult::Status(Err("agent::main_thread - recv err"));
                             to_user.send(err).expect("agent::main_thread - recv, send both err");
                             continue
                         },
@@ -58,10 +64,10 @@ impl Agent {
                     let res = ref_game.play(msg.as_str());
                     match ref_game.is_game_end() {
                         Player::None =>
-                            to_user.send(GameResult::Status(res))
+                            to_user.send(InnerResult::Status(res))
                                 .expect("agent::main_thread - err in sending status"),
                         player => {
-                            to_user.send(GameResult::GameEnd(player))
+                            to_user.send(InnerResult::GameEnd(player))
                                 .expect("agent::main_thread - err in sending game end");
                             break;
                         }
@@ -82,16 +88,23 @@ impl Agent {
             Err(_) => return Err("Agent::play - send fail"),
         };
 
-        let result = match self.from_thread.recv() {
+        let inner_result = match self.from_thread.recv() {
             Ok(r) => r,
             Err(_) => return Err("Agent::play - recv fail"),
         };
 
-        if let GameResult::GameEnd(_) = result {
-            self.is_game_end.set(true);
-        }
+        let play_result = match inner_result {
+            InnerResult::GameEnd(player) => {
+                self.is_game_end.set(true);
+                return Ok(GameResult::GameEnd(player))
+            },
+            InnerResult::Status(result) => result,
+        };
 
-        Ok(result)
+        match play_result {
+            Ok(result) => Ok(GameResult::Status(result)),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn terminate(&mut self) {
