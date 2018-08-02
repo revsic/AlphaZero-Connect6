@@ -17,7 +17,7 @@ impl PlayResult {
         PlayResult {
             player: Player::None,
             num_remain: 0,
-            position: ('a', 'A')
+            position: ('a', 'A'),
         }
     }
 
@@ -25,10 +25,13 @@ impl PlayResult {
         PlayResult {
             player: game.turn,
             num_remain: game.num_remain,
-            position : pos.to_char(),
+            position: pos.to_char(),
         }
     }
 }
+
+type Msg = &'static str;
+type Board = [[Player; 19]; 19];
 
 pub struct Game {
     turn: Player,
@@ -45,16 +48,29 @@ impl Game {
         }
     }
 
-    pub fn play(&mut self, query: &str) -> Result<PlayResult, &'static str> {
-        let position = match Pos::from(query) {
-            Some(pos) => pos,
-            None => return Err("Invalid Query")
+    pub fn simulate(&self, query: &str) -> Result<Game, Msg> {
+        let mut board = self.board;
+        if let Err(err) = Game::set(&mut board, query, self.turn) {
+            return Err(err);
+        }
+
+        let (num_remain, next_player) = {
+            if self.num_remain <= 1 {
+                (2, self.turn.switch())
+            } else {
+                (1, self.turn)
+            }
         };
 
-        let player = self.turn;
-        if !self.set(position, player) {
-            return Err("Already set position");
-        }
+        let next_game = Game { turn: next_player, num_remain, board };
+        Ok(next_game)
+    }
+
+    pub fn play(&mut self, query: &str) -> Result<PlayResult, Msg> {
+        let position = match Game::set(&mut self.board, query, self.turn) {
+            Ok(pos) => pos,
+            Err(err) => return Err(err),
+        };
 
         self.num_remain -= 1;
         let result = PlayResult::with_game(self, position);
@@ -64,21 +80,22 @@ impl Game {
             self.turn.mut_switch();
         }
 
-        return Ok(result);
+        Ok(result)
     }
 
-    fn set(&mut self, pos: Pos, player: Player) -> bool {
-        if !pos.validate() {
-            return false;
-        }
+    fn set(board: &mut Board, query: &str, player: Player) -> Result<Pos, Msg> {
+        let pos = match Pos::from(query) {
+            Some(pos) => pos,
+            None => return Err("Invalid Query")
+        };
 
         let (row, col) = pos.to_usize();
-        if self.board[row][col] != Player::None {
-            return false;
+        if board[row][col] != Player::None {
+            return Err("Already set position");
         }
 
-        self.board[row][col] = player;
-        true
+        board[row][col] = player;
+        Ok(pos)
     }
 
     pub fn get_board(&self) -> &[[Player; 19]; 19] {

@@ -1,5 +1,3 @@
-extern crate rand;
-
 use super::*;
 use super::super::position::tests::gen_pos;
 
@@ -18,13 +16,47 @@ fn test_new() {
 fn test_set() {
     let mut game = Game::new();
 
-    let (pos, _, _) = gen_pos();
-    let (row, col) = pos.to_usize();
+    let (pos, row, col) = gen_pos();
+    let (urow, ucol) = pos.to_usize();
 
-    assert_eq!(game.board[row][col], Player::None);
-    assert!(game.set(pos, Player::White));
-    assert_eq!(game.board[row][col], Player::White);
-    assert!(!game.set(pos, Player::Black));
+    let query: String = vec![row, col].iter().collect();
+
+    assert_eq!(game.board[urow][ucol], Player::None);
+    match Game::set(&mut game.board, query.as_str(), Player::White) {
+        Ok(set_pos) => assert_eq!(pos, set_pos),
+        Err(_) => assert!(false),
+    }
+    assert_eq!(game.board[urow][ucol], Player::White);
+    match Game::set(&mut game.board, query.as_str(), Player::Black) {
+        Ok(_) => assert!(false),
+        Err(err) => assert_eq!(err, "Already set position"),
+    }
+}
+
+#[test]
+fn test_simulate() {
+    let game = Game::new();
+    let game = match game.simulate("aA") {
+        Ok(game) => game,
+        Err(_) => {
+            assert!(false);
+            Game::new()
+        }
+    };
+
+    assert_eq!(game.turn, Player::White);
+    assert_eq!(game.num_remain, 2);
+    assert_eq!(game.board[0][0], Player::Black);
+
+    match game.simulate("aA") {
+        Ok(_) => assert!(false),
+        Err(e) => assert_eq!(e, "Already set position"),
+    };
+
+    match game.simulate("AA") {
+        Ok(_) => assert!(false),
+        Err(e) => assert_eq!(e, "Invalid Query"),
+    };
 }
 
 #[test]
