@@ -3,5 +3,13 @@ name = "connect6"
 version = "0.1.0"
 authors = ["revsic <revsic99@gmail.com>"]
 
+[lib]
+name = "connect6"
+crate-type = ["dylib"]
+
 [dependencies]
 rand = "0.5.4"
+
+[dependencies.cpython]
+version = "0.1"
+features = ["extension-module"]
