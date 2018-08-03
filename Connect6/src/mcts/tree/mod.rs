@@ -94,13 +94,27 @@ impl Node {
 
 pub struct DefaultPolicy {
     debug: bool,
+    num_expand: i32,
     map: HashMap<Board, Node>,
 }
 
 impl DefaultPolicy {
+    fn default_num_expand() -> i32 {
+        50
+    }
+
     pub fn new() -> DefaultPolicy {
         DefaultPolicy {
             debug: false,
+            num_expand: Self::default_num_expand(),
+            map: HashMap::new(),
+        }
+    }
+
+    pub fn with_num_expand(num_expand: i32) -> DefaultPolicy {
+        DefaultPolicy {
+            debug: false,
+            num_expand,
             map: HashMap::new(),
         }
     }
@@ -108,6 +122,7 @@ impl DefaultPolicy {
     pub fn debug() -> DefaultPolicy {
         DefaultPolicy {
             debug: true,
+            num_expand: Self::default_num_expand(),
             map: HashMap::new(),
         }
     }
@@ -119,7 +134,7 @@ impl Policy for DefaultPolicy {
     }
 
     fn num_expand(&self) -> i32 {
-        50
+        self.num_expand
     }
 
     fn select(&self, sim: &Simulate) -> (usize, usize) {
