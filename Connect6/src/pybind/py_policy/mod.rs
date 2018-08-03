@@ -2,10 +2,14 @@ extern crate cpython;
 
 use cpython::{PyResult, Python};
 
-use super::*;
+use super::super::{agent::*, game::*, mcts::*};
 use std::any::Any;
 
 struct AlphaZero {
+
+}
+
+impl AlphaZero {
 
 }
 

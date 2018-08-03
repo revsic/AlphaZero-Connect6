@@ -5,4 +5,3 @@ pub use self::mcts_play::*;
 mod simulate;
 mod tree;
 mod mcts_play;
-mod py_policy;

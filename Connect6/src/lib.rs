@@ -1,6 +1,7 @@
 pub mod game;
 pub mod agent;
 pub mod mcts;
+pub mod pybind;
 
 #[macro_use]
 extern crate cpython;
