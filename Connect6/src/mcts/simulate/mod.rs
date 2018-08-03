@@ -27,16 +27,31 @@ pub struct Simulate<'a> {
 }
 
 impl Root {
+    fn possible() -> Vec<(usize, usize)> {
+        (0..19).flat_map(|x| (0..19).map(move |y| (x, y)))
+               .collect()
+    }
+
+    pub fn new() -> Root {
+        Root {
+            turn: Player::Black,
+            num_remain: 1,
+            board: [[Player::None; 19]; 19],
+            possible: Self::possible()
+        }
+    }
+
     pub fn from_game(game: &Game) -> Root {
-        let possible: Vec<(usize, usize)> = (0..19)
-            .flat_map(|x| (0..19).map(move |y| (x, y)))
-            .collect();
+        let board = game.get_board();
+        let possible = Self::possible().into_iter().filter(
+            |(r, c)| board[*r][*c] == Player::None
+        ).collect();
 
         Root {
             turn: game.get_turn(),
             num_remain: game.get_remain(),
             board: *game.get_board(),
-            possible: possible,
+            possible,
         }
     }
 
@@ -119,6 +134,7 @@ impl<'a> Simulate<'a> {
     pub fn recover(&mut self, backup: SimulateBack) {
         self.turn = backup.turn;
         self.num_remain = backup.num_remain;
+        self.pos = backup.pos;
         *self.board = backup.board;
         *self.possible = backup.possible;
     }

@@ -7,6 +7,15 @@ mod root_tests {
     use super::*;
 
     #[test]
+    fn test_new() {
+        let root = Root::new();
+        assert_eq!(root.turn, Player::Black);
+        assert_eq!(root.num_remain, 1);
+        assert_eq!(root.board, [[Player::None; 19]; 19]);
+        assert_eq!(root.possible.len(), 19 * 19);
+    }
+
+    #[test]
     fn test_from_game() {
         let game = Game::new();
         let root = Root::from_game(&game);
