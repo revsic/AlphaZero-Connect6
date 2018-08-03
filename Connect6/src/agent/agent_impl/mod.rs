@@ -58,11 +58,14 @@ impl Agent {
                         Query::Terminate => break,
                     };
 
-                    let mut ref_game = game.write()
-                        .expect("agent::main_thread RwLock of game is posioned");
+                    let (res, is_game_end) = {
+                        let mut ref_game = game.write()
+                            .expect("agent::main_thread RwLock of game is posioned");
 
-                    let res = ref_game.play(msg.as_str());
-                    match ref_game.is_game_end() {
+                        let res = ref_game.play(msg.as_str());
+                        (res, ref_game.is_game_end())
+                    };
+                    match is_game_end {
                         Player::None =>
                             to_user.send(InnerResult::Status(res))
                                 .expect("agent::main_thread - err in sending status"),
