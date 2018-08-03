@@ -11,8 +11,10 @@ macro_rules! play_with_stdio {
     () => {
         let mut stdin = io::stdin();
         let mut stdout = io::stdout();
+        let agent = Agent::with_start();
 
         let mut agent_io = AgentIO::new(
+            &agent,
             &mut stdin,
             &mut stdout,
         );
