@@ -3,9 +3,9 @@ mod tests;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Player {
-    Black,
-    White,
-    None,
+    Black = -1,
+    White = 1,
+    None = 0,
 }
 
 impl Player {
