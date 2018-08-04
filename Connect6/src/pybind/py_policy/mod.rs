@@ -3,11 +3,12 @@ extern crate cpython;
 use cpython::*;
 use std::collections::HashMap;
 
-use super::super::{agent::*, game::*, mcts::*};
+use super::super::{game::*, mcts::*};
 
 struct Node {
-    value: f32, //probability of black win
     visit: i32,
+    value: f32, //probability of black win
+    q_value: f32,
     policy: [[f32; 19]; 19],
     prev: Vec<u64>,
 }
@@ -15,8 +16,9 @@ struct Node {
 impl Node {
     fn new() -> Node {
         Node {
-            value: 0.,
             visit: 0,
+            value: 0.,
+            q_value: 0.,
             policy: [[0.; 19]; 19],
             prev: Vec::new(),
         }
@@ -24,8 +26,9 @@ impl Node {
 
     fn with_output(value: f32, policy: &[[f32; 19]; 19]) -> Node {
         Node {
-            value,
             visit: 1,
+            value,
+            q_value: 0.,
             policy: *policy,
             prev: Vec::new(),
         }
@@ -80,8 +83,12 @@ impl<'a> AlphaZero<'a> {
 }
 
 impl<'a> Policy for AlphaZero<'a> {
-    fn select(&self, sim: &Simulate) -> Vec<(usize, usize)> {
-        vec![(0, 0)]
+    fn num_iter(&self) -> i32 {
+        0
+    }
+
+    fn select(&self, sim: &Simulate) -> (usize, usize) {
+        (0, 0)
     }
 
     fn update(&mut self, sim: &mut Simulate) {

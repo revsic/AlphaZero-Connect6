@@ -26,7 +26,8 @@ fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
 }
 
 pub trait Policy {
-    fn select(&self, sim: &Simulate) -> Vec<(usize, usize)>;
+    fn num_iter(&self) -> i32;
+    fn select(&self, sim: &Simulate) -> (usize, usize);
     fn update(&mut self, sim: &mut Simulate);
     fn get_policy(&self, root: &Root) -> (usize, usize);
 }
@@ -52,12 +53,13 @@ impl<'a, P> TreeSearch<'a, P> where P: 'a + Policy + Sized {
     }
 
     pub fn search(&mut self) -> (usize, usize) {
-        { // search and update
+        let num_iter = self.policy.num_iter();
+        for _ in 0..num_iter { // search and update
             let mut sim = self.root.to_simulate();
-            for (row, col) in self.policy.select(&sim) {
-                let mut selected = sim.simulate(row, col);
-                self.policy.update(&mut selected);
-            }
+            let (row, col) = self.policy.select(&sim);
+
+            let mut selected = sim.simulate(row, col);
+            self.policy.update(&mut selected);
         }
         self.policy.get_policy(&self.root)
     }
@@ -124,16 +126,13 @@ impl DefaultPolicy {
 }
 
 impl Policy for DefaultPolicy {
-    fn select(&self, sim: &Simulate) -> Vec<(usize, usize)> {
+    fn num_iter(&self) -> i32 {
+        self.num_expand
+    }
+
+    fn select(&self, sim: &Simulate) -> (usize, usize) {
         let mut rng = rand::thread_rng();
-        let mut vec = Vec::new();
-
-        for _ in 0..self.num_expand {
-            let pos = *rng.choose(sim.possible).unwrap();
-            vec.push(pos);
-        }
-
-        vec
+        *rng.choose(sim.possible).unwrap()
     }
 
     fn update(&mut self, sim: &mut Simulate) {
