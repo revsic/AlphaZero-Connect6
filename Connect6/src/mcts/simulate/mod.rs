@@ -1,3 +1,6 @@
+extern crate cpython;
+
+use cpython::*;
 use super::super::game::*;
 
 #[cfg(test)]
@@ -146,5 +149,24 @@ impl<'a> Drop for Simulate<'a> {
             self.possible.push((row, col));
             self.board[row][col] = Player::None;
         }
+    }
+}
+
+impl<'a> ToPyObject for Simulate<'a> {
+    type ObjectType = PyTuple;
+    fn to_py_object(&self, py: Python) -> Self::ObjectType {
+        let player = (self.turn as i32).to_py_object(py).into_object();
+        let num_remain = self.num_remain.to_py_object(py).into_object();
+
+        let mut board: Vec<PyObject> = Vec::new();
+        for i in 0..19 {
+            for j in 0..19 {
+                board[i * 19 + j] = (self.board[i][j] as i32).to_py_object(py).into_object();
+            }
+        }
+        let list = PyList::new(py, board.as_slice()).into_object();
+        let tuple = [player, num_remain, list];
+
+        PyTuple::new(py, &tuple)
     }
 }
