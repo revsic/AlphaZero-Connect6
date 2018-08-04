@@ -56,7 +56,7 @@ impl<'a, P> SinglePolicyMCTS<'a, P> where P: 'a + Policy + Sized {
                     winner = player;
                     break;
                 },
-                Ok(GameResult::Status(result)) => (),
+                Ok(GameResult::Status(_)) => (),
                 Err(err) => panic!(format!("single_policy_mcts::run : {}", err)),
             };
         }
@@ -111,7 +111,7 @@ impl<'a, 'b, P, Q> SeperatePolicyMCTS<'a, 'b, P, Q>
                     winner = player;
                     break;
                 },
-                Ok(GameResult::Status(result)) => (),
+                Ok(GameResult::Status(_)) => (),
                 Err(err) => panic!(format!("seperate_policy_mcts::run : {}", err)),
             };
         }
