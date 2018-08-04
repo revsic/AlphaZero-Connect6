@@ -1,6 +1,5 @@
 extern crate rand;
 
-use std::any::Any;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -27,9 +26,7 @@ fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
 }
 
 pub trait Policy {
-    fn as_any(&self) -> &Any;
-    fn num_expand(&self) -> i32;
-    fn select(&self, sim: &Simulate) -> (usize, usize);
+    fn select(&self, sim: &Simulate) -> Vec<(usize, usize)>;
     fn update(&mut self, sim: &mut Simulate);
     fn get_policy(&self, root: &Root) -> (usize, usize);
 }
@@ -55,15 +52,13 @@ impl<'a, P> TreeSearch<'a, P> where P: 'a + Policy + Sized {
     }
 
     pub fn search(&mut self) -> (usize, usize) {
-        let num_iter = self.policy.num_expand();
-        for _ in 0..num_iter {
+        { // search and update
             let mut sim = self.root.to_simulate();
-            let (row, col) = self.policy.select(&sim);
-
-            let mut selected = sim.simulate(row, col);
-            self.policy.update(&mut selected);
+            for (row, col) in self.policy.select(&sim) {
+                let mut selected = sim.simulate(row, col);
+                self.policy.update(&mut selected);
+            }
         }
-
         self.policy.get_policy(&self.root)
     }
 }
@@ -129,17 +124,16 @@ impl DefaultPolicy {
 }
 
 impl Policy for DefaultPolicy {
-    fn as_any(&self) -> &Any {
-        self
-    }
-
-    fn num_expand(&self) -> i32 {
-        self.num_expand
-    }
-
-    fn select(&self, sim: &Simulate) -> (usize, usize) {
+    fn select(&self, sim: &Simulate) -> Vec<(usize, usize)> {
         let mut rng = rand::thread_rng();
-        *rng.choose(sim.possible).unwrap()
+        let mut vec = Vec::new();
+
+        for _ in 0..self.num_expand {
+            let pos = *rng.choose(sim.possible).unwrap();
+            vec.push(pos);
+        }
+
+        vec
     }
 
     fn update(&mut self, sim: &mut Simulate) {

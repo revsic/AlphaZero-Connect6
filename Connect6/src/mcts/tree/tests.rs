@@ -1,6 +1,4 @@
-use std::io;
 use super::*;
-use super::super::super::agent::*;
 
 mod policy_test {
     use super::*;
@@ -10,11 +8,12 @@ mod policy_test {
         let mut root = Root::from_game(&game);
         let sim = root.to_simulate();
 
-        let (row, col) = policy.select(&sim);
-        assert!(sim.validate(row, col));
+        for (row, col) in policy.select(&sim) {
+            assert!(sim.validate(row, col));
 
-        let pos = sim.possible.iter().position(|x| *x == (row, col));
-        assert!(pos.is_some());
+            let pos = sim.possible.iter().position(|x| *x == (row, col));
+            assert!(pos.is_some());
+        }
     }
 
     pub fn test_update(policy: &mut impl Policy) {
