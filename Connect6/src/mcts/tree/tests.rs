@@ -1,48 +1,80 @@
 use super::*;
 
+use std::io;
+use super::super::super::agent::*;
+
 mod policy_test {
     use super::*;
 
-    pub fn test_select(policy: &impl Policy) {
+    pub fn test_select(policy: &mut impl Policy) {
         let game = Game::new();
-        let mut root = Root::from_game(&game);
-        let sim = root.to_simulate();
+        let sim = Simulate::from_game(&game);
+        policy.init(&sim);
 
-        let (row, col) = policy.select(&sim);
-        assert!(sim.validate(row, col));
+        loop {
+            if let Some((row, col)) = policy.select(&sim) {
+                let node = sim.node.borrow();
+                let pos = node.possible.iter().position(|x| *x == (row, col));
 
-        let pos = sim.possible.iter().position(|x| *x == (row, col));
+                assert!(pos.is_some());
+                assert!(sim.validate(row, col));
+                break;
+            }
+            else {
+                let pos = policy.select(&sim);
+                assert!(pos.is_none());
+
+                let (row, col) = policy.expand(&sim);
+                let expanded = sim.simulate(row, col);
+                let path = vec![(row, col)];
+                policy.update(&expanded, &path);
+            }
+        }
+    }
+
+    pub fn test_expand(policy: &mut impl Policy) {
+        let game = Game::new();
+        let mut sim = Simulate::from_game(&game);
+        policy.init(&sim);
+
+        while let Some((row, col)) = policy.select(&sim) {
+            sim.simulate_in(row, col);
+        }
+        let (row, col) = policy.expand(&sim);
+
+        let node = sim.node.borrow();
+        let pos = node.possible.iter().position(|x| *x == (row, col));
+
         assert!(pos.is_some());
+        assert!(sim.validate(row, col));
     }
 
     pub fn test_update(policy: &mut impl Policy) {
         let game = Game::new();
-        let origin = Root::from_game(&game);
-        let mut root = Root::from_game(&game);
-        {
-            let mut sim = root.to_simulate();
-            let mut sim_aA = sim.simulate(0, 0);
+        let mut sim = Simulate::from_game(&game);
+        policy.init(&sim);
 
-            policy.update(&mut sim_aA);
+        while let Some((row, col)) = policy.select(&sim) {
+            sim.simulate_in(row, col);
         }
-        assert_eq!(origin.turn, root.turn);
-        assert_eq!(origin.num_remain, root.num_remain);
-        assert_eq!(origin.board, root.board);
+        let (row, col) = policy.expand(&sim);
+        let expanded = sim.simulate(row, col);
+        let path = vec![(row, col)];
 
-        let pos = root.possible.pop().unwrap();
-        root.possible.insert(0, pos);
-        assert_eq!(origin.possible, root.possible);
+        policy.update(&expanded, &path);
+        assert!(true);
     }
 
-    pub fn test_get_policy(policy: &impl Policy) {
+    pub fn test_get_policy(policy: &mut impl Policy) {
         let game = Game::new();
-        let mut root = Root::from_game(&game);
-        let (row, col) = policy.get_policy(&root);
+        let sim = Simulate::from_game(&game);
+        policy.init(&sim);
 
-        let sim = root.to_simulate();
+        let (row, col) = policy.policy(&sim);
         assert!(sim.validate(row, col));
 
-        let pos = sim.possible.iter().position(|x| *x == (row, col));
+        let node = sim.node.borrow();
+        let pos = node.possible.iter().position(|x| *x == (row, col));
         assert!(pos.is_some());
     }
 }
@@ -53,109 +85,105 @@ mod default_policy_test {
 
     #[test]
     fn test_select() {
-        let policy = DefaultPolicy::new();
-        policy_test::test_select(&policy);
+        let mut policy = DefaultPolicy::new();
+        policy_test::test_select(&mut policy);
+    }
+
+    #[test]
+    fn test_expand() {
+        let mut policy = DefaultPolicy::new();
+        policy_test::test_expand(&mut policy);
+        assert_eq!(policy.map.len(), 2);
+
+        let board = [[Player::None; 19]; 19];
+        let node = policy.map.get(&hash(&board));
+        assert!(node.is_some());
+
+        let hashed = &node.unwrap().next_node;
+        assert_eq!(hashed.len(), 1);
+
+        let node = policy.map.get(&hashed[0]);
+        assert!(node.is_some());
     }
 
     #[test]
     fn test_update() {
         let mut policy = DefaultPolicy::new();
         policy_test::test_update(&mut policy);
+        assert_eq!(policy.map.len(), 2);
 
-        fn num(board: &[[Player; 19]; 19]) -> usize {
-            board.iter().flat_map(|x|
-                x.iter().filter(|y| **y != Player::None )
-            ).count()
-        }
+        let board = [[Player::None; 19]; 19];
+        let node = policy.map.get(&hash(&board));
+        assert!(node.is_some());
 
-        let mut table: Vec<(&[[Player; 19]; 19], &Node)> = policy.map.iter().collect();
-        table.sort_by(|(board1, _), (board2, _)| num(board1).cmp(&num(board2)));
+        let parent = node.unwrap();
+        let hashed = &parent.next_node;
+        assert_eq!(hashed.len(), 1);
+        assert_eq!(parent.visit, 1);
 
-        assert!(table.len() >= 10);
-        assert_eq!(num(table[0].0), 2);
+        let node = policy.map.get(&hashed[0]);
+        assert!(node.is_some());
 
-        let mut hasher = DefaultHasher::new();
-        let mut board = [[Player::None; 19]; 19];
-        board[0][0] = Player::Black;
-        board.hash(&mut hasher);
+        let child = node.unwrap();
+        assert_eq!(child.next_node.len(), 0);
+        assert_eq!(child.visit, 1);
+        assert_eq!(child.black_win, parent.black_win);
 
-        let mut prev_num = 1;
-        let mut prev_hash = hasher.finish();
-        for (board, node) in table {
-            assert_eq!(prev_num + 1, num(board));
-            assert!(node.prev.contains(&prev_hash));
-
-            let mut hasher = DefaultHasher::new();
-            board.hash(&mut hasher);
-
-            prev_hash = hasher.finish();
-            prev_num += 1;
-        }
+        let num = child.board.iter()
+            .flat_map(|x| x.iter()
+                .filter(|y| **y != Player::None))
+            .count();
+        assert_eq!(num, 1);
     }
 
     #[test]
     fn test_get_policy() {
-        let policy = DefaultPolicy::new();
-        policy_test::test_get_policy(&policy);
-    }
-}
-
-#[cfg(test)]
-mod tree_search_test {
-    use super::*;
-
-    #[test]
-    fn test_new() {
         let mut policy = DefaultPolicy::new();
-        let tree = TreeSearch::new(&mut policy);
-
-        assert!(true);
+        policy_test::test_get_policy(&mut policy);
     }
 
     #[test]
-    fn test_from_game() {
-        let game = Game::new();
-        let mut policy = DefaultPolicy::new();
-        let _tree = TreeSearch::from_game(&game, &mut policy);
-
-        assert!(true);
-    }
-
-    #[test]
+    //#[ignore]
     fn test_self_play() {
-//        let agent = Agent::with_start();
-//        let game = agent.get_game();
-//        let mut policy = DefaultPolicy::debug();
-//
-//        let mut stdout = io::stdout();
-//        loop {
-//            let (row, col) = {
-//                let game = game.read().unwrap();
-//                game.print(&mut stdout);
-//                println!("-----------------{}-----------------", policy.map.len());
-//
-//                let mut tree = TreeSearch::from_game(&*game, &mut policy);
-//                tree.search()
-//            };
-//
-//            let row = (row as u8 + 0x61) as char;
-//            let col = (col as u8 + 0x41) as char;
-//            let query: String = vec![row, col].iter().collect();
-//
-//            match agent.play(&query) {
-//                Ok(GameResult::GameEnd(player)) => {
-//                    println!("{:?} win", player);
-//                    break;
-//                },
-//                Ok(GameResult::Status(result)) => (),
-//                Err(err) => {
-//                    println!("err occured {}", err);
-//                    assert!(false);
-//                    break;
-//                }
-//            };
-//        }
+        let agent = Agent::with_start();
+        let game = agent.get_game();
+        let mut black_policy = DefaultPolicy::new();
+        let mut white_policy = DefaultPolicy::new();
 
-        assert!(true);
+        let mut stdout = io::stdout();
+        loop {
+            let (row, col) = {
+                let game = game.read().unwrap();
+                game.print(&mut stdout).unwrap();
+                println!("-----------------{}-{}-----------------",
+                         black_policy.map.len(), white_policy.map.len());
+
+                if game.get_turn() == Player::Black {
+                    black_policy.get_policy(50, &*game)
+                } else {
+                    white_policy.get_policy(50, &*game)
+                }
+            };
+
+            let row = (row as u8 + 0x61) as char;
+            let col = (col as u8 + 0x41) as char;
+            let query: String = vec![row, col].iter().collect();
+
+            match agent.play(&query) {
+                Ok(GameResult::GameEnd(player)) => {
+                    println!("{:?} win", player);
+                    break;
+                },
+                Ok(GameResult::Status(_)) => (),
+                Err(err) => {
+                    println!("err occured {}", err);
+                    assert!(false);
+                    break;
+                }
+            };
+        }
+
+        let game = game.read().unwrap();
+        game.print(&mut stdout);
     }
 }

@@ -1,17 +1,184 @@
 extern crate rand;
 
 use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
+use std::collections::hash_map::*;
 use std::hash::{Hash, Hasher};
 
 use self::rand::Rng;
-use super::simulate::*;
+use super::simulate::Simulate;
 use super::super::game::*;
 
 #[cfg(test)]
 mod tests;
 
 type Board = [[Player; 19]; 19];
+
+pub trait Policy {
+    fn init(&mut self, sim: &Simulate);
+    fn select(&self, sim: &Simulate) -> Option<(usize, usize)>;
+    fn expand(&mut self, sim: &Simulate) -> (usize, usize);
+    fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>);
+    fn policy(&self, sim: &Simulate) -> (usize, usize);
+
+    fn search(&mut self, game: &Game) {
+        let mut simulate = Simulate::from_game(game);
+        self.init(&simulate);
+
+        let mut path = Vec::new();
+        while let Some((row, col)) = self.select(&simulate) {
+            path.push((row, col));
+            simulate.simulate_in(row, col);
+        }
+
+        if simulate.search_winner() != Player::None {
+            return;
+        }
+        let (row, col) = self.expand(&simulate);
+
+        path.push((row, col));
+        simulate.simulate_in(row, col);
+        self.update(&simulate, &path);
+    }
+
+    fn get_policy(&mut self, num: i32, game: &Game) -> (usize, usize) {
+        for _ in 0..num {
+            self.search(game);
+        }
+
+        let simulate = Simulate::from_game(game);
+        self.policy(&simulate)
+    }
+}
+
+struct Node {
+    visit: i32,
+    black_win: i32,
+    board: Board,
+    next_node: Vec<u64>,
+}
+
+impl Node {
+    fn new(board: &Board) -> Node {
+        Node {
+            visit: 0,
+            black_win: 0,
+            board: *board,
+            next_node: Vec::new(),
+        }
+    }
+
+    fn prob(player: &Player) -> (fn(&Node) -> f32) {
+        match *player {
+            Player::None => panic!("couldn't calculate none user's prob"),
+            Player::Black => |node: &Node| node.black_win as f32 / node.visit as f32,
+            Player::White => |node: &Node| 1. - (node.black_win as f32 / node.visit as f32),
+        }
+    }
+}
+
+struct DefaultPolicy {
+    map: HashMap<u64, Node>,
+}
+
+impl DefaultPolicy {
+    fn new() -> DefaultPolicy {
+        DefaultPolicy {
+            map: HashMap::new(),
+        }
+    }
+}
+
+fn hash(board: &Board) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    board.hash(&mut hasher);
+    hasher.finish()
+}
+
+impl Policy for DefaultPolicy {
+    fn init(&mut self, sim: &Simulate) {
+        let board = sim.board();
+        self.map.entry(hash(&board)).or_insert(Node::new(&board));
+    }
+
+    fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
+        let node = sim.node.borrow();
+        let tree_node = self.map.get(&hash(&node.board)).unwrap();
+
+        let prob = Node::prob(&sim.turn);
+        let max = tree_node.next_node.iter()
+            .max_by(|n1, n2| {
+                let node1 = self.map.get(*n1).unwrap();
+                let node2 = self.map.get(*n2).unwrap();
+                prob(node1).partial_cmp(&prob(node2)).unwrap()
+            });
+
+        if let Some(hashed) = max {
+            let max_node = self.map.get(hashed).unwrap();
+            if prob(max_node) != 0. {
+                let pos = diff_board(&max_node.board, &node.board);
+                return pos;
+            }
+        }
+        None
+    }
+
+    fn expand(&mut self, sim: &Simulate) -> (usize, usize) {
+        let mut rng = rand::thread_rng();
+        let (row, col) = {
+            let node = sim.node.borrow();
+            *rng.choose(&node.possible).unwrap()
+        };
+
+        let board = sim.simulate(row, col).board();
+        let hashed_board = hash(&board);
+        self.map.insert(hashed_board, Node::new(&board));
+
+        let parent_node = {
+            let node = sim.node.borrow();
+            self.map.get_mut(&hash(&node.board)).unwrap()
+        };
+        parent_node.next_node.push(hashed_board);
+
+        (row, col)
+    }
+
+    fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>) {
+        let mut simulate = sim.deep_clone();
+        let mut rng = rand::thread_rng();
+        while simulate.search_winner() == Player::None {
+            let (row, col) = {
+                let node = simulate.node.borrow();
+                *rng.choose(&node.possible).unwrap()
+            };
+            simulate.simulate_in(row, col);
+        }
+        let win = simulate.search_winner();
+        let black_win = (win == Player::Black) as i32;
+
+        let mut sim = sim.deep_clone();
+        let mut update = |sim: &Simulate| {
+            let node = self.map.get_mut(&hash(&sim.board())).unwrap();
+            node.visit += 1;
+            node.black_win += black_win;
+        };
+
+        update(&sim);
+        for (row, col) in path.iter().rev() {
+            sim.rollback_in(*row, *col);
+            update(&sim);
+        }
+    }
+
+    fn policy(&self, sim: &Simulate) -> (usize, usize) {
+        if let Some(pos) = self.select(sim) {
+            pos
+        } else {
+            let node = sim.node.borrow();
+            let mut rng = rand::thread_rng();
+            *rng.choose(&node.possible).unwrap()
+        }
+    }
+}
 
 fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
     for row in 0..19 {
@@ -23,190 +190,4 @@ fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
     }
 
     return None
-}
-
-pub trait Policy {
-    fn num_iter(&self) -> i32;
-    fn select(&self, sim: &Simulate) -> (usize, usize);
-    fn update(&mut self, sim: &mut Simulate);
-    fn get_policy(&self, root: &Root) -> (usize, usize);
-}
-
-pub struct TreeSearch<'a, P> where P: 'a + Policy + Sized{
-    root: Root,
-    policy: &'a mut P,
-}
-
-impl<'a, P> TreeSearch<'a, P> where P: 'a + Policy + Sized {
-    pub fn new(policy: &'a mut P) -> TreeSearch<'a, P> {
-        TreeSearch {
-            root: Root::new(),
-            policy,
-        }
-    }
-
-    pub fn from_game(game: &Game, policy: &'a mut P) -> TreeSearch<'a, P> {
-        TreeSearch {
-            root: Root::from_game(game),
-            policy,
-        }
-    }
-
-    pub fn search(&mut self) -> (usize, usize) {
-        let num_iter = self.policy.num_iter();
-        for _ in 0..num_iter { // search and update
-            let mut sim = self.root.to_simulate();
-            let (row, col) = self.policy.select(&sim);
-
-            let mut selected = sim.simulate(row, col);
-            self.policy.update(&mut selected);
-        }
-        self.policy.get_policy(&self.root)
-    }
-}
-
-struct Node {
-    visit: i32,
-    black_win: i32,
-    prev: Vec<u64>,
-}
-
-impl Node {
-    fn new() -> Node {
-        Node {
-            visit: 1,
-            black_win: 0,
-            prev: Vec::new(),
-        }
-    }
-
-    fn calc(player: &Player) -> fn(&Node) -> f32 {
-        match *player {
-            Player::None => panic!("couldn't calculate none user's prob"),
-            Player::Black => |node: &Node| node.black_win as f32 / node.visit as f32,
-            Player::White => |node: &Node| 1. - (node.black_win as f32 / node.visit as f32),
-        }
-    }
-}
-
-pub struct DefaultPolicy {
-    debug: bool,
-    num_expand: i32,
-    map: HashMap<Board, Node>,
-}
-
-impl DefaultPolicy {
-    fn default_num_expand() -> i32 {
-        50
-    }
-
-    pub fn new() -> DefaultPolicy {
-        DefaultPolicy {
-            debug: false,
-            num_expand: Self::default_num_expand(),
-            map: HashMap::new(),
-        }
-    }
-
-    pub fn with_num_expand(num_expand: i32) -> DefaultPolicy {
-        DefaultPolicy {
-            debug: false,
-            num_expand,
-            map: HashMap::new(),
-        }
-    }
-
-    pub fn debug() -> DefaultPolicy {
-        DefaultPolicy {
-            debug: true,
-            num_expand: Self::default_num_expand(),
-            map: HashMap::new(),
-        }
-    }
-}
-
-impl Policy for DefaultPolicy {
-    fn num_iter(&self) -> i32 {
-        self.num_expand
-    }
-
-    fn select(&self, sim: &Simulate) -> (usize, usize) {
-        let mut rng = rand::thread_rng();
-        *rng.choose(sim.possible).unwrap()
-    }
-
-    fn update(&mut self, sim: &mut Simulate) {
-        let backup = sim.backup();
-        let mut rng = rand::thread_rng();
-
-        let mut win = Player::None;
-        let mut play: Vec<[[Player; 19]; 19]> = Vec::new();
-
-        loop {
-            match sim.is_game_end() {
-                Player::None => (),
-                player => {
-                    win = player;
-                    break;
-                }
-            }
-            let (row, col) = *rng.choose(sim.possible).unwrap();
-            sim.simulate_mut(row, col);
-
-            play.push(*sim.board);
-        }
-
-        sim.recover(backup);
-
-        let mut hasher = DefaultHasher::new();
-        sim.board.hash(&mut hasher);
-
-        let mut prev = hasher.finish();
-        for board in play.iter() {
-            let node = self.map.entry(*board).or_insert(Node::new());
-            node.visit += 1;
-            if win == Player::Black {
-                node.black_win += 1
-            };
-            node.prev.push(prev);
-
-            let mut hasher = DefaultHasher::new();
-            board.hash(&mut hasher);
-            prev = hasher.finish();
-        }
-    }
-
-    fn get_policy(&self, root: &Root) -> (usize, usize) {
-        let mut hasher = DefaultHasher::new();
-        root.board.hash(&mut hasher);
-
-        let hash = hasher.finish();
-        let calc = Node::calc(&root.turn);
-
-        let max = self.map.iter()
-            .filter(|(_, node)| node.prev.contains(&hash))
-            .max_by(|(_, node1), (_, node2)| {
-                calc(node1).partial_cmp(&calc(node2)).unwrap()
-            });
-
-        if let Some((board, node)) = max{
-            if calc(node) != 0. {
-                if let Some(pos) = diff_board(board, &root.board) {
-                    if self.debug {
-                        println!("find {} ({})", calc(node), node.visit);
-                    }
-                    return pos;
-                }
-            }
-        }
-        let mut rng = rand::thread_rng();
-        if let Some(rand) = rng.choose(&root.possible) {
-            if self.debug {
-                println!("rand");
-            }
-            return *rand;
-        }
-
-        (100, 100)
-    }
 }
