@@ -3,7 +3,7 @@ use std::time::Instant;
 
 #[test]
 fn test_single_policy_mcts() {
-    let mut policy = DefaultPolicy::with_num_expand(1);
+    let mut policy = DefaultPolicy::with_num_iter(1);
     let mut mcts = SinglePolicyMCTS::new(&mut policy);
 
     let now = Instant::now();
@@ -20,8 +20,8 @@ fn test_single_policy_mcts() {
 
 #[test]
 fn test_seperate_policy_mcts() {
-    let mut black_policy = DefaultPolicy::with_num_expand(1);
-    let mut white_policy = DefaultPolicy::with_num_expand(1);
+    let mut black_policy = DefaultPolicy::with_num_iter(1);
+    let mut white_policy = DefaultPolicy::with_num_iter(1);
     let mut mcts = SeperatePolicyMCTS::new(&mut black_policy, &mut white_policy);
 
     let now = Instant::now();
