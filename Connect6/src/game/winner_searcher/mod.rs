@@ -3,6 +3,7 @@ use super::Player;
 #[cfg(test)]
 mod tests;
 
+#[derive(Copy, Clone, Debug)]
 enum Path {
     Right,
     Down,
