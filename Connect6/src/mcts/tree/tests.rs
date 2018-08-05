@@ -143,7 +143,7 @@ mod default_policy_test {
     }
 
     #[test]
-    //#[ignore]
+    #[ignore]
     fn test_self_play() {
         let agent = Agent::with_start();
         let game = agent.get_game();
@@ -159,9 +159,9 @@ mod default_policy_test {
                          black_policy.map.len(), white_policy.map.len());
 
                 if game.get_turn() == Player::Black {
-                    black_policy.get_policy(50, &*game)
+                    black_policy.get_policy(&*game)
                 } else {
-                    white_policy.get_policy(50, &*game)
+                    white_policy.get_policy(&*game)
                 }
             };
 

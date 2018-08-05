@@ -40,8 +40,8 @@ pub trait Policy {
         self.update(&simulate, &path);
     }
 
-    fn get_policy(&mut self, num: i32, game: &Game) -> (usize, usize) {
-        for _ in 0..num {
+    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
+        for _ in 0..50 {
             self.search(game);
         }
 
@@ -76,13 +76,22 @@ impl Node {
     }
 }
 
-struct DefaultPolicy {
+pub struct DefaultPolicy {
+    num_iter: i32,
     map: HashMap<u64, Node>,
 }
 
 impl DefaultPolicy {
-    fn new() -> DefaultPolicy {
+    pub fn new() -> DefaultPolicy {
         DefaultPolicy {
+            num_iter: 50,
+            map: HashMap::new(),
+        }
+    }
+
+    pub fn with_num_iter(num_iter: i32) -> DefaultPolicy {
+        DefaultPolicy {
+            num_iter,
             map: HashMap::new(),
         }
     }
@@ -177,6 +186,15 @@ impl Policy for DefaultPolicy {
             let mut rng = rand::thread_rng();
             *rng.choose(&node.possible).unwrap()
         }
+    }
+
+    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
+        for _ in 0..self.num_iter {
+            self.search(game);
+        }
+
+        let simulate = Simulate::from_game(game);
+        self.policy(&simulate)
     }
 }
 
