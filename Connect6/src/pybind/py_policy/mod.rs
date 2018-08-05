@@ -70,10 +70,11 @@ impl<'a> AlphaZero<'a> {
             return None;
         }
 
+        let board = sim.board();
         let mut policy = [[0.; 19]; 19];
         for i in 0..19 {
             for j in 0..19 {
-                let mask = (sim.board[i][j] as i32 as f32).abs();
+                let mask = (board[i][j] as i32 as f32).abs();
                 policy[i][j] = vec[i * 19 + j] * mask;
             }
         }
@@ -83,19 +84,23 @@ impl<'a> AlphaZero<'a> {
 }
 
 impl<'a> Policy for AlphaZero<'a> {
-    fn num_iter(&self) -> i32 {
-        0
+    fn init(&mut self, sim: &Simulate) {
+
     }
 
-    fn select(&self, sim: &Simulate) -> (usize, usize) {
+    fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
+        None
+    }
+
+    fn expand(&mut self, sim: &Simulate) -> (usize, usize) {
         (0, 0)
     }
 
-    fn update(&mut self, sim: &mut Simulate) {
+    fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>) {
 
     }
 
-    fn get_policy(&self, root: &Root) -> (usize, usize) {
+    fn policy(&self, sim: &Simulate) -> (usize, usize) {
         (0, 0)
     }
 }
