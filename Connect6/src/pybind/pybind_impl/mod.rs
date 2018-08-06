@@ -3,6 +3,9 @@ extern crate cpython;
 use cpython::*;
 use super::super::game::*;
 
+#[cfg(test)]
+mod tests;
+
 type Board = [[Player; 19]; 19];
 
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
