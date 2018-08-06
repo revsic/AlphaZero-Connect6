@@ -49,6 +49,7 @@ impl Node {
 pub struct AlphaZero<'a> {
     py: Python<'a>,
     obj: PyObject,
+    debug: bool,
     num_iter: i32,
     map: HashMap<u64, Node>,
 }
@@ -62,6 +63,17 @@ impl<'a> AlphaZero<'a> {
         AlphaZero {
             py,
             obj,
+            debug: false,
+            num_iter: Self::default_num_iter(),
+            map: HashMap::new(),
+        }
+    }
+
+    pub fn debug(py: Python<'a>, obj: PyObject) -> AlphaZero {
+        AlphaZero {
+            py,
+            obj,
+            debug: true,
             num_iter: Self::default_num_iter(),
             map: HashMap::new(),
         }
@@ -71,6 +83,7 @@ impl<'a> AlphaZero<'a> {
         AlphaZero {
             py,
             obj,
+            debug: false,
             num_iter,
             map: HashMap::new(),
         }
