@@ -184,6 +184,6 @@ mod default_policy_test {
         }
 
         let game = game.read().unwrap();
-        game.print(&mut stdout);
+        game.print(&mut stdout).unwrap();
     }
 }
