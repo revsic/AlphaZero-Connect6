@@ -1,6 +1,5 @@
 extern crate cpython;
 
-use cpython::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::super::game::*;
