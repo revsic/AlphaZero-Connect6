@@ -10,6 +10,9 @@ use std::hash::{Hash, Hasher};
 use super::pybind_impl::*;
 use super::super::{game::*, mcts::*};
 
+#[cfg(test)]
+mod tests;
+
 type Board = [[Player; 19]; 19];
 
 struct Node {
@@ -39,9 +42,9 @@ impl Node {
         match player {
             Player::None => panic!("node::prob couldn't get probability from Player::None"),
             Player::Black => |node: &Node|
-                node.q_value + node.n_prob / (1. + node.visit as f32),
+                node.q_value / (node.visit as f32) + node.n_prob / (1. + node.visit as f32),
             Player::White => |node: &Node|
-                (1. - node.q_value) + (1. - node.n_prob) / (1. + node.visit as f32),
+                (1. - node.q_value / node.visit as f32) + (1. - node.n_prob) / (1. + node.visit as f32),
         }
     }
 }
@@ -49,7 +52,6 @@ impl Node {
 pub struct AlphaZero<'a> {
     py: Python<'a>,
     obj: PyObject,
-    debug: bool,
     num_iter: i32,
     map: HashMap<u64, Node>,
 }
@@ -63,17 +65,6 @@ impl<'a> AlphaZero<'a> {
         AlphaZero {
             py,
             obj,
-            debug: false,
-            num_iter: Self::default_num_iter(),
-            map: HashMap::new(),
-        }
-    }
-
-    pub fn debug(py: Python<'a>, obj: PyObject) -> AlphaZero {
-        AlphaZero {
-            py,
-            obj,
-            debug: true,
             num_iter: Self::default_num_iter(),
             map: HashMap::new(),
         }
@@ -83,7 +74,6 @@ impl<'a> AlphaZero<'a> {
         AlphaZero {
             py,
             obj,
-            debug: false,
             num_iter,
             map: HashMap::new(),
         }
@@ -109,7 +99,7 @@ impl<'a> AlphaZero<'a> {
             let mut temporal = [[0.; 19]; 19];
             for i in 0..19 {
                 for j in 0..19 {
-                    let mask = (board[i][j] as i32 as f32).abs();
+                    let mask = (board[i][j] == Player::None) as i32 as f32;
                     temporal[i][j] = policy[i * 19 + j] * mask;
                 }
             }
@@ -142,7 +132,18 @@ fn hash(board: &Board) -> u64 {
 impl<'a> Policy for AlphaZero<'a> {
     fn init(&mut self, sim: &Simulate) {
         let node = sim.node.borrow();
-        self.map.entry(hash(&node.board)).or_insert(Node::new(&node.board));
+        let hashed = hash(&node.board);
+
+        if self.map.get(&hashed).is_none() {
+            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
+                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
+
+                entry.value = value[0];
+                entry.prob = policy[0];
+            } else {
+                panic!("alpha_zero::init couldn't get from py policy");
+            }
+        }
     }
 
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
@@ -158,7 +159,7 @@ impl<'a> Policy for AlphaZero<'a> {
     }
 
     fn expand(&mut self, sim: &Simulate) -> (usize, usize) {
-        let (possible, hashed) = {
+        let (possible, parent_hashed) = {
             let node = sim.node.borrow();
             let board = &node.board;
             (node.possible.clone(), hash(board))
@@ -166,11 +167,11 @@ impl<'a> Policy for AlphaZero<'a> {
         let mut boards = Vec::new();
         let mut hashes = Vec::new();
 
-        for (row, col) in possible {
-            let board = sim.simulate(row, col).board();
+        for (row, col) in possible.iter() {
+            let board = sim.simulate(*row, *col).board();
             let hashed_board = hash(&board);
             { // borrow mut HashMap
-                let parent_node = self.map.get_mut(&hashed).unwrap();
+                let parent_node = self.map.get_mut(&parent_hashed).unwrap();
                 parent_node.next_node.push(hashed_board);
             }
             if self.map.get(&hashed_board).is_none() {
@@ -183,14 +184,23 @@ impl<'a> Policy for AlphaZero<'a> {
 
         let result = self.get_from(&boards);
         if let Some((values, policies)) = result {
-            for ((value, policy), hashed) in values.iter()
+            let n_prob = {
+                let parent_node = self.map.get(&parent_hashed).unwrap();
+                parent_node.prob
+            };
+
+            for (((value, policy), hashed), pos) in values.iter()
                 .zip(policies.iter())
                 .zip(hashes.iter())
+                .zip(possible.iter())
             {
                 let node = self.map.get_mut(hashed).unwrap();
                 node.visit += 1;
                 node.value = *value;
                 node.prob = *policy;
+
+                let (row, col) = *pos;
+                node.n_prob = n_prob[row][col];
             }
         } else {
             panic!("alpha_zero::couldn't get from python object")
@@ -205,7 +215,7 @@ impl<'a> Policy for AlphaZero<'a> {
             let tree_node = self.map.get(&hashed).unwrap();
             tree_node.next_node.iter()
                 .map(|x| self.map.get(x).unwrap().value)
-                .sum::<f32>() / tree_node.next_node.len() as f32
+                .sum::<f32>()
         };
         { // boroow mut map: HashMap
             let tree_node = self.map.get_mut(&hashed).unwrap();
@@ -214,7 +224,7 @@ impl<'a> Policy for AlphaZero<'a> {
         }
 
         let mut sim = sim.deep_clone();
-        for (row, col) in path.iter() {
+        for (row, col) in path.iter().rev() {
             sim.rollback_in(*row, *col);
 
             let node = self.map.get_mut(&hash(&sim.board())).unwrap();
