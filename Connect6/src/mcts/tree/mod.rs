@@ -10,6 +10,7 @@ use super::super::game::*;
 
 #[cfg(test)]
 mod tests;
+pub mod policy_tests;
 
 type Board = [[Player; 19]; 19];
 
