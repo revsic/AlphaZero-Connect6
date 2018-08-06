@@ -198,7 +198,7 @@ impl Policy for DefaultPolicy {
     }
 }
 
-fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
+pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
     for row in 0..19 {
         for col in 0..19 {
             if board1[row][col] != board2[row][col] {
@@ -206,6 +206,5 @@ fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
             }
         }
     }
-
     return None
 }
