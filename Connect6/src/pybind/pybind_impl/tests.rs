@@ -39,10 +39,10 @@ fn test_pylist_from_board() {
     let mut recovered = [[Player::None; 19]; 19];
     for i in 0..19 {
         for j in 0..19 {
-            let player = match seq[i * 19 + j] {
-                -1. => Player::Black,
-                0. => Player::None,
-                1. => Player::White,
+            let player = match seq[i * 19 + j] as i32 {
+                -1 => Player::Black,
+                0 => Player::None,
+                1 => Player::White,
                 _ => { assert!(false); Player::None },
             };
             recovered[i][j] = player;
