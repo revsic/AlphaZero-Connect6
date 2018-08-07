@@ -7,7 +7,7 @@ pub mod pybind;
 extern crate cpython;
 use cpython::*;
 
-const BOARD_SIZE: usize = 15;
+const BOARD_SIZE: usize = 12;
 const BOARD_CAPACITY: usize = BOARD_SIZE * BOARD_SIZE;
 type Board = [[game::Player; BOARD_SIZE]; BOARD_SIZE];
 

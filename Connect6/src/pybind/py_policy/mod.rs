@@ -176,6 +176,7 @@ impl<'a> AlphaZero<'a> {
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
+                print!("{} ", prob(node2));
                 prob(node1).partial_cmp(&prob(node2)).unwrap()
             })
             .map(|x| *x)
@@ -318,20 +319,18 @@ impl<'a> Policy for AlphaZero<'a> {
         let parent_visit = tree_node.visit as f32;
         let prob = |node: &Node| -> f32 {
             let visit = node.visit as f32;
-            visit.powf(tau) / (parent_visit - visit).powf(tau)
+            visit.powf(tau) / (parent_visit - visit + 1.).powf(tau)
         };
-//        let c_puct = self.param.c_puct;
-//        let prob2 = Node::prob(sim.turn);
-//        let prob2 = |node: &Node| prob2(node, c_puct, parent_visit);
+
         let hashed = tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
-//                print!("({:.2}, {:.2}) ", prob(node2), prob2(node2));
                 prob(node1).partial_cmp(&prob(node2)).unwrap()
             })
             .map(|x| *x)
             .unwrap();
+
         let max_node = self.map.get(&hashed).unwrap();
         diff_board(&node.board, &max_node.board).unwrap()
     }
@@ -341,9 +340,9 @@ impl<'a> Policy for AlphaZero<'a> {
         self.init(&simulate);
 
         let node = self.map.get(&hash(&simulate.board())).unwrap().clone();
-        if node.num_player > self.param.tau_update_term {
-            self.tau = self.param.updated_tau;
-        }
+//        if node.num_player > self.param.tau_update_term {
+//            self.tau = self.param.updated_tau;
+//        }
         for _ in 0..self.param.num_simulation {
             self.search(&simulate);
         }
