@@ -1,5 +1,7 @@
 use super::Player;
 
+use super::super::BOARD_SIZE;
+
 #[cfg(test)]
 mod tests;
 
@@ -50,18 +52,18 @@ impl Cumulative {
 
 struct Block {
     flag: usize,
-    mem: [[Cumulative; 21]; 2],
+    mem: [[Cumulative; BOARD_SIZE+2]; 2],
 }
 
 impl Block {
     fn new() -> Block {
         Block {
             flag: 0,
-            mem: [[Cumulative::new(); 21]; 2],
+            mem: [[Cumulative::new(); BOARD_SIZE+2]; 2],
         }
     }
 
-    fn as_tuple(&self) -> (&[Cumulative; 21], &[Cumulative; 21]) {
+    fn as_tuple(&self) -> (&[Cumulative; BOARD_SIZE+2], &[Cumulative; BOARD_SIZE+2]) {
         let f = self.flag;
         (&self.mem[f], &self.mem[1 - f])
     }
@@ -77,7 +79,7 @@ impl Block {
     }
 
     fn update_now<F>(&mut self, update: F)
-        where F: Fn(&mut [Cumulative; 21])
+        where F: Fn(&mut [Cumulative; BOARD_SIZE+2])
     {
         let f = self.flag;
         let now = &mut self.mem[1 - f];
@@ -88,13 +90,13 @@ impl Block {
         self.flag = 1 - self.flag;
         let now = &mut self.mem[1 - self.flag];
 
-        for i in 0..21 {
+        for i in 0..BOARD_SIZE+2 {
             now[i] = Cumulative::new();
         }
     }
 }
 
-pub fn search(table: &[[Player; 19]; 19]) -> Player {
+pub fn search(table: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Player {
     let mut black = Block::new();
     let mut white = Block::new();
 
@@ -112,11 +114,11 @@ pub fn search(table: &[[Player; 19]; 19]) -> Player {
         false
     }
 
-    for row in 0..19 {
+    for row in 0..BOARD_SIZE {
         black.update_row();
         white.update_row();
 
-        for col in 0..19 {
+        for col in 0..BOARD_SIZE {
             match table[row][col] {
                 Player::None => continue,
                 Player::Black =>

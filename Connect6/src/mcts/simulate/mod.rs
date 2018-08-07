@@ -3,29 +3,30 @@ extern crate cpython;
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::super::game::*;
+use super::super::BOARD_SIZE;
 
 #[cfg(test)]
 mod tests;
 
 pub struct Node {
-    pub board: [[Player; 19]; 19],
+    pub board: [[Player; BOARD_SIZE]; BOARD_SIZE],
     pub possible: Vec<(usize, usize)>,
 }
 
 impl Node {
     #[inline]
     fn possible() -> Vec<(usize, usize)> {
-        (0..19).flat_map(|x| (0..19).map(move |y| (x, y))).collect()
+        (0..BOARD_SIZE).flat_map(|x| (0..BOARD_SIZE).map(move |y| (x, y))).collect()
     }
 
     fn new() -> Node {
         Node {
-            board: [[Player::None; 19]; 19],
+            board: [[Player::None; BOARD_SIZE]; BOARD_SIZE],
             possible: Self::possible(),
         }
     }
 
-    fn from_board(board: &[[Player; 19]; 19]) -> Node {
+    fn from_board(board: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Node {
         let possible = Self::possible()
             .into_iter()
             .filter(|(r, c)| board[*r][*c] == Player::None)
@@ -76,7 +77,7 @@ impl Simulate {
         }
     }
 
-    pub fn board(&self) -> [[Player; 19]; 19] {
+    pub fn board(&self) -> [[Player; BOARD_SIZE]; BOARD_SIZE] {
         let node = self.node.borrow();
         node.board
     }
@@ -87,7 +88,7 @@ impl Simulate {
     }
 
     pub fn validate(&self, row: usize, col: usize) -> bool {
-        if row >= 19 || col >= 19 {
+        if row >= BOARD_SIZE || col >= BOARD_SIZE {
             return false;
         }
         let board = &self.node.borrow().board;

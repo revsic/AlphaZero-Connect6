@@ -7,12 +7,13 @@ use std::hash::{Hash, Hasher};
 use self::rand::Rng;
 use super::simulate::Simulate;
 use super::super::game::*;
+use super::super::BOARD_SIZE;
 
 #[cfg(test)]
 mod tests;
 pub mod policy_tests;
 
-type Board = [[Player; 19]; 19];
+type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub trait Policy {
     fn init(&mut self, sim: &Simulate);
@@ -196,8 +197,8 @@ impl BasicPolicy for DefaultPolicy {
 }
 
 pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
-    for row in 0..19 {
-        for col in 0..19 {
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
             if board1[row][col] != board2[row][col] {
                 return Some((row, col))
             }

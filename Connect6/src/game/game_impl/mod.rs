@@ -2,6 +2,7 @@
 mod tests;
 
 use std::io;
+use super::super::BOARD_SIZE;
 use super::player::Player;
 use super::position::Pos;
 
@@ -31,12 +32,12 @@ impl PlayResult {
 }
 
 type Msg = &'static str;
-type Board = [[Player; 19]; 19];
+type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub struct Game {
     turn: Player,
     num_remain: i32,
-    board: [[Player; 19]; 19],
+    board: [[Player; BOARD_SIZE]; BOARD_SIZE],
 }
 
 impl Game {
@@ -44,7 +45,7 @@ impl Game {
         Game {
             turn: Player::Black,
             num_remain: 1,
-            board: [[Player::None; 19]; 19],
+            board: [[Player::None; BOARD_SIZE]; BOARD_SIZE],
         }
     }
 
@@ -98,7 +99,7 @@ impl Game {
         Ok(pos)
     }
 
-    pub fn get_board(&self) -> &[[Player; 19]; 19] {
+    pub fn get_board(&self) -> &[[Player; BOARD_SIZE]; BOARD_SIZE] {
         &self.board
     }
 
@@ -114,11 +115,11 @@ impl Game {
         let mut paint = Paint::new(writer);
         paint.push(b"0 A B C D E F G H I J K L M N O P Q R S\n");
 
-        for i in 0..19 {
+        for i in 0..BOARD_SIZE {
             let row_name = [0x61 + i as u8, ' ' as u8];
             paint.push(&row_name);
 
-            for j in 0..19 {
+            for j in 0..BOARD_SIZE {
                 match self.board[i][j] {
                     Player::Black => paint.push(b"X "),
                     Player::White => paint.push(b"O "),

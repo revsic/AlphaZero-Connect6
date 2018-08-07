@@ -3,6 +3,7 @@ extern crate rand;
 #[cfg(test)]
 mod tests;
 
+use super::super::BOARD_SIZE;
 use super::super::game::Player;
 use super::agent_impl::*;
 
@@ -27,8 +28,9 @@ impl RandomPlayer {
     }
 
     pub fn play_io(&self, io_action: impl Fn(&Agent)) -> Result<RandomPlayResult, &'static str> {
-        let lower: Vec<char> = (0..19).map(|x: u8| (x + 0x61) as char).collect();
-        let upper: Vec<char> = (0..19).map(|x: u8| (x + 0x41) as char).collect();
+        let size = BOARD_SIZE as u8;
+        let lower: Vec<char> = (0..size).map(|x: u8| (x + 0x61) as char).collect();
+        let upper: Vec<char> = (0..size).map(|x: u8| (x + 0x41) as char).collect();
 
         let possible = {
             let mut possible: Vec<(char, char)> = lower.iter().cloned().flat_map(

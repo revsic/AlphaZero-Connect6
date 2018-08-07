@@ -19,7 +19,7 @@ mod default_policy_test {
         policy_tests::test_expand(&mut policy);
         assert_eq!(policy.map.len(), 2);
 
-        let board = [[Player::None; 19]; 19];
+        let board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
         let node = policy.map.get(&hash(&board));
         assert!(node.is_some());
 
@@ -36,7 +36,7 @@ mod default_policy_test {
         policy_tests::test_update(&mut policy);
         assert_eq!(policy.map.len(), 2);
 
-        let board = [[Player::None; 19]; 19];
+        let board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
         let node = policy.map.get(&hash(&board));
         assert!(node.is_some());
 

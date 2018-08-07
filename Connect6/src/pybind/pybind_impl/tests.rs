@@ -27,7 +27,7 @@ fn test_pylist_from_board() {
     let gil = Python::acquire_gil();
     let py = gil.python();
 
-    let mut board = [[Player::None; 19]; 19];
+    let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
     board[0][0] = Player::White;
     board[1][0] = Player::Black;
 
@@ -36,10 +36,10 @@ fn test_pylist_from_board() {
     assert!(seq.is_some());
 
     let seq = seq.unwrap();
-    let mut recovered = [[Player::None; 19]; 19];
-    for i in 0..19 {
-        for j in 0..19 {
-            let player = match seq[i * 19 + j] as i32 {
+    let mut recovered = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE {
+            let player = match seq[i * BOARD_SIZE + j] as i32 {
                 -1 => Player::Black,
                 0 => Player::None,
                 1 => Player::White,
@@ -56,7 +56,7 @@ fn test_pylist_from_multiple() {
     let gil = Python::acquire_gil();
     let py = gil.python();
 
-    let board = vec![[[Player::None; 19]; 19], [[Player::Black; 19]; 19]];
+    let board = vec![[[Player::None; BOARD_SIZE]; BOARD_SIZE], [[Player::Black; BOARD_SIZE]; BOARD_SIZE]];
     let list = pylist_from_multiple(py, &board);
 
     let res = list.cast_into::<PySequence>(py).ok();
@@ -71,9 +71,9 @@ fn test_pylist_from_multiple() {
         .collect::<Vec<_>>();
 
     assert_eq!(vec.len(), 2);
-    assert_eq!(vec[0].len(), 361);
-    assert_eq!(vec[1].len(), 361);
+    assert_eq!(vec[0].len(), BOARD_SIZE * BOARD_SIZE);
+    assert_eq!(vec[1].len(), BOARD_SIZE * BOARD_SIZE);
 
-    assert_eq!(vec[0], vec![Player::None as i32 as f32; 361]);
-    assert_eq!(vec[1], vec![Player::Black as i32 as f32; 361]);
+    assert_eq!(vec[0], vec![Player::None as i32 as f32; BOARD_SIZE * BOARD_SIZE]);
+    assert_eq!(vec[1], vec![Player::Black as i32 as f32; BOARD_SIZE * BOARD_SIZE]);
 }

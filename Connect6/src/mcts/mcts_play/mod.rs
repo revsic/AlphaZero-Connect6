@@ -7,13 +7,14 @@ use super::*;
 use super::super::game::*;
 use super::super::agent::*;
 use super::super::pybind::*;
+use super::super::BOARD_SIZE;
 
 #[cfg(test)]
 mod tests;
 
 pub struct Path {
     pub turn: Player,
-    pub board: [[Player; 19]; 19],
+    pub board: [[Player; BOARD_SIZE]; BOARD_SIZE],
     pub pos: (usize, usize),
 }
 

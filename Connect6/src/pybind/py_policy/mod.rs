@@ -2,19 +2,18 @@ extern crate cpython;
 extern crate rand;
 
 use cpython::*;
-use self::rand::Rng;
 use self::rand::distributions::{Distribution, Dirichlet};
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use super::pybind_impl::*;
-use super::super::{game::*, mcts::*};
+use super::super::{game::*, mcts::*, BOARD_SIZE};
 
 #[cfg(test)]
 mod tests;
 
-type Board = [[Player; 19]; 19];
+type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Clone)]
 struct Node {
@@ -22,14 +21,14 @@ struct Node {
     value: f32, //probability of black win
     q_value: f32,
     n_prob: f32,
-    prob: [[f32; 19]; 19],
+    prob: [[f32; BOARD_SIZE]; BOARD_SIZE],
     num_player: usize,
-    board: [[Player; 19]; 19],
+    board: [[Player; BOARD_SIZE]; BOARD_SIZE],
     next_node: Vec<u64>,
 }
 
 impl Node {
-    fn new(board: &[[Player; 19]; 19]) -> Node {
+    fn new(board: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Node {
         let num_player = board.iter()
             .map(|x| x.iter().filter(|x| **x != Player::None).count())
             .sum();
@@ -38,33 +37,33 @@ impl Node {
             value: 0.,
             q_value: 0.,
             n_prob: 0.,
-            prob: [[0.; 19]; 19],
+            prob: [[0.; BOARD_SIZE]; BOARD_SIZE],
             num_player,
             board: *board,
             next_node: Vec::new(),
         }
     }
 
-    fn new_with_num(board: &[[Player; 19]; 19], num_player: usize) -> Node {
+    fn new_with_num(board: &[[Player; BOARD_SIZE]; BOARD_SIZE], num_player: usize) -> Node {
         Node {
             visit: 0,
             value: 0.,
             q_value: 0.,
             n_prob: 0.,
-            prob: [[0.; 19]; 19],
+            prob: [[0.; BOARD_SIZE]; BOARD_SIZE],
             num_player,
             board: *board,
             next_node: Vec::new(),
         }
     }
 
-    fn prob(player: Player) -> (fn(&Node, f32) -> f32) {
+    fn prob(player: Player) -> (fn(&Node, f32, f32) -> f32) {
         match player {
             Player::None => panic!("node::prob couldn't get probability from Player::None"),
-            Player::Black => |node: &Node, parent_visit: f32|
-                node.q_value / (node.visit as f32) + node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
-            Player::White => |node: &Node, parent_visit: f32|
-                (1. - node.q_value / node.visit as f32) + (1. - node.n_prob)  * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
+            Player::Black => |node: &Node, c_puct: f32, parent_visit: f32|
+                node.q_value / (node.visit as f32) + c_puct * node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
+            Player::White => |node: &Node, c_puct: f32, parent_visit: f32|
+                (1. - node.q_value / node.visit as f32) + c_puct * (1. - node.n_prob)  * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
         }
     }
 }
@@ -76,17 +75,19 @@ pub struct HyperParameter {
     pub tau_update_term: usize,
     pub epsilon: f32,
     pub dirichlet_alpha: f64,
+    pub c_puct: f32,
 }
 
 impl HyperParameter {
     fn default() -> HyperParameter {
         HyperParameter {
-            num_simulation: 160,
+            num_simulation: 100,
             initial_tau: 1.,
             updated_tau: 1e-4,
             tau_update_term: 30,
             epsilon: 0.25,
             dirichlet_alpha: 0.03,
+            c_puct: 1.,
         }
     }
 }
@@ -121,7 +122,7 @@ impl<'a> AlphaZero<'a> {
         }
     }
 
-    fn get_from(&self, boards: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; 19]; 19]>)> {
+    fn get_from(&self, boards: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let pylist = pylist_from_multiple(self.py, boards);
         let res = self.obj.call(self.py, (pylist, ), None).ok()?;
         let pytuple = res.cast_into::<PyTuple>(self.py).ok()?;
@@ -142,11 +143,11 @@ impl<'a> AlphaZero<'a> {
         for (board, policy) in boards.iter().zip(policy_vec.iter()) {
             let mut count = 0;
             let mut vec = Vec::new();
-            let mut temporal = [[0.; 19]; 19];
-            for i in 0..19 {
-                for j in 0..19 {
+            let mut temporal = [[0.; BOARD_SIZE]; BOARD_SIZE];
+            for i in 0..BOARD_SIZE {
+                for j in 0..BOARD_SIZE {
                     let mask = (board[i][j] == Player::None) as i32 as f32;
-                    temporal[i][j] = policy[i * 19 + j] * mask;
+                    temporal[i][j] = policy[i * BOARD_SIZE + j] * mask;
 
                     if mask != 0. {
                         count += 1;
@@ -169,13 +170,15 @@ impl<'a> AlphaZero<'a> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
 
+        let c_puct = self.param.c_puct;
         let parent_visit = tree_node.visit as f32;
         let prob = Node::prob(sim.turn);
+        let prob = |node: &Node| prob(node, c_puct, parent_visit);
         tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
-                prob(node1, parent_visit).partial_cmp(&prob(node2, parent_visit)).unwrap()
+                prob(node1).partial_cmp(&prob(node2)).unwrap()
             })
             .map(|x| *x)
     }
@@ -251,7 +254,7 @@ impl<'a> AlphaZero<'a> {
                 .map(|x| self.map.get(x).unwrap().value)
                 .sum::<f32>()
         };
-        { // boroow mut map: HashMap
+        { // borrow mut map: HashMap
             let tree_node = self.map.get_mut(&hashed).unwrap();
             tree_node.visit += 1;
             tree_node.q_value = q_value;
@@ -266,8 +269,9 @@ impl<'a> AlphaZero<'a> {
         }
     }
 
-    fn search(&mut self, simulate: &mut Simulate) {
+    fn search(&mut self, simulate: &Simulate) {
         self.init(&simulate);
+        let mut simulate = simulate.deep_clone();
         let mut path = Vec::new();
         while let Some((row, col)) = self.select(&simulate) {
             path.push((row, col));
@@ -277,6 +281,9 @@ impl<'a> AlphaZero<'a> {
         if simulate.search_winner() != Player::None {
             return;
         }
+//        {   let asdf = self.map.get(&hash(&simulate.board())).unwrap();
+//            println!("{:?} {}", path.last(), asdf.num_player);
+//        }
         self.expand(&simulate);
         self.update(&simulate, &path);
     }
@@ -315,10 +322,14 @@ impl<'a> Policy for AlphaZero<'a> {
             let visit = node.visit as f32;
             visit.powf(tau) / (parent_visit - visit).powf(tau)
         };
+//        let c_puct = self.param.c_puct;
+//        let prob2 = Node::prob(sim.turn);
+//        let prob2 = |node: &Node| prob2(node, c_puct, parent_visit);
         let hashed = tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
+//                print!("({:.2}, {:.2}) ", prob(node2), prob2(node2));
                 prob(node1).partial_cmp(&prob(node2)).unwrap()
             })
             .map(|x| *x)
@@ -328,20 +339,22 @@ impl<'a> Policy for AlphaZero<'a> {
     }
 
     fn get_policy(&mut self, game: &Game) -> (usize, usize) {
-        let mut simulate = Simulate::from_game(game);
+        let simulate = Simulate::from_game(game);
+        self.init(&simulate);
+
         let node = self.map.get(&hash(&simulate.board())).unwrap().clone();
         if node.num_player > self.param.tau_update_term {
             self.tau = self.param.updated_tau;
         }
         for _ in 0..self.param.num_simulation {
-            self.search(&mut simulate);
+            self.search(&simulate);
         }
         let res = self.policy(&simulate);
 
         let num_player = node.num_player;
         let sibling = self.map.iter()
-            .filter(|(hash, node)| node.num_player == num_player)
-            .map(|(hash, node)| *hash)
+            .filter(|(_, node)| node.num_player == num_player)
+            .map(|(hash, _)| *hash)
             .collect::<Vec<u64>>();
         for hashed in sibling {
             self.map.remove(&hashed);

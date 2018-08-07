@@ -14,8 +14,8 @@ mod simulate_tests {
         assert_eq!(simulate.pos, None);
 
         let node = simulate.node.borrow();
-        assert_eq!(node.board, [[Player::None; 19]; 19]);
-        assert_eq!(node.possible.len(), 19 * 19);
+        assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
+        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
     }
 
     #[test]
@@ -28,8 +28,8 @@ mod simulate_tests {
         assert_eq!(simulate.pos, None);
 
         let node = simulate.node.borrow();
-        assert_eq!(node.board, [[Player::None; 19]; 19]);
-        assert_eq!(node.possible.len(), 19 * 19);
+        assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
+        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod simulate_tests {
 
         let row = rand::random::<usize>() % 40 + 1;
         let col = rand::random::<usize>() % 40 + 1;
-        assert_eq!(simulate.validate(row, col), row < 19 && col < 19);
+        assert_eq!(simulate.validate(row, col), row < BOARD_SIZE && col < BOARD_SIZE);
     }
 
     #[test]
@@ -115,7 +115,7 @@ mod simulate_tests {
         assert_eq!(simulate.pos, None);
 
         let node = simulate.node.borrow();
-        assert_eq!(node.board, [[Player::None; 19]; 19]);
-        assert_eq!(node.possible.len(), 19 * 19);
+        assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
+        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
     }
 }

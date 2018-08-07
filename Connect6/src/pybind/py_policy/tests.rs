@@ -12,7 +12,7 @@ py_class!(class PyPolicy |py| {
         let value = PyList::new(py, value.as_slice()).into_object();
 
         let policy = (0..len).map(|_| {
-            let rand_policy = (0..361)
+            let rand_policy = (0..BOARD_SIZE*BOARD_SIZE)
                 .map(|_| rand::random::<f32>().to_py_object(py).into_object())
                 .collect::<Vec<PyObject>>();
             PyList::new(py, rand_policy.as_slice()).into_object()
@@ -88,13 +88,13 @@ fn test_expand() {
     assert_ne!(root.value, 0.);
     assert_eq!(root.q_value, 0.);
     assert_eq!(root.n_prob, 0.);
-    assert_ne!(root.prob, [[0.; 19]; 19]);
+    assert_ne!(root.prob, [[0.; BOARD_SIZE]; BOARD_SIZE]);
     assert_eq!(root.num_player, 0);
     assert_eq!(root.board, sim.board());
-    assert_eq!(root.next_node.len(), 361);
+    assert_eq!(root.next_node.len(), BOARD_SIZE * BOARD_SIZE);
 
-    for i in 0..19 {
-        for j in 0..19 {
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE {
             let sim = sim.simulate(i, j);
             let board = sim.board();
             let hashed = hash(&board);
@@ -106,7 +106,7 @@ fn test_expand() {
             assert_eq!(node.visit, 1);
             assert_ne!(node.value, 0.);
             assert_eq!(node.n_prob, root.prob[i][j]);
-            assert_ne!(node.prob, [[0.; 19]; 19]);
+            assert_ne!(node.prob, [[0.; BOARD_SIZE]; BOARD_SIZE]);
             assert_eq!(node.num_player, 1);
             assert_eq!(node.next_node.len(), 0);
         }
@@ -129,7 +129,7 @@ fn test_update() {
     policy.expand(&sim);
     policy.update(&sim, &path);
 
-    let node = policy.map.get(&hash(&[[Player::None; 19]; 19]));
+    let node = policy.map.get(&hash(&[[Player::None; BOARD_SIZE]; BOARD_SIZE]));
     assert!(node.is_some());
 
     let node = node.unwrap();
@@ -167,8 +167,12 @@ fn test_get_policy() {
 #[ignore]
 fn test_self_play() {
     py_policy!(py, py_policy);
-    let mut policy = AlphaZero::new(py, py_policy);
-    let mut mcts = SinglePolicyMCTS::new(&mut policy);
+    let mut param = HyperParameter::default();
+    param.num_simulation = 50;
+    param.c_puct = 0.5;
+
+    let mut policy = AlphaZero::with_param(py, py_policy, param);
+    let mut mcts = SinglePolicyMCTS::debug(&mut policy);
 
     let now = Instant::now();
     let result = mcts.run();

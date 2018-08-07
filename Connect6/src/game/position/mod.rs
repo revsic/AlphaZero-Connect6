@@ -1,5 +1,9 @@
 #[cfg(test)]
 pub mod tests;
+use super::super::BOARD_SIZE;
+
+const END_LOWER: char = (BOARD_SIZE as u8 + 0x61) as char;
+const END_UPPER: char = (BOARD_SIZE as u8 + 0x41) as char;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 struct Row(char);
@@ -14,7 +18,7 @@ impl Row {
     }
 
     fn validate(&self) -> bool {
-        self.0 >= 'a' && self.0 <= 's'
+        self.0 >= 'a' && self.0 <= END_LOWER
     }
 }
 
@@ -31,7 +35,7 @@ impl Col {
     }
 
     fn validate(&self) -> bool {
-        self.0 >= 'A' && self.0 <= 'S'
+        self.0 >= 'A' && self.0 <= END_UPPER
     }
 }
 

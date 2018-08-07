@@ -7,7 +7,7 @@ pub fn gen_pos() -> (Pos, char, char) {
 
     let mut rng = thread_rng();
     let mut gen_char = |base: u8| -> char {
-        let idx: u8 = rng.gen_range(0, 19);
+        let idx: u8 = rng.gen_range(0, BOARD_SIZE as u8);
         (idx + base) as char
     };
 
@@ -30,8 +30,7 @@ pub fn gen_pos() -> (Pos, char, char) {
 
 #[cfg(test)]
 mod row_tests {
-    use super::rand;
-    use super::Row;
+    use super::*;
 
     #[test]
     fn test_to_char() {
@@ -55,15 +54,14 @@ mod row_tests {
         let rnd_char = rand::random::<char>();
         let row = Row(rnd_char);
 
-        let is_valid = rnd_char >= 'a' && rnd_char <= 's';
+        let is_valid = rnd_char >= 'a' && rnd_char <= END_LOWER;
         assert_eq!(is_valid, row.validate());
     }
 }
 
 #[cfg(test)]
 mod col_tests {
-    use super::rand;
-    use super::Col;
+    use super::*;
 
     #[test]
     fn test_to_char() {
@@ -87,7 +85,7 @@ mod col_tests {
         let rnd_char = rand::random::<char>();
         let col = Col(rnd_char);
 
-        let is_valid = rnd_char >= 'A' && rnd_char <= 'S';
+        let is_valid = rnd_char >= 'A' && rnd_char <= END_UPPER;
         assert_eq!(is_valid, col.validate());
     }
 }
@@ -95,7 +93,7 @@ mod col_tests {
 #[cfg(test)]
 mod pos_tests {
     use super::{rand::random, gen_pos};
-    use super::{Row, Col, Pos};
+    use super::*;
 
     #[test]
     fn test_from() {
@@ -106,8 +104,9 @@ mod pos_tests {
             }
         }
 
+        let query: String = vec![END_LOWER, END_UPPER].iter().collect();
         validate("aA", 'a', 'A');
-        validate("sS", 's', 'S');
+        validate(query.as_str(), END_LOWER, END_UPPER);
 
         assert!(Pos::from("zZ").is_none());
         assert!(Pos::from("Aa").is_none());

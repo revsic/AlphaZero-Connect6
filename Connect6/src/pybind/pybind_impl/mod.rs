@@ -2,11 +2,12 @@ extern crate cpython;
 
 use cpython::*;
 use super::super::game::*;
+use super::super::BOARD_SIZE;
 
 #[cfg(test)]
 mod tests;
 
-type Board = [[Player; 19]; 19];
+type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
     let vec = obj.cast_into::<PySequence>(py).ok()?
@@ -18,9 +19,9 @@ pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
 }
 
 pub fn pylist_from_board(py: Python, board: &Board) -> PyObject {
-    let mut ordered: Vec<PyObject> = Vec::with_capacity(19 * 19);
-    for i in 0..19 {
-        for j in 0..19 {
+    let mut ordered: Vec<PyObject> = Vec::with_capacity(BOARD_SIZE * BOARD_SIZE);
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE {
             ordered.push((board[i][j] as i32).to_py_object(py).into_object());
         }
     }

@@ -8,7 +8,7 @@ fn test_new() {
     assert_eq!(game.get_turn(), Player::Black);
     assert_eq!(game.get_remain(), 1);
 
-    let sample_board = [[Player::None; 19]; 19];
+    let sample_board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
     assert_eq!(*game.get_board(), sample_board);
 }
 

@@ -18,11 +18,11 @@ mod block_tests {
     fn rand_block() -> Block {
         Block {
             flag: 0,
-            mem: [[rand_cumulative(); 21]; 2],
+            mem: [[rand_cumulative(); BOARD_SIZE+2]; 2],
         }
     }
 
-    fn get_tuple(block: &Block) -> ([Cumulative; 21], [Cumulative; 21]) {
+    fn get_tuple(block: &Block) -> ([Cumulative; BOARD_SIZE+2], [Cumulative; BOARD_SIZE+2]) {
         let (prev, now) = block.as_tuple();
         (*prev, *now)
     }
@@ -31,7 +31,7 @@ mod block_tests {
     fn test_block_new() {
         let block = Block::new();
         assert_eq!(block.flag, 0);
-        assert_eq!(block.mem, [[Cumulative::new(); 21]; 2]);
+        assert_eq!(block.mem, [[Cumulative::new(); BOARD_SIZE+2]; 2]);
     }
 
     #[test]
@@ -80,14 +80,14 @@ mod block_tests {
     #[test]
     fn test_update_row() {
         let mut block = Block::new();
-        let crand = [rand_cumulative(); 21];
+        let crand = [rand_cumulative(); BOARD_SIZE+2];
 
         block.mem[1] = crand.clone();
         block.update_row();
 
         let (prev, now) = block.as_tuple();
         assert_eq!(*prev, crand);
-        assert_eq!(*now, [Cumulative::new(); 21]);
+        assert_eq!(*now, [Cumulative::new(); BOARD_SIZE+2]);
     }
 }
 
@@ -95,8 +95,8 @@ mod block_tests {
 mod search_tests {
     use super::*;
 
-    fn new_table() -> [[Player; 19]; 19] {
-        [[Player::None; 19]; 19]
+    fn new_table() -> [[Player; BOARD_SIZE]; BOARD_SIZE] {
+        [[Player::None; BOARD_SIZE]; BOARD_SIZE]
     }
 
     #[test]
@@ -104,159 +104,115 @@ mod search_tests {
         let mut table = new_table();
         // Right
         for i in 0..5 {
-            table[10][5+i] = Player::Black;
+            table[0][i] = Player::Black;
         }
         assert_eq!(search(&table), Player::None);
 
-        table[10][10] = Player::Black;
+        table[0][5] = Player::Black;
         assert_eq!(search(&table), Player::Black);
 
         // Down
         for i in 0..5 {
-            table[5+i][10] = Player::White;
+            table[5-i][0] = Player::White;
         }
         assert_eq!(search(&table), Player::Black);
 
-        table[10][10] = Player::White;
+        table[0][0] = Player::White;
         assert_eq!(search(&table), Player::White);
 
         // RightDown
         for i in 0..5 {
-            table[5+i][5+i] = Player::Black;
+            table[5-i][5-i] = Player::Black;
         }
         assert_eq!(search(&table), Player::White);
 
-        table[10][10] = Player::Black;
+        table[0][0] = Player::Black;
         assert_eq!(search(&table), Player::Black);
 
         // LeftDown
         for i in 0..5 {
-            table[5+i][15-i] = Player::White;
+            table[5-i][i] = Player::White;
         }
         assert_eq!(search(&table), Player::Black);
 
-        table[10][10] = Player::White;
+        table[0][5] = Player::White;
         assert_eq!(search(&table), Player::White);
     }
 
+    macro_rules! boundary_test {
+        (row => $table:ident, $base:expr, $init:expr) => {
+            let mut $table = new_table();
+            for i in 0..5 {
+                $table[$base][$init + i] = Player::White;
+            }
+            assert_eq!(search(&$table), Player::None);
+
+            $table[$base][$init + 5] = Player::White;
+            assert_eq!(search(&$table), Player::White);
+        };
+        (col => $table:ident, $base:expr, $init:expr) => {
+            let mut $table = new_table();
+            for i in 0..5 {
+                $table[$init + i][$base] = Player::Black;
+            }
+            assert_eq!(search(&$table), Player::None);
+
+            $table[$init + 5][$base] = Player::Black;
+            assert_eq!(search(&$table), Player::Black);
+        };
+    }
+
     #[test]
-    fn test_boundary_search() {
+    fn test_variadic_boundary_search() {
         // boundary test
-        let mut table = new_table();
-        for i in 0..5 {
-            table[0][i] = Player::White; // 0 ~ 4
-            table[0][i + 7] = Player::White; // 7 ~ 11
-            table[0][18 - i] = Player::White; // 14 ~ 18
-        }
-        assert_eq!(search(&table), Player::None);
+        boundary_test!(row => table, 0, 0);
+        boundary_test!(row => table, 0, 1);
+        boundary_test!(row => table, 0, BOARD_SIZE-6);
 
-        table[0][5] = Player::White; // 0 ~ 5
-        assert_eq!(search(&table), Player::White);
+        boundary_test!(row => table, BOARD_SIZE-1, 0);
+        boundary_test!(row => table, BOARD_SIZE-1, 1);
+        boundary_test!(row => table, BOARD_SIZE-1, BOARD_SIZE-6);
 
-        table[0][5] = Player::None;
-        table[0][12] = Player::White; // 7 ~ 12
-        assert_eq!(search(&table), Player::White);
+        boundary_test!(col => table, 0, 0);
+        boundary_test!(col => table, 0, 1);
+        boundary_test!(col => table, 0, BOARD_SIZE-6);
 
-        table[0][12] = Player::None;
-        table[0][13] = Player::White; // 13 ~ 18
-        assert_eq!(search(&table), Player::White);
+        boundary_test!(col => table, BOARD_SIZE-1, 0);
+        boundary_test!(col => table, BOARD_SIZE-1, 1);
+        boundary_test!(col => table, BOARD_SIZE-1, BOARD_SIZE-6);
+    }
 
-        let mut table = new_table();
-        for i in 0..5 {
-            table[18][i] = Player::White;
-            table[18][i + 7] = Player::White;
-            table[18][18 - i] = Player::White;
-        }
-        assert_eq!(search(&table), Player::None);
+    macro_rules! cross_test {
+        (right_down => $table:ident, $init:expr) => {
+            let mut $table = new_table();
+            for i in 0..5 {
+                $table[$init + i][$init + i] = Player::White;
+            }
+            assert_eq!(search(&$table), Player::None);
 
-        table[18][5] = Player::White;
-        assert_eq!(search(&table), Player::White);
+            $table[$init + 5][$init + 5] = Player::White;
+            assert_eq!(search(&$table), Player::White);
+        };
+        (left_down => $table:ident, $init:expr) => {
+            let mut $table = new_table();
+            for i in 0..5 {
+                $table[$init + i][BOARD_SIZE - 1 - $init - i] = Player::Black;
+            }
+            assert_eq!(search(&$table), Player::None);
 
-        table[18][5] = Player::None;
-        table[18][12] = Player::White;
-        assert_eq!(search(&table), Player::White);
-
-        table[18][12] = Player::None;
-        table[18][13] = Player::White;
-        assert_eq!(search(&table), Player::White);
-
-        let mut table = new_table();
-        for i in 0..5 {
-            table[i][0] = Player::Black;
-            table[i + 7][0] = Player::Black;
-            table[18 - i][0] = Player::Black;
-        }
-        assert_eq!(search(&table), Player::None);
-
-        table[5][0] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[5][0] = Player::None;
-        table[12][0] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[12][0] = Player::None;
-        table[13][0] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        let mut table = new_table();
-        for i in 0..5 {
-            table[i][18] = Player::Black;
-            table[i + 7][18] = Player::Black;
-            table[18 - i][18] = Player::Black;
-        }
-        assert_eq!(search(&table), Player::None);
-
-        table[5][18] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[5][18] = Player::None;
-        table[12][18] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[12][18] = Player::None;
-        table[13][18] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
+            $table[$init + 5][BOARD_SIZE - $init - 6] = Player::Black;
+            assert_eq!(search(&$table), Player::Black);
+        };
     }
 
     #[test]
-    fn test_cross_search() {
-        let mut table = new_table();
-        for i in 0..5 {
-            table[i][i] = Player::Black; // 0 ~ 4
-            table[i + 7][i + 7] = Player::Black; // 7 ~ 11
-            table[18 - i][18 - i] = Player::Black; // 14 ~ 18
-        }
-        assert_eq!(search(&table), Player::None);
+    fn test_variadic_cross_search() {
+        cross_test!(right_down => table, 0);
+        cross_test!(right_down => table, 1);
+        cross_test!(right_down => table, BOARD_SIZE-6);
 
-        table[5][5] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[5][5] = Player::None;
-        table[12][12] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[12][12] = Player::None;
-        table[13][13] = Player::Black;
-        assert_eq!(search(&table), Player::Black);
-
-        table[13][13] = Player::None;
-        for i in 0..5 {
-            table[i][18 - i] = Player::White;
-            table[i + 7][11 - i] = Player::White;
-            table[18 - i][i] = Player::White;
-        }
-        assert_eq!(search(&table), Player::None);
-
-        table[5][13] = Player::White;
-        assert_eq!(search(&table), Player::White);
-
-        table[5][13] = Player::None;
-        table[12][6] = Player::White;
-        assert_eq!(search(&table), Player::White);
-
-        table[12][6] = Player::None;
-        table[13][5] = Player::White;
-        assert_eq!(search(&table), Player::White);
+        cross_test!(left_down => table, 0);
+        cross_test!(left_down => table, 1);
+        cross_test!(left_down => table, BOARD_SIZE-6);
     }
 }
