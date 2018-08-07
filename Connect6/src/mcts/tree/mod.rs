@@ -16,11 +16,14 @@ type Board = [[Player; 19]; 19];
 
 pub trait Policy {
     fn init(&mut self, sim: &Simulate);
+    fn policy(&self, sim: &Simulate) -> (usize, usize);
+    fn get_policy(&mut self, game: &Game) -> (usize, usize);
+}
+
+pub trait BasicPolicy: Policy {
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)>;
     fn expand(&mut self, sim: &Simulate) -> (usize, usize);
     fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>);
-    fn policy(&self, sim: &Simulate) -> (usize, usize);
-
     fn search(&mut self, game: &Game) {
         let mut simulate = Simulate::from_game(game);
         self.init(&simulate);
@@ -39,15 +42,6 @@ pub trait Policy {
         path.push((row, col));
         simulate.simulate_in(row, col);
         self.update(&simulate, &path);
-    }
-
-    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
-        for _ in 0..50 {
-            self.search(game);
-        }
-
-        let simulate = Simulate::from_game(game);
-        self.policy(&simulate)
     }
 }
 
@@ -110,6 +104,27 @@ impl Policy for DefaultPolicy {
         self.map.entry(hash(&board)).or_insert(Node::new(&board));
     }
 
+    fn policy(&self, sim: &Simulate) -> (usize, usize) {
+        if let Some(pos) = self.select(sim) {
+            pos
+        } else {
+            let node = sim.node.borrow();
+            let mut rng = rand::thread_rng();
+            *rng.choose(&node.possible).unwrap()
+        }
+    }
+
+    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
+        for _ in 0..self.num_iter {
+            self.search(game);
+        }
+
+        let simulate = Simulate::from_game(game);
+        self.policy(&simulate)
+    }
+}
+
+impl BasicPolicy for DefaultPolicy {
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
@@ -177,25 +192,6 @@ impl Policy for DefaultPolicy {
             sim.rollback_in(*row, *col);
             update(&sim);
         }
-    }
-
-    fn policy(&self, sim: &Simulate) -> (usize, usize) {
-        if let Some(pos) = self.select(sim) {
-            pos
-        } else {
-            let node = sim.node.borrow();
-            let mut rng = rand::thread_rng();
-            *rng.choose(&node.possible).unwrap()
-        }
-    }
-
-    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
-        for _ in 0..self.num_iter {
-            self.search(game);
-        }
-
-        let simulate = Simulate::from_game(game);
-        self.policy(&simulate)
     }
 }
 

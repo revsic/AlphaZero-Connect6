@@ -1,6 +1,6 @@
 use super::*;
 
-pub fn test_select(policy: &mut impl Policy) {
+pub fn test_select(policy: &mut impl BasicPolicy) {
     let game = Game::new();
     let sim = Simulate::from_game(&game);
     policy.init(&sim);
@@ -26,7 +26,7 @@ pub fn test_select(policy: &mut impl Policy) {
     }
 }
 
-pub fn test_expand(policy: &mut impl Policy) {
+pub fn test_expand(policy: &mut impl BasicPolicy) {
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
     policy.init(&sim);
@@ -43,7 +43,7 @@ pub fn test_expand(policy: &mut impl Policy) {
     assert!(sim.validate(row, col));
 }
 
-pub fn test_update(policy: &mut impl Policy) {
+pub fn test_update(policy: &mut impl BasicPolicy) {
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
     policy.init(&sim);
