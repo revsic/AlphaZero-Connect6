@@ -160,8 +160,14 @@ impl<'a> AlphaZero<'a> {
 
         let c_puct = self.param.c_puct;
         let parent_visit = tree_node.visit as f32;
-        let prob = |node: &Node| node.q_value / (node.visit as f32)
-            + c_puct * node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32);
+        let prob = |unary: fn(f32) -> f32|
+            move |node: &Node| unary(node.q_value / (node.visit as f32))
+                + c_puct * unary(node.n_prob) * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32);
+        let prob = match sim.turn {
+            Player::None => panic!("alpha_zero::maximum_from couldn't get prob from none"),
+            Player::Black => prob(|x| x),
+            Player::White => prob(|x| 1. - x),
+        };
         tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
