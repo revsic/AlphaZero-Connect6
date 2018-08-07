@@ -8,7 +8,7 @@ name = "connect6"
 crate-type = ["dylib"]
 
 [dependencies]
-rand = "0.5.4"
+rand = { git = "https://github.com/rust-lang-nursery/rand" }
 
 [dependencies.cpython]
 version = "0.1"
