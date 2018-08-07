@@ -35,26 +35,62 @@ macro_rules! py_policy {
 fn test_select() {
     py_policy!(py, py_policy);
     let mut policy = AlphaZero::new(py, py_policy);
-    policy_tests::test_select(&mut policy);
+
+    let game = Game::new();
+    let mut sim = Simulate::from_game(&game);
+    policy.init(&sim);
+
+    let mut path = Vec::new();
+    while let Some((row, col)) = policy.select(&sim) {
+        { // borrow sim: mut Simulate
+           let node = sim.node.borrow();
+            let pos = node.possible.iter().position(|x| *x == (row, col));
+            assert!(pos.is_some());
+            assert!(sim.validate(row, col));
+        }
+        path.push((row, col));
+        sim.simulate_in(row, col);
+    }
+
+    policy.expand(&sim);
+    policy.update(&sim, &path);
+
+    let pos = policy.select(&sim);
+    assert!(pos.is_some());
+
+    let (row, col) = pos.unwrap();
+    assert!(sim.validate(row, col));
+
+    let node = sim.node.borrow();
+    let pos = node.possible.iter().position(|x| *x == (row, col));
+    assert!(pos.is_some());
 }
 
 #[test]
 fn test_expand() {
     py_policy!(py, py_policy);
     let mut policy = AlphaZero::new(py, py_policy);
-    policy_tests::test_expand(&mut policy);
+    let game = Game::new();
+    let mut sim = Simulate::from_game(&game);
+    policy.init(&sim);
+
+    while let Some((row, col)) = policy.select(&sim) {
+        sim.simulate_in(row, col);
+    }
+    policy.expand(&sim);
 
     let sim = Simulate::new();
     let root = policy.map.get(&hash(&sim.board()));
     assert!(root.is_some());
 
     let root = root.unwrap();
-    assert_eq!(root.board, sim.board());
-    assert_eq!(root.q_value, 0.);
-    assert_ne!(root.value, 0.);
     assert_eq!(root.visit, 0);
-    assert_ne!(root.prob, [[0.; 19]; 19]);
+    assert_ne!(root.value, 0.);
+    assert_eq!(root.q_value, 0.);
     assert_eq!(root.n_prob, 0.);
+    assert_ne!(root.prob, [[0.; 19]; 19]);
+    assert_eq!(root.num_player, 0);
+    assert_eq!(root.board, sim.board());
     assert_eq!(root.next_node.len(), 361);
 
     for i in 0..19 {
@@ -69,8 +105,10 @@ fn test_expand() {
             let node = policy.map.get(&hashed).unwrap();
             assert_eq!(node.visit, 1);
             assert_ne!(node.value, 0.);
-            assert_ne!(node.prob, [[0.; 19]; 19]);
             assert_eq!(node.n_prob, root.prob[i][j]);
+            assert_ne!(node.prob, [[0.; 19]; 19]);
+            assert_eq!(node.num_player, 1);
+            assert_eq!(node.next_node.len(), 0);
         }
     }
 }
@@ -102,8 +140,27 @@ fn test_update() {
 #[test]
 fn test_get_policy() {
     py_policy!(py, py_policy);
+    let game = Game::new();
+    let mut sim = Simulate::from_game(&game);
     let mut policy = AlphaZero::new(py, py_policy);
-    policy_tests::test_get_policy(&mut policy);
+
+    policy.init(&sim);
+    let mut path = Vec::new();
+    while let Some((row, col)) = policy.select(&sim) {
+        sim.simulate_in(row, col);
+        path.push((row, col));
+    }
+    policy.expand(&sim);
+    policy.update(&sim, &path);
+
+    let sim = Simulate::from_game(&game);
+    // let (row, col) = policy.get_policy(&game);
+    let (row, col) = policy.policy(&sim);
+    assert!(sim.validate(row, col));
+
+    let node = sim.node.borrow();
+    let pos = node.possible.iter().position(|x| *x == (row, col));
+    assert!(pos.is_some());
 }
 
 #[test]

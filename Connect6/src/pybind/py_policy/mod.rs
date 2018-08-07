@@ -3,6 +3,7 @@ extern crate rand;
 
 use cpython::*;
 use self::rand::Rng;
+use self::rand::distributions::{Distribution, Dirichlet};
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -15,36 +16,77 @@ mod tests;
 
 type Board = [[Player; 19]; 19];
 
+#[derive(Clone)]
 struct Node {
     visit: i32,
     value: f32, //probability of black win
     q_value: f32,
     n_prob: f32,
     prob: [[f32; 19]; 19],
+    num_player: usize,
     board: [[Player; 19]; 19],
     next_node: Vec<u64>,
 }
 
 impl Node {
     fn new(board: &[[Player; 19]; 19]) -> Node {
+        let num_player = board.iter()
+            .map(|x| x.iter().filter(|x| **x != Player::None).count())
+            .sum();
         Node {
             visit: 0,
             value: 0.,
             q_value: 0.,
             n_prob: 0.,
             prob: [[0.; 19]; 19],
+            num_player,
             board: *board,
             next_node: Vec::new(),
         }
     }
 
-    fn prob(player: Player) -> (fn(&Node) -> f32) {
+    fn new_with_num(board: &[[Player; 19]; 19], num_player: usize) -> Node {
+        Node {
+            visit: 0,
+            value: 0.,
+            q_value: 0.,
+            n_prob: 0.,
+            prob: [[0.; 19]; 19],
+            num_player,
+            board: *board,
+            next_node: Vec::new(),
+        }
+    }
+
+    fn prob(player: Player) -> (fn(&Node, f32) -> f32) {
         match player {
             Player::None => panic!("node::prob couldn't get probability from Player::None"),
-            Player::Black => |node: &Node|
-                node.q_value / (node.visit as f32) + node.n_prob / (1. + node.visit as f32),
-            Player::White => |node: &Node|
-                (1. - node.q_value / node.visit as f32) + (1. - node.n_prob) / (1. + node.visit as f32),
+            Player::Black => |node: &Node, parent_visit: f32|
+                node.q_value / (node.visit as f32) + node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
+            Player::White => |node: &Node, parent_visit: f32|
+                (1. - node.q_value / node.visit as f32) + (1. - node.n_prob)  * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
+        }
+    }
+}
+
+pub struct HyperParameter {
+    pub num_simulation: i32,
+    pub initial_tau: f32,
+    pub updated_tau: f32,
+    pub tau_update_term: usize,
+    pub epsilon: f32,
+    pub dirichlet_alpha: f64,
+}
+
+impl HyperParameter {
+    fn default() -> HyperParameter {
+        HyperParameter {
+            num_simulation: 160,
+            initial_tau: 1.,
+            updated_tau: 1e-4,
+            tau_update_term: 30,
+            epsilon: 0.25,
+            dirichlet_alpha: 0.03,
         }
     }
 }
@@ -52,30 +94,30 @@ impl Node {
 pub struct AlphaZero<'a> {
     py: Python<'a>,
     obj: PyObject,
-    num_iter: i32,
     map: HashMap<u64, Node>,
+    tau: f32,
+    param: HyperParameter,
 }
 
 impl<'a> AlphaZero<'a> {
-    fn default_num_iter() -> i32 {
-        1
-    }
-
     pub fn new(py: Python<'a>, obj: PyObject) -> AlphaZero {
+        let param = HyperParameter::default();
         AlphaZero {
             py,
             obj,
-            num_iter: Self::default_num_iter(),
             map: HashMap::new(),
+            tau: param.initial_tau,
+            param,
         }
     }
 
-    pub fn with_num_iter(py: Python<'a>, obj: PyObject, num_iter: i32) -> AlphaZero {
+    pub fn with_param(py: Python<'a>, obj: PyObject, param: HyperParameter) -> AlphaZero {
         AlphaZero {
             py,
             obj,
-            num_iter,
             map: HashMap::new(),
+            tau: param.initial_tau,
+            param,
         }
     }
 
@@ -94,14 +136,29 @@ impl<'a> AlphaZero<'a> {
             .filter_map(|x| pyseq_to_vec(self.py, x))
             .collect::<Vec<Vec<f32>>>();
 
+        let alpha = self.param.dirichlet_alpha;
+        let epsilon = self.param.epsilon;
         let mut masked = Vec::new();
         for (board, policy) in boards.iter().zip(policy_vec.iter()) {
+            let mut count = 0;
+            let mut vec = Vec::new();
             let mut temporal = [[0.; 19]; 19];
             for i in 0..19 {
                 for j in 0..19 {
                     let mask = (board[i][j] == Player::None) as i32 as f32;
                     temporal[i][j] = policy[i * 19 + j] * mask;
+
+                    if mask != 0. {
+                        count += 1;
+                        vec.push((i, j));
+                    }
                 }
+            }
+            let mut dirichlet = Dirichlet::new_with_param(alpha, count);
+            let sample = dirichlet.sample(&mut rand::thread_rng());
+            for (i, j) in vec {
+                count -= 1;
+                temporal[i][j] = (1. - epsilon) * temporal[i][j] + epsilon * sample[count] as f32;
             }
             masked.push(temporal);
         }
@@ -112,38 +169,15 @@ impl<'a> AlphaZero<'a> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
 
+        let parent_visit = tree_node.visit as f32;
         let prob = Node::prob(sim.turn);
         tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
-                prob(node1).partial_cmp(&prob(node2)).unwrap()
+                prob(node1, parent_visit).partial_cmp(&prob(node2, parent_visit)).unwrap()
             })
             .map(|x| *x)
-    }
-}
-
-fn hash(board: &Board) -> u64 {
-    let mut hasher = DefaultHasher::new();
-    board.hash(&mut hasher);
-    hasher.finish()
-}
-
-impl<'a> Policy for AlphaZero<'a> {
-    fn init(&mut self, sim: &Simulate) {
-        let node = sim.node.borrow();
-        let hashed = hash(&node.board);
-
-        if self.map.get(&hashed).is_none() {
-            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
-                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
-
-                entry.value = value[0];
-                entry.prob = policy[0];
-            } else {
-                panic!("alpha_zero::init couldn't get from py policy");
-            }
-        }
     }
 
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
@@ -158,12 +192,13 @@ impl<'a> Policy for AlphaZero<'a> {
         return diff_board(&node.board, &tree_node.board);
     }
 
-    fn expand(&mut self, sim: &Simulate) -> (usize, usize) {
+    fn expand(&mut self, sim: &Simulate) {
         let (possible, parent_hashed) = {
             let node = sim.node.borrow();
             let board = &node.board;
             (node.possible.clone(), hash(board))
         };
+        let child_num = self.map.get(&parent_hashed).unwrap().num_player + 1;
         let mut boards = Vec::new();
         let mut hashes = Vec::new();
 
@@ -175,7 +210,7 @@ impl<'a> Policy for AlphaZero<'a> {
                 parent_node.next_node.push(hashed_board);
             }
             if self.map.get(&hashed_board).is_none() {
-                self.map.insert(hashed_board, Node::new(&board));
+                self.map.insert(hashed_board, Node::new_with_num(&board, child_num));
 
                 boards.push(board);
                 hashes.push(hashed_board);
@@ -205,7 +240,6 @@ impl<'a> Policy for AlphaZero<'a> {
         } else {
             panic!("alpha_zero::couldn't get from python object")
         }
-        (0, 0)
     }
 
     fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>) {
@@ -232,20 +266,8 @@ impl<'a> Policy for AlphaZero<'a> {
         }
     }
 
-    fn policy(&self, sim: &Simulate) -> (usize, usize) {
-        if let Some(pos) = self.select(sim) {
-            pos
-        } else {
-            let node = sim.node.borrow();
-            let mut rng = rand::thread_rng();
-            *rng.choose(&node.possible).unwrap()
-        }
-    }
-
-    fn search(&mut self, game: &Game) {
-        let mut simulate = Simulate::from_game(game);
+    fn search(&mut self, simulate: &mut Simulate) {
         self.init(&simulate);
-
         let mut path = Vec::new();
         while let Some((row, col)) = self.select(&simulate) {
             path.push((row, col));
@@ -258,13 +280,74 @@ impl<'a> Policy for AlphaZero<'a> {
         self.expand(&simulate);
         self.update(&simulate, &path);
     }
+}
+
+fn hash(board: &Board) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    board.hash(&mut hasher);
+    hasher.finish()
+}
+
+impl<'a> Policy for AlphaZero<'a> {
+    fn init(&mut self, sim: &Simulate) {
+        let node = sim.node.borrow();
+        let hashed = hash(&node.board);
+
+        if self.map.get(&hashed).is_none() {
+            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
+                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
+
+                entry.value = value[0];
+                entry.prob = policy[0];
+            } else {
+                panic!("alpha_zero::init couldn't get from py policy");
+            }
+        }
+    }
+
+    fn policy(&self, sim: &Simulate) -> (usize, usize) {
+        let node = sim.node.borrow();
+        let tree_node = self.map.get(&hash(&node.board)).unwrap();
+
+        let tau = 1. / self.tau;
+        let parent_visit = tree_node.visit as f32;
+        let prob = |node: &Node| -> f32 {
+            let visit = node.visit as f32;
+            visit.powf(tau) / (parent_visit - visit).powf(tau)
+        };
+        let hashed = tree_node.next_node.iter()
+            .max_by(|n1, n2| {
+                let node1 = self.map.get(*n1).unwrap();
+                let node2 = self.map.get(*n2).unwrap();
+                prob(node1).partial_cmp(&prob(node2)).unwrap()
+            })
+            .map(|x| *x)
+            .unwrap();
+        let max_node = self.map.get(&hashed).unwrap();
+        diff_board(&node.board, &max_node.board).unwrap()
+    }
 
     fn get_policy(&mut self, game: &Game) -> (usize, usize) {
-        for _ in 0..self.num_iter {
-            self.search(game);
+        let mut simulate = Simulate::from_game(game);
+        let node = self.map.get(&hash(&simulate.board())).unwrap().clone();
+        if node.num_player > self.param.tau_update_term {
+            self.tau = self.param.updated_tau;
         }
+        for _ in 0..self.param.num_simulation {
+            self.search(&mut simulate);
+        }
+        let res = self.policy(&simulate);
 
-        let simulate = Simulate::from_game(game);
-        self.policy(&simulate)
+        let num_player = node.num_player;
+        let sibling = self.map.iter()
+            .filter(|(hash, node)| node.num_player == num_player)
+            .map(|(hash, node)| *hash)
+            .collect::<Vec<u64>>();
+        for hashed in sibling {
+            self.map.remove(&hashed);
+        }
+        self.map.insert(hash(&node.board), node);
+
+        res
     }
 }
