@@ -172,11 +172,17 @@ impl BasicPolicy for DefaultPolicy {
         while simulate.search_winner() == Player::None {
             let (row, col) = {
                 let node = simulate.node.borrow();
-                *rng.choose(&node.possible).unwrap()
+                match rng.choose(&node.possible) {
+                    Some(pos) => *pos,
+                    None => break,
+                }
             };
             simulate.simulate_in(row, col);
         }
         let win = simulate.search_winner();
+        if win == Player::None {
+            return;
+        }
         let black_win = (win == Player::Black) as i32;
 
         let mut sim = sim.deep_clone();
