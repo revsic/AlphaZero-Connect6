@@ -183,5 +183,4 @@ fn test_self_play() {
     } else {
         assert!(true);
     }
-    mcts.run();
 }

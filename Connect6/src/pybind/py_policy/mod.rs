@@ -176,7 +176,6 @@ impl<'a> AlphaZero<'a> {
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();
                 let node2 = self.map.get(*n2).unwrap();
-                print!("{} ", prob(node2));
                 prob(node1).partial_cmp(&prob(node2)).unwrap()
             })
             .map(|x| *x)
@@ -280,9 +279,6 @@ impl<'a> AlphaZero<'a> {
         if simulate.search_winner() != Player::None {
             return;
         }
-//        {   let asdf = self.map.get(&hash(&simulate.board())).unwrap();
-//            println!("{:?} {}", path.last(), asdf.num_player);
-//        }
         self.expand(&simulate);
         self.update(&simulate, &path);
     }
