@@ -54,16 +54,6 @@ impl Node {
             next_node: Vec::new(),
         }
     }
-
-    fn prob(player: Player) -> (fn(&Node, f32, f32) -> f32) {
-        match player {
-            Player::None => panic!("node::prob couldn't get probability from Player::None"),
-            Player::Black => |node: &Node, c_puct: f32, parent_visit: f32|
-                node.q_value / (node.visit as f32) + c_puct * node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
-            Player::White => |node: &Node, c_puct: f32, parent_visit: f32|
-                (1. - node.q_value / node.visit as f32) + c_puct * (1. - node.n_prob)  * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32),
-        }
-    }
 }
 
 pub struct HyperParameter {
@@ -170,8 +160,8 @@ impl<'a> AlphaZero<'a> {
 
         let c_puct = self.param.c_puct;
         let parent_visit = tree_node.visit as f32;
-        let prob = Node::prob(sim.turn);
-        let prob = |node: &Node| prob(node, c_puct, parent_visit);
+        let prob = |node: &Node| node.q_value / (node.visit as f32)
+            + c_puct * node.n_prob * (parent_visit - node.visit as f32).sqrt() / (1. + node.visit as f32);
         tree_node.next_node.iter()
             .max_by(|n1, n2| {
                 let node1 = self.map.get(*n1).unwrap();

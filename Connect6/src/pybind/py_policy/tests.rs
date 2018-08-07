@@ -167,8 +167,7 @@ fn test_get_policy() {
 fn test_self_play() {
     py_policy!(py, py_policy);
     let mut param = HyperParameter::default();
-    param.num_simulation = 5;
-    param.c_puct = 0.5;
+    param.num_simulation = 30;
 
     let mut policy = AlphaZero::with_param(py, py_policy, param);
     let mut mcts = SinglePolicyMCTS::debug(&mut policy);
