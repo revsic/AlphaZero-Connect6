@@ -3,13 +3,13 @@ extern crate cpython;
 use std::cell::RefCell;
 use std::rc::Rc;
 use super::super::game::*;
-use super::super::BOARD_SIZE;
+use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
 
 #[cfg(test)]
 mod tests;
 
 pub struct Node {
-    pub board: [[Player; BOARD_SIZE]; BOARD_SIZE],
+    pub board: Board,
     pub possible: Vec<(usize, usize)>,
 }
 
@@ -26,7 +26,7 @@ impl Node {
         }
     }
 
-    fn from_board(board: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Node {
+    fn from_board(board: &Board) -> Node {
         let possible = Self::possible()
             .into_iter()
             .filter(|(r, c)| board[*r][*c] == Player::None)
@@ -77,7 +77,7 @@ impl Simulate {
         }
     }
 
-    pub fn board(&self) -> [[Player; BOARD_SIZE]; BOARD_SIZE] {
+    pub fn board(&self) -> Board {
         let node = self.node.borrow();
         node.board
     }

@@ -2,12 +2,10 @@ extern crate cpython;
 
 use cpython::*;
 use super::super::game::*;
-use super::super::BOARD_SIZE;
+use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
 
 #[cfg(test)]
 mod tests;
-
-type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
     let vec = obj.cast_into::<PySequence>(py).ok()?

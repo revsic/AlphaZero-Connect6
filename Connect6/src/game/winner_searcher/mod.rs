@@ -1,6 +1,6 @@
 use super::Player;
 
-use super::super::BOARD_SIZE;
+use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;
@@ -96,7 +96,7 @@ impl Block {
     }
 }
 
-pub fn search(table: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Player {
+pub fn search(table: &Board) -> Player {
     let mut black = Block::new();
     let mut white = Block::new();
 

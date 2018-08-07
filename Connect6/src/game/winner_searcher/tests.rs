@@ -95,7 +95,7 @@ mod block_tests {
 mod search_tests {
     use super::*;
 
-    fn new_table() -> [[Player; BOARD_SIZE]; BOARD_SIZE] {
+    fn new_table() -> Board {
         [[Player::None; BOARD_SIZE]; BOARD_SIZE]
     }
 

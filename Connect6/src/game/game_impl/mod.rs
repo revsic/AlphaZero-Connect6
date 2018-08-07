@@ -2,7 +2,7 @@
 mod tests;
 
 use std::io;
-use super::super::BOARD_SIZE;
+use super::super::{BOARD_SIZE, Board};
 use super::player::Player;
 use super::position::Pos;
 
@@ -32,12 +32,11 @@ impl PlayResult {
 }
 
 type Msg = &'static str;
-type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub struct Game {
     turn: Player,
     num_remain: i32,
-    board: [[Player; BOARD_SIZE]; BOARD_SIZE],
+    board: Board,
 }
 
 impl Game {
@@ -99,7 +98,7 @@ impl Game {
         Ok(pos)
     }
 
-    pub fn get_board(&self) -> &[[Player; BOARD_SIZE]; BOARD_SIZE] {
+    pub fn get_board(&self) -> &Board {
         &self.board
     }
 

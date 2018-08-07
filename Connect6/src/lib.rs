@@ -5,10 +5,11 @@ pub mod pybind;
 
 #[macro_use]
 extern crate cpython;
-
 use cpython::*;
 
-const BOARD_SIZE: usize = 10;
+const BOARD_SIZE: usize = 15;
+const BOARD_CAPACITY: usize = BOARD_SIZE * BOARD_SIZE;
+type Board = [[game::Player; BOARD_SIZE]; BOARD_SIZE];
 
 py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     try!(m.add(py, "__doc__", "This module is implemented in Rust, for Simulating Connect6"));

@@ -71,9 +71,9 @@ fn test_pylist_from_multiple() {
         .collect::<Vec<_>>();
 
     assert_eq!(vec.len(), 2);
-    assert_eq!(vec[0].len(), BOARD_SIZE * BOARD_SIZE);
-    assert_eq!(vec[1].len(), BOARD_SIZE * BOARD_SIZE);
+    assert_eq!(vec[0].len(), BOARD_CAPACITY);
+    assert_eq!(vec[1].len(), BOARD_CAPACITY);
 
-    assert_eq!(vec[0], vec![Player::None as i32 as f32; BOARD_SIZE * BOARD_SIZE]);
-    assert_eq!(vec[1], vec![Player::Black as i32 as f32; BOARD_SIZE * BOARD_SIZE]);
+    assert_eq!(vec[0], vec![Player::None as i32 as f32; BOARD_CAPACITY]);
+    assert_eq!(vec[1], vec![Player::Black as i32 as f32; BOARD_CAPACITY]);
 }

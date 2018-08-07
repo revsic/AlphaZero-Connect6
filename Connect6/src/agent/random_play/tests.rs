@@ -15,7 +15,6 @@ fn test_random_play_io() {
     let result = agent.play_io(|agent: &Agent| {
         let game = agent.get_game();
         let _game = game.read().unwrap();
-
         // game.print(&mut io::stdout());
     });
     assert!(result.is_ok());

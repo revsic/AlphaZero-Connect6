@@ -7,13 +7,11 @@ use std::hash::{Hash, Hasher};
 use self::rand::Rng;
 use super::simulate::Simulate;
 use super::super::game::*;
-use super::super::BOARD_SIZE;
+use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;
 pub mod policy_tests;
-
-type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 pub trait Policy {
     fn init(&mut self, sim: &Simulate);

@@ -15,7 +15,7 @@ mod simulate_tests {
 
         let node = simulate.node.borrow();
         assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
-        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
+        assert_eq!(node.possible.len(), BOARD_CAPACITY);
     }
 
     #[test]
@@ -29,7 +29,7 @@ mod simulate_tests {
 
         let node = simulate.node.borrow();
         assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
-        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
+        assert_eq!(node.possible.len(), BOARD_CAPACITY);
     }
 
     #[test]
@@ -116,6 +116,6 @@ mod simulate_tests {
 
         let node = simulate.node.borrow();
         assert_eq!(node.board, [[Player::None; BOARD_SIZE]; BOARD_SIZE]);
-        assert_eq!(node.possible.len(), BOARD_SIZE * BOARD_SIZE);
+        assert_eq!(node.possible.len(), BOARD_CAPACITY);
     }
 }

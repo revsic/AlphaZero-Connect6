@@ -8,12 +8,10 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use super::pybind_impl::*;
-use super::super::{game::*, mcts::*, BOARD_SIZE};
+use super::super::{game::*, mcts::*, BOARD_SIZE, BOARD_CAPACITY, Board};
 
 #[cfg(test)]
 mod tests;
-
-type Board = [[Player; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Clone)]
 struct Node {
@@ -23,12 +21,12 @@ struct Node {
     n_prob: f32,
     prob: [[f32; BOARD_SIZE]; BOARD_SIZE],
     num_player: usize,
-    board: [[Player; BOARD_SIZE]; BOARD_SIZE],
+    board: Board,
     next_node: Vec<u64>,
 }
 
 impl Node {
-    fn new(board: &[[Player; BOARD_SIZE]; BOARD_SIZE]) -> Node {
+    fn new(board: &Board) -> Node {
         let num_player = board.iter()
             .map(|x| x.iter().filter(|x| **x != Player::None).count())
             .sum();
@@ -44,7 +42,7 @@ impl Node {
         }
     }
 
-    fn new_with_num(board: &[[Player; BOARD_SIZE]; BOARD_SIZE], num_player: usize) -> Node {
+    fn new_with_num(board: &Board, num_player: usize) -> Node {
         Node {
             visit: 0,
             value: 0.,

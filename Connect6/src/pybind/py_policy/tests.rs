@@ -12,7 +12,7 @@ py_class!(class PyPolicy |py| {
         let value = PyList::new(py, value.as_slice()).into_object();
 
         let policy = (0..len).map(|_| {
-            let rand_policy = (0..BOARD_SIZE*BOARD_SIZE)
+            let rand_policy = (0..BOARD_CAPACITY)
                 .map(|_| rand::random::<f32>().to_py_object(py).into_object())
                 .collect::<Vec<PyObject>>();
             PyList::new(py, rand_policy.as_slice()).into_object()
