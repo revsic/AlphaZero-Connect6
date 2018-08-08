@@ -18,9 +18,6 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     try!(m.add(py, "with_param", py_fn!(py, with_param(object: PyObject,
                                                        num_simulation: i32,
                                                        num_expansion: usize,
-                                                       initial_tau: f32,
-                                                       updated_tau: f32,
-                                                       tau_update_term: usize,
                                                        epsilon: f32,
                                                        dirichlet_alpha: f64,
                                                        c_puct: f32))));
@@ -45,18 +42,12 @@ fn with_param(py: Python,
               object: PyObject,
               num_simulation: i32,
               num_expansion: usize,
-              initial_tau: f32,
-              updated_tau: f32,
-              tau_update_term: usize,
               epsilon: f32,
               dirichlet_alpha: f64,
               c_puct: f32) -> PyResult<PyTuple> {
     let param = pybind::HyperParameter {
         num_simulation,
         num_expansion,
-        initial_tau,
-        updated_tau,
-        tau_update_term,
         epsilon,
         dirichlet_alpha,
         c_puct

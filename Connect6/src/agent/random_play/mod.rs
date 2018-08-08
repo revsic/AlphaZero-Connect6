@@ -3,6 +3,8 @@ extern crate rand;
 #[cfg(test)]
 mod tests;
 
+use self::rand::seq::*;
+
 use super::super::BOARD_SIZE;
 use super::super::game::Player;
 use super::agent_impl::*;
@@ -35,10 +37,7 @@ impl RandomPlayer {
         let possible = {
             let mut possible: Vec<(char, char)> = lower.iter().cloned().flat_map(
                 |x| upper.iter().map(move |y| (x, *y))).collect();
-
-            use self::rand::Rng;
-            rand::thread_rng().shuffle(&mut possible);
-
+            possible.shuffle(&mut rand::thread_rng());
             possible
         };
 

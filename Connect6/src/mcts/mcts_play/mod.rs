@@ -7,7 +7,7 @@ use super::*;
 use super::super::game::*;
 use super::super::agent::*;
 use super::super::pybind::*;
-use super::super::{BOARD_SIZE, Board};
+use super::super::Board;
 
 #[cfg(test)]
 mod tests;
@@ -58,12 +58,16 @@ impl<'a, P> SinglePolicyMCTS<'a, P> where P: 'a + Policy + Sized {
 
         let mut path = Vec::new();
         loop {
-            let (turn, board, (row, col)) = {
+            let (turn, board, pos) = {
                 let game = game.read().unwrap();
                 let turn = game.get_turn();
                 if self.debug { game.print(&mut io::stdout()).unwrap(); }
                 (turn, *game.get_board(), self.policy.get_policy(&*game))
             };
+            if pos.is_none() {
+                break;
+            }
+            let (row, col) = pos.unwrap();
 
             path.push(Path{ turn, board, pos: (row, col) });
             let row = (row as u8 + 0x61) as char;
@@ -113,7 +117,7 @@ impl<'a, 'b, P, Q> SeperatePolicyMCTS<'a, 'b, P, Q>
 
         let mut path = Vec::new();
         loop {
-            let (turn, board, (row, col)) = {
+            let (turn, board, pos) = {
                 let game = game.read().unwrap();
                 let turn = game.get_turn();
                 let pos = match turn {
@@ -125,6 +129,10 @@ impl<'a, 'b, P, Q> SeperatePolicyMCTS<'a, 'b, P, Q>
                 if self.debug { game.print(&mut io::stdout()).unwrap(); }
                 (turn, *game.get_board(), pos)
             };
+            if pos.is_none() {
+                break;
+            }
+            let (row, col) = pos.unwrap();
 
             path.push(Path{ turn, board, pos: (row, col) });
             let row = (row as u8 + 0x61) as char;

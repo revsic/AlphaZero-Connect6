@@ -4,7 +4,8 @@ use std::collections::HashMap;
 use std::collections::hash_map::*;
 use std::hash::{Hash, Hasher};
 
-use self::rand::Rng;
+use self::rand::seq::*;
+use self::rand::prelude::*;
 use super::simulate::Simulate;
 use super::super::game::*;
 use super::super::{BOARD_SIZE, Board};
@@ -15,8 +16,8 @@ pub mod policy_tests;
 
 pub trait Policy {
     fn init(&mut self, sim: &Simulate);
-    fn policy(&self, sim: &Simulate) -> (usize, usize);
-    fn get_policy(&mut self, game: &Game) -> (usize, usize);
+    fn policy(&self, sim: &Simulate) -> Option<(usize, usize)>;
+    fn get_policy(&mut self, game: &Game) -> Option<(usize, usize)>;
 }
 
 pub trait BasicPolicy: Policy {
@@ -103,21 +104,20 @@ impl Policy for DefaultPolicy {
         self.map.entry(hash(&board)).or_insert(Node::new(&board));
     }
 
-    fn policy(&self, sim: &Simulate) -> (usize, usize) {
-        if let Some(pos) = self.select(sim) {
+    fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
+        let res = if let Some(pos) = self.select(sim) {
             pos
         } else {
             let node = sim.node.borrow();
-            let mut rng = rand::thread_rng();
-            *rng.choose(&node.possible).unwrap()
-        }
+            *node.possible.choose(&mut thread_rng()).unwrap()
+        };
+        Some(res)
     }
 
-    fn get_policy(&mut self, game: &Game) -> (usize, usize) {
+    fn get_policy(&mut self, game: &Game) -> Option<(usize, usize)> {
         for _ in 0..self.num_iter {
             self.search(game);
         }
-
         let simulate = Simulate::from_game(game);
         self.policy(&simulate)
     }
@@ -150,7 +150,7 @@ impl BasicPolicy for DefaultPolicy {
         let mut rng = rand::thread_rng();
         let (row, col) = {
             let node = sim.node.borrow();
-            *rng.choose(&node.possible).unwrap()
+            *node.possible.choose(&mut rng).unwrap()
         };
 
         let board = sim.simulate(row, col).board();
@@ -172,7 +172,7 @@ impl BasicPolicy for DefaultPolicy {
         while simulate.search_winner() == Player::None {
             let (row, col) = {
                 let node = simulate.node.borrow();
-                match rng.choose(&node.possible) {
+                match node.possible.choose(&mut rng) {
                     Some(pos) => *pos,
                     None => break,
                 }

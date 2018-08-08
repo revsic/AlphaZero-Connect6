@@ -66,7 +66,10 @@ pub fn test_get_policy(policy: &mut impl Policy) {
     let sim = Simulate::from_game(&game);
     policy.init(&sim);
 
-    let (row, col) = policy.policy(&sim);
+    let pos = policy.policy(&sim);
+    assert!(pos.is_some());
+
+    let (row, col) = pos.unwrap();
     assert!(sim.validate(row, col));
 
     let node = sim.node.borrow();

@@ -1,6 +1,7 @@
 extern crate rand;
 
 use super::*;
+use super::super::super::BOARD_CAPACITY;
 
 #[cfg(test)]
 mod simulate_tests {

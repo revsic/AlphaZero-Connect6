@@ -12,10 +12,11 @@ fn test_single_policy_mcts() {
 
     println!("{} elapsed", done);
     if let Some(last) = result.path.last() {
-        assert_eq!(last.turn, result.winner);
-    } else {
-        assert!(true);
+        if result.winner != Player::None {
+            assert_eq!(last.turn, result.winner);
+        }
     }
+    assert!(true);
 }
 
 #[test]
@@ -30,8 +31,9 @@ fn test_seperate_policy_mcts() {
 
     println!("{} elapsed", done);
     if let Some(last) = result.path.last() {
-        assert_eq!(last.turn, result.winner);
-    } else {
-        assert!(true);
+        if result.winner != Player::None {
+            assert_eq!(last.turn, result.winner);
+        }
     }
+    assert!(true);
 }

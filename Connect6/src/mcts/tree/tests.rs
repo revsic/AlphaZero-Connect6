@@ -83,9 +83,9 @@ mod default_policy_test {
                          black_policy.map.len(), white_policy.map.len());
 
                 if game.get_turn() == Player::Black {
-                    black_policy.get_policy(&*game)
+                    black_policy.get_policy(&*game).unwrap()
                 } else {
-                    white_policy.get_policy(&*game)
+                    white_policy.get_policy(&*game).unwrap()
                 }
             };
 
