@@ -1,4 +1,5 @@
 use super::*;
+use super::super::super::BOARD_CAPACITY;
 
 use std::time::Instant;
 
@@ -158,7 +159,7 @@ fn test_get_policy() {
 
     let sim = Simulate::from_game(&game);
     // let (row, col) = policy.get_policy(&game);
-    let (row, col) = policy.policy(&sim);
+    let (row, col) = policy.policy(&sim).unwrap();
     assert!(sim.validate(row, col));
 
     let node = sim.node.borrow();
@@ -170,6 +171,8 @@ fn test_get_policy() {
 fn test_self_play() {
     py_policy!(py, py_policy);
     let mut param = HyperParameter::default();
+    param.num_simulation = 10;
+    param.num_expansion = 1;
 
     let mut policy = AlphaZero::with_param(py, py_policy, param);
     let mut mcts = SinglePolicyMCTS::new(&mut policy);
@@ -180,8 +183,9 @@ fn test_self_play() {
 
     println!("{} elapsed", done);
     if let Some(last) = result.path.last() {
-        assert_eq!(last.turn, result.winner);
-    } else {
-        assert!(true);
+        if result.winner != Player::None {
+            assert_eq!(last.turn, result.winner);
+        }
     }
+    assert!(true);
 }

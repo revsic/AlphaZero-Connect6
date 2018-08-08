@@ -1,6 +1,7 @@
 extern crate rand;
 
 use super::*;
+use super::super::super::{BOARD_CAPACITY, game::*};
 
 #[test]
 fn test_pyseq_to_vec() {

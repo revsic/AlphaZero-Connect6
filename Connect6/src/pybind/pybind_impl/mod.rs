@@ -1,8 +1,7 @@
 extern crate cpython;
 
 use cpython::*;
-use super::super::game::*;
-use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
+use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;
