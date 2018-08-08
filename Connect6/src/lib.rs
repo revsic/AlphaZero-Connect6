@@ -14,8 +14,10 @@ type Board = [[game::Player; BOARD_SIZE]; BOARD_SIZE];
 py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     try!(m.add(py, "__doc__", "This module is implemented in Rust, for Simulating Connect6"));
     try!(m.add(py, "self_play", py_fn!(py, self_play(object: PyObject))));
+    try!(m.add(py, "debug", py_fn!(py, debug(object: PyObject))));
     try!(m.add(py, "with_param", py_fn!(py, with_param(object: PyObject,
                                                        num_simulation: i32,
+                                                       num_expansion: usize,
                                                        initial_tau: f32,
                                                        updated_tau: f32,
                                                        tau_update_term: usize,
@@ -32,9 +34,17 @@ fn self_play(py: Python, object: PyObject) -> PyResult<PyTuple> {
     Ok(result.to_py_object(py))
 }
 
+fn debug(py: Python, object: PyObject) -> PyResult<PyTuple> {
+    let mut policy = pybind::AlphaZero::new(py, object);
+    let mut mcts = mcts::SinglePolicyMCTS::debug(&mut policy);
+    let result = mcts.run();
+    Ok(result.to_py_object(py))
+}
+
 fn with_param(py: Python,
               object: PyObject,
               num_simulation: i32,
+              num_expansion: usize,
               initial_tau: f32,
               updated_tau: f32,
               tau_update_term: usize,
@@ -43,6 +53,7 @@ fn with_param(py: Python,
               c_puct: f32) -> PyResult<PyTuple> {
     let param = pybind::HyperParameter {
         num_simulation,
+        num_expansion,
         initial_tau,
         updated_tau,
         tau_update_term,

@@ -3,6 +3,8 @@ extern crate rand;
 
 use cpython::*;
 use self::rand::distributions::{Distribution, Dirichlet};
+use self::rand::prelude::*;
+use self::rand::seq::*;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -58,6 +60,7 @@ impl Node {
 
 pub struct HyperParameter {
     pub num_simulation: i32,
+    pub num_expansion: usize,
     pub initial_tau: f32,
     pub updated_tau: f32,
     pub tau_update_term: usize,
@@ -69,7 +72,8 @@ pub struct HyperParameter {
 impl HyperParameter {
     fn default() -> HyperParameter {
         HyperParameter {
-            num_simulation: 100,
+            num_simulation: 150,
+            num_expansion: 1,
             initial_tau: 1.,
             updated_tau: 1e-4,
             tau_update_term: 30,
@@ -192,8 +196,18 @@ impl<'a> AlphaZero<'a> {
     fn expand(&mut self, sim: &Simulate) {
         let (possible, parent_hashed) = {
             let node = sim.node.borrow();
-            let board = &node.board;
-            (node.possible.clone(), hash(board))
+            let hashed = hash(&node.board);
+
+            if node.possible.len() < self.param.num_expansion {
+                (node.possible.clone(), hashed)
+            } else {
+                let mut rng = thread_rng();
+                let sampled = node.possible
+                    .choose_multiple(&mut rng, self.param.num_expansion)
+                    .cloned()
+                    .collect::<Vec<_>>();
+                (sampled, hashed)
+            }
         };
         let child_num = self.map.get(&parent_hashed).unwrap().num_player + 1;
         let mut boards = Vec::new();

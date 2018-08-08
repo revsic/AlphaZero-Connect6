@@ -69,7 +69,10 @@ fn test_select() {
 #[test]
 fn test_expand() {
     py_policy!(py, py_policy);
-    let mut policy = AlphaZero::new(py, py_policy);
+    let mut param = HyperParameter::default();
+    param.num_expansion = BOARD_CAPACITY;
+
+    let mut policy = AlphaZero::with_param(py, py_policy, param);
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
     policy.init(&sim);
@@ -91,7 +94,7 @@ fn test_expand() {
     assert_ne!(root.prob, [[0.; BOARD_SIZE]; BOARD_SIZE]);
     assert_eq!(root.num_player, 0);
     assert_eq!(root.board, sim.board());
-    assert_eq!(root.next_node.len(), BOARD_SIZE * BOARD_SIZE);
+    assert_eq!(root.next_node.len(), BOARD_CAPACITY);
 
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
@@ -167,7 +170,6 @@ fn test_get_policy() {
 fn test_self_play() {
     py_policy!(py, py_policy);
     let mut param = HyperParameter::default();
-    param.num_simulation = 5;
 
     let mut policy = AlphaZero::with_param(py, py_policy, param);
     let mut mcts = SinglePolicyMCTS::new(&mut policy);
