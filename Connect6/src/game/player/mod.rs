@@ -3,8 +3,8 @@ mod tests;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Player {
-    None = -1,
-    Black = 0,
+    Black = -1,
+    None = 0,
     White = 1,
 }
 

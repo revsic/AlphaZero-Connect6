@@ -41,8 +41,8 @@ fn test_pylist_from_board() {
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
             let player = match seq[i * BOARD_SIZE + j] as i32 {
-                -1 => Player::None,
-                0 => Player::Black,
+                -1 => Player::Black,
+                0 => Player::None,
                 1 => Player::White,
                 _ => { assert!(false); Player::None },
             };

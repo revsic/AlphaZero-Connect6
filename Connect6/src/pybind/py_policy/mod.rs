@@ -172,7 +172,7 @@ impl<'a> AlphaZero<'a> {
 
         let prob = match sim.turn {
             Player::None => panic!("alpha_zero::maximum_from couldn't get prob from none"),
-            Player::Black => prob(|x| 1. - x),
+            Player::Black => prob(|x| -x),
             Player::White => prob(|x| x),
         };
         child_nodes.into_iter()
