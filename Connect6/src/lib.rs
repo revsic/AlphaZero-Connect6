@@ -20,7 +20,8 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
                                                        num_expansion: usize,
                                                        epsilon: f32,
                                                        dirichlet_alpha: f64,
-                                                       c_puct: f32))));
+                                                       c_puct: f32,
+                                                       debug: bool))));
     Ok(())
 });
 
@@ -44,7 +45,8 @@ fn with_param(py: Python,
               num_expansion: usize,
               epsilon: f32,
               dirichlet_alpha: f64,
-              c_puct: f32) -> PyResult<PyTuple> {
+              c_puct: f32,
+              debug: bool) -> PyResult<PyTuple> {
     let param = pybind::HyperParameter {
         num_simulation,
         num_expansion,
@@ -53,7 +55,13 @@ fn with_param(py: Python,
         c_puct
     };
     let mut policy = pybind::AlphaZero::with_param(py, object, param);
-    let mut mcts = mcts::SinglePolicyMCTS::new(&mut policy);
+    let mut mcts =
+        if debug {
+            mcts::SinglePolicyMCTS::debug(&mut policy)
+        } else {
+            mcts::SinglePolicyMCTS::new(&mut policy)
+        };
+
     let result = mcts.run();
     Ok(result.to_py_object(py))
 }
