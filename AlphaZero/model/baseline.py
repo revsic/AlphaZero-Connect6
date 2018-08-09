@@ -1,17 +1,21 @@
 import json
 import tensorflow as tf
 
-class AlphaZero(object):
-    ''' BasicModel
+class AlphaZeroBaseLine(object):
+    ''' AlphaZeroBaseLine
     Attributes:
         board_size: int, size of the board
         l2_level: float, parameter controlling the level of L2 weight regluarization
         learning_rate: Float, learning rate of Adam for optimizing loss function.
-        beta1: Float, beta1 value of Adam for optimizing loss function.
-        plc_x: tf.placeholder, input vector.
+        momentum: Float, momentum parameter of the optimizer
+        sess: tf.Session, tf session for inferencing and training model
+        plc_x: tf.placeholder, input vector shaped (batch_size, board_size ** 2).
+        plc_z: tf.placeholder, game results as expected value vectors
+        plc_pi: tf.placeholder, real policy from combined mcts
+        plc_metric: tf.placeholder, metric value
         plc_training: tf.placeholder, boolean, batch normalization mode either train or inference.
-        plc_dropout: tf.placeholder, probability for dropout layer.
-        model: tf.Tensor, model.
+        policy: tf.Tensor, policy head results of model.
+        value: tf.Tensor, value head results of model
         loss: tf.Tensor, loss function.
         metric: tf.Tensor, metric for evaluating model.
         optimize: tf.Tensor, optimize object.
@@ -54,7 +58,7 @@ class AlphaZero(object):
         self.ckpt = tf.train.Saver()
 
     def __call__(self, boards, **kwargs):
-        pass
+        return self.sess.run((self.value, self.policy), feed_dict={self.plc_x: x, self.plc_training: False})
 
     def init(self, sess=None):
         if sess is None:
@@ -147,29 +151,3 @@ class AlphaZero(object):
 
     def _get_metric(self):
         return self.plc_metric
-
-
-class Batch(object):
-    def __init__(self, x, y, batch_size):
-        self.total_x = x
-        self.total_y = y
-        self.batch_size = batch_size
-
-        self.iter_per_epoch = len(x) // batch_size
-        self.epochs_completed = 0
-
-        self._iter = 0
-
-    def __call__(self):
-        start = self._iter * self.batch_size
-        end = (self._iter + 1) * self.batch_size
-
-        batch_x = self.total_x[start:end]
-        batch_y = self.total_y[start:end]
-
-        self._iter += 1
-        if self._iter == self.iter_per_epoch:
-            self.epochs_completed += 1
-            self._iter = 0
-
-        return batch_x, batch_y
