@@ -114,8 +114,8 @@ impl<'a> AlphaZero<'a> {
 
     fn get_from(&self, boards: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let pylist = pylist_from_multiple(self.py, boards);
-        let res = self.obj.call(self.py, (pylist, ), None).ok()?;
-        let pytuple = res.cast_into::<PyTuple>(self.py).ok()?;
+        let res = pycheck!(self.obj.call(self.py, (pylist, ), None), "alpha_zero::get_from couldn't call pyobject");
+        let pytuple = pycheck!(res.cast_into::<PyTuple>(self.py), "alpha_zero::get_from couldn't cast into pytuple");
 
         let value = pytuple.get_item(self.py, 0);
         let policy = pytuple.get_item(self.py, 1);
@@ -227,18 +227,20 @@ impl<'a> AlphaZero<'a> {
             let node = self.map.get_mut(&hashed).unwrap();
             node.n_prob = prob[*row][*col];
         }
-        if let Some((values, policies)) = self.get_from(&boards) {
-            for ((value, policy), hashed) in values.iter()
-                .zip(policies.iter())
-                .zip(hashes.iter())
-            {
-                let node = self.map.get_mut(hashed).unwrap();
-                node.visit += 1;
-                node.value = *value;
-                node.prob = *policy;
+        if boards.len() > 0 {
+            if let Some((values, policies)) = self.get_from(&boards) {
+                for ((value, policy), hashed) in values.iter()
+                    .zip(policies.iter())
+                    .zip(hashes.iter())
+                {
+                    let node = self.map.get_mut(hashed).unwrap();
+                    node.visit += 1;
+                    node.value = *value;
+                    node.prob = *policy;
+                }
+            } else {
+                panic!("alpha_zero::expand couldn't get from python object")
             }
-        } else {
-            panic!("alpha_zero::couldn't get from python object")
         }
     }
 

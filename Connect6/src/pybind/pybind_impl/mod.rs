@@ -6,9 +6,20 @@ use super::super::{BOARD_SIZE, Board};
 #[cfg(test)]
 mod tests;
 
+#[macro_export]
+macro_rules! pycheck {
+    ($e:expr, $err:expr) => {
+        match $e {
+            Ok(obj) => obj,
+            Err(e) => panic!("{} : {:?}", $err, e),
+        }
+    }
+}
+
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
-    let vec = obj.cast_into::<PySequence>(py).ok()?
-        .iter(py).ok()?
+    let pyseq = pycheck!(obj.cast_into::<PySequence>(py), "pyseq_to_vec couldn't cast obj into pyseq");
+    let pyiter = pycheck!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
+    let vec = pyiter
         .filter_map(|x| x.ok())
         .filter_map(|x| x.extract::<f32>(py).ok())
         .collect::<Vec<f32>>();

@@ -142,13 +142,13 @@ class AlphaZeroBaseLine(object):
         return policy, value
 
     def _get_loss(self):
-        value_loss = tf.square(self.plc_z - self.value)
-        policy_loss = tf.reduce_sum(tf.multiply(self.pi, tf.log(self.policy)), axis=1)
-        vars = tf.trainable_variables()
-        l2_norm = self.l2_level * tf.add_n([tf.nn.l2_loss(v) for v in vars])
+        value_loss = tf.reduce_sum(tf.square(self.plc_z - self.value))
+        policy_loss = tf.reduce_sum(tf.multiply(self.pi, tf.log(self.policy)))
 
-        loss = value_loss - policy_loss + l2_norm
-        return loss
+        vars = tf.trainable_variables()
+        l2_norm = self.l2_level * tf.reduce_sum(tf.nn.l2_loss(v) for v in vars)
+
+        return value_loss - policy_loss + l2_norm
 
     def _get_metric(self):
         return self.plc_metric
