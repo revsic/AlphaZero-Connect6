@@ -1,2 +1,5 @@
 .idea/
 *.pyd
+__pycache__
+ckpt
+summary
