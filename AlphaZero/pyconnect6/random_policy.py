@@ -1,4 +1,4 @@
-import env
+import pyenv
 import numpy as np
 
 board_size = 15
@@ -11,8 +11,8 @@ class RandomPolicy:
         return value, policy
 
 policy = RandomPolicy()
-param = env.default_param()
+param = pyenv.default_param()
 param['debug'] = True
 
-winner, path = env.with_param(policy, param)
+winner, path = pyenv.with_param(policy, param)
 print('winner {}, len {}'.format(winner, len(path)))
