@@ -2,6 +2,7 @@ extern crate cpython;
 
 use cpython::*;
 use std::io;
+use std::time::Instant;
 
 use super::*;
 use super::super::game::*;
@@ -58,12 +59,14 @@ impl<'a, P> SinglePolicyMCTS<'a, P> where P: 'a + Policy + Sized {
 
         let mut path = Vec::new();
         loop {
+            let before = Instant::now();
             let (turn, board, pos) = {
                 let game = game.read().unwrap();
                 let turn = game.get_turn();
                 if self.debug { game.print(&mut io::stdout()).unwrap(); }
                 (turn, *game.get_board(), self.policy.get_policy(&*game))
             };
+            let duration = before.elapsed();
             if pos.is_none() {
                 break;
             }
@@ -80,7 +83,7 @@ impl<'a, P> SinglePolicyMCTS<'a, P> where P: 'a + Policy + Sized {
                     break;
                 },
                 Ok(GameResult::Status(status)) => if self.debug {
-                    println!("{:?} {:?}, remain {}", status.player, status.position, status.num_remain);
+                    println!("{:?} {:?}, remain {}, {} elapsed", status.player, status.position, status.num_remain, duration.as_secs());
                 },
                 Err(err) => panic!(format!("single_policy_mcts::run : {}", err)),
             };
