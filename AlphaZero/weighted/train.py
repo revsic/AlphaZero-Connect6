@@ -2,8 +2,9 @@ import os
 import tensorflow as tf
 from datetime import datetime
 
-import env
-from env.buffer import Buffer
+import pyconnect6
+from multiproc.agent import AsyncConnect6
+from pyconnect6.buffer import Buffer
 from weighted.model import WeightedPolicy
 
 flags = tf.app.flags
@@ -31,18 +32,19 @@ def main(_):
         policy = WeightedPolicy(sess, FLAGS.board_size, FLAGS.learning_rate, FLAGS.momentum)
         writer = tf.summary.FileWriter(os.path.join(FLAGS.summary_dir, FLAGS.name), sess.graph)
 
-        param = env.default_param()
+        param = pyconnect6.default_param()
         param['num_simulation'] = 500
+        agent = AsyncConnect6(5, policy, param)
+        agent.start()
 
         epoch = 0
         num_game = 0
         sess.run(tf.global_variables_initializer())
         while True:
             num_game += 1
-            res = env.with_param(policy, param)
-            buffer.push_game(res)
+            agent.play(5, buffer)
+            log('self-play async game#{}'.format(num_game))
 
-            log('self-play game#{}'.format(num_game))
             if len(buffer) > FLAGS.start_train:
                 epoch += 1
                 for _ in range(FLAGS.batch_size):
