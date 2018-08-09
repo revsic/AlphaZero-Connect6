@@ -1,8 +1,9 @@
 import json
 import tensorflow as tf
 
+
 class AlphaZeroBaseLine(object):
-    ''' AlphaZeroBaseLine
+    """ AlphaZeroBaseLine
     Attributes:
         board_size: int, size of the board
         l2_level: float, parameter controlling the level of L2 weight regluarization
@@ -20,19 +21,19 @@ class AlphaZeroBaseLine(object):
         metric: tf.Tensor, metric for evaluating model.
         optimize: tf.Tensor, optimize object.
         summary: tf.Tensor, tensor summary of the metric.
-    '''
+    """
     def __init__(self,
                  board_size,
                  l2_level=1e-4,
                  learning_rate=1e-3,
                  momentum=0.9):
-        ''' Initializer
+        """ Initializer
         Args:
             board_size: int, size of the board
             l2_level: float, parameter controlling the level of L2 weight regluarization
             learning_rate: Float, learning rate.
             momentum: Float, momentum parameter of the optimizer
-        '''
+        """
         self.board_size = board_size
         self.l2_level = l2_level
         self.learning_rate = learning_rate
@@ -79,8 +80,9 @@ class AlphaZeroBaseLine(object):
             dump = json.dumps(
                 {
                     'board_size': self.board_size,
+                    'l2_level': self.l2_level,
                     'learning_rate': self.learning_rate,
-                    'beta1': self.beta1
+                    'momentum': self.momentum,
                 }
             )
             f.write(dump)
@@ -89,7 +91,7 @@ class AlphaZeroBaseLine(object):
     def load(cls, path):
         with open(path + '.json') as f:
             param = json.loads(f.read())
-        model = cls(param['board_size'], param['learning_rate'], param['beta1'])
+        model = cls(param['board_size'], param['l2_level'], param['learning_rate'], param['momentum'])
         model.init()
         model.ckpt.restore(model.sess, path + '.ckpt')
 
@@ -141,12 +143,11 @@ class AlphaZeroBaseLine(object):
 
     def _get_loss(self):
         value_loss = tf.square(self.plc_z - self.value)
-        policy_loss = -tf.matmul(tf.transpose(self.pi), self.policy)
-
+        policy_loss = tf.reduce_sum(tf.multiply(self.pi, tf.log(self.policy)), axis=1)
         vars = tf.trainable_variables()
         l2_norm = self.l2_level * tf.add_n([tf.nn.l2_loss(v) for v in vars])
 
-        loss = value_loss + policy_loss + l2_norm
+        loss = value_loss - policy_loss + l2_norm
         return loss
 
     def _get_metric(self):
