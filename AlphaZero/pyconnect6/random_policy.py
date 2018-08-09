@@ -1,4 +1,4 @@
-import pyenv
+import pyconnect6
 import numpy as np
 
 board_size = 15
@@ -11,8 +11,8 @@ class RandomPolicy:
         return value, policy
 
 policy = RandomPolicy()
-param = pyenv.default_param()
+param = pyconnect6.default_param()
 param['debug'] = True
 
-winner, path = pyenv.with_param(policy, param)
+winner, path = pyconnect6.with_param(policy, param)
 print('winner {}, len {}'.format(winner, len(path)))
