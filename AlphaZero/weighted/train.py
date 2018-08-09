@@ -1,10 +1,9 @@
 import os
-import numpy as np
 import tensorflow as tf
 from datetime import datetime
 
 import env
-from buffer import Buffer
+from env.buffer import Buffer
 from weighted.model import WeightedPolicy
 
 flags = tf.app.flags
