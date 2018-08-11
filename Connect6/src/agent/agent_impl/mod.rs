@@ -13,6 +13,7 @@ use super::super::policy::*;
 use super::super::pybind::*;
 use super::super::Board;
 
+#[derive(Debug, PartialEq)]
 pub struct Path {
     pub turn: Player,
     pub board: Board,
@@ -47,7 +48,7 @@ impl<'a> Agent<'a> {
         }
     }
 
-    pub fn play(&mut self) -> RunResult {
+    pub fn play(&mut self) -> Result<RunResult, String> {
         let mut winner = Player::None;
         let mut path = Vec::new();
         let mut game = self.game.borrow_mut();
@@ -56,7 +57,6 @@ impl<'a> Agent<'a> {
             if self.debug {
                 game.print(&mut io::stdout()).unwrap();
             }
-            let turn = game.get_turn();
             let before = Instant::now();
             let pos = self.policy.next(&game);
             let duration = before.elapsed();
@@ -65,8 +65,7 @@ impl<'a> Agent<'a> {
                 break;
             }
             let pos = pos.unwrap();
-            let board = *game.get_board();
-            path.push(Path { turn, board, pos, });
+            path.push(Path { turn: game.get_turn(), board: *game.get_board(), pos, });
 
             match game.play(pos) {
                 Ok(result) => if self.debug {
@@ -76,7 +75,7 @@ impl<'a> Agent<'a> {
                     println!("{:?} ({}, {}), remain {}, {} elapsed",
                              result.player, row, col, result.num_remain, duration.as_secs());
                 },
-                Err(err) => panic!(format!("agent::play : {}", err)),
+                Err(err) => return Err(format!("agent::play : {}", err)),
             };
 
             let is_end = game.is_game_end();
@@ -86,7 +85,7 @@ impl<'a> Agent<'a> {
             }
         }
 
-        RunResult { winner, path }
+        Ok(RunResult { winner, path })
     }
 }
 

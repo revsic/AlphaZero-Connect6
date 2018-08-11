@@ -28,13 +28,13 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
 fn self_play(py: Python, object: PyObject) -> PyResult<PyTuple> {
     let mut policy = pybind::AlphaZero::new(py, object);
     let result = agent::Agent::new(&mut policy).play();
-    Ok(result.to_py_object(py))
+    Ok(result.unwrap().to_py_object(py))
 }
 
 fn debug(py: Python, object: PyObject) -> PyResult<PyTuple> {
     let mut policy = pybind::AlphaZero::new(py, object);
     let result = agent::Agent::debug(&mut policy).play();
-    Ok(result.to_py_object(py))
+    Ok(result.unwrap().to_py_object(py))
 }
 
 fn with_param(py: Python,
@@ -56,5 +56,5 @@ fn with_param(py: Python,
     let result =
         if debug { agent::Agent::new(&mut policy).play() }
             else { agent::Agent::debug(&mut policy).play() };
-    Ok(result.to_py_object(py))
+    Ok(result.unwrap().to_py_object(py))
 }
