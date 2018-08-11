@@ -4,68 +4,21 @@ extern crate rand;
 mod tests;
 
 use self::rand::seq::*;
+use super::*;
 
-use super::super::BOARD_SIZE;
-use super::super::game::Player;
-use super::agent_impl::*;
+pub struct RandomPolicy { }
 
-pub struct RandomPlayResult {
-    pub vec: Vec<(String, String)>,
-    pub winner: Player,
+impl RandomPolicy {
+    pub fn new() -> RandomPolicy {
+        RandomPolicy { }
+    }
 }
 
-pub struct RandomPlayer {
-    agent: Agent
-}
-
-impl RandomPlayer {
-    pub fn new() -> RandomPlayer {
-        RandomPlayer {
-            agent: Agent::with_start()
-        }
-    }
-
-    pub fn play(&self) -> Result<RandomPlayResult, &'static str> {
-        self.play_io(|_: &Agent| ())
-    }
-
-    pub fn play_io(&self, io_action: impl Fn(&Agent)) -> Result<RandomPlayResult, &'static str> {
-        let size = BOARD_SIZE as u8;
-        let lower: Vec<char> = (0..size).map(|x: u8| (x + 0x61) as char).collect();
-        let upper: Vec<char> = (0..size).map(|x: u8| (x + 0x41) as char).collect();
-
-        let possible = {
-            let mut possible: Vec<(char, char)> = lower.iter().cloned().flat_map(
-                |x| upper.iter().map(move |y| (x, *y))).collect();
-            possible.shuffle(&mut rand::thread_rng());
-            possible
-        };
-
-        let mut prev = String::new();
-        let mut vec = Vec::new();
-
-        for (row, col) in possible {
-            let query: String = vec![row, col].into_iter().collect();
-
-            let game_result = match self.agent.play(&query) {
-                Ok(result) => result,
-                Err(err) => return Err(err),
-            };
-
-            if prev.is_empty() {
-                prev = query.clone();
-            } else {
-                vec.push((prev, query));
-                prev = String::new();
-            }
-
-            io_action(&self.agent);
-
-            if let GameResult::GameEnd(player) = game_result {
-                return Ok(RandomPlayResult { vec, winner: player });
-            }
-        }
-
-        Ok(RandomPlayResult { vec, winner: Player::None })
+impl Policy for RandomPolicy {
+    fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
+        let sim = Simulate::from_game(game);
+        let node = sim.node.borrow();
+        node.possible.choose(&mut rand::thread_rng())
+            .map(|x| *x)
     }
 }

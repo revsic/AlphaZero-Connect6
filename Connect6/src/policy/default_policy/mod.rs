@@ -6,44 +6,13 @@ use std::hash::{Hash, Hasher};
 
 use self::rand::seq::*;
 use self::rand::prelude::*;
+use super::Policy;
 use super::simulate::Simulate;
 use super::super::game::*;
 use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;
-pub mod policy_tests;
-
-pub trait Policy {
-    fn init(&mut self, sim: &Simulate);
-    fn policy(&self, sim: &Simulate) -> Option<(usize, usize)>;
-    fn get_policy(&mut self, game: &Game) -> Option<(usize, usize)>;
-}
-
-pub trait BasicPolicy: Policy {
-    fn select(&self, sim: &Simulate) -> Option<(usize, usize)>;
-    fn expand(&mut self, sim: &Simulate) -> (usize, usize);
-    fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>);
-    fn search(&mut self, game: &Game) {
-        let mut simulate = Simulate::from_game(game);
-        self.init(&simulate);
-
-        let mut path = Vec::new();
-        while let Some((row, col)) = self.select(&simulate) {
-            path.push((row, col));
-            simulate.simulate_in(row, col);
-        }
-
-        if simulate.search_winner() != Player::None {
-            return;
-        }
-        let (row, col) = self.expand(&simulate);
-
-        path.push((row, col));
-        simulate.simulate_in(row, col);
-        self.update(&simulate, &path);
-    }
-}
 
 struct Node {
     visit: i32,
@@ -71,6 +40,23 @@ impl Node {
     }
 }
 
+fn hash(board: &Board) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    board.hash(&mut hasher);
+    hasher.finish()
+}
+
+pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
+            if board1[row][col] != board2[row][col] {
+                return Some((row, col))
+            }
+        }
+    }
+    return None
+}
+
 pub struct DefaultPolicy {
     num_iter: i32,
     map: HashMap<u64, Node>,
@@ -90,40 +76,12 @@ impl DefaultPolicy {
             map: HashMap::new(),
         }
     }
-}
 
-fn hash(board: &Board) -> u64 {
-    let mut hasher = DefaultHasher::new();
-    board.hash(&mut hasher);
-    hasher.finish()
-}
-
-impl Policy for DefaultPolicy {
     fn init(&mut self, sim: &Simulate) {
         let board = sim.board();
         self.map.entry(hash(&board)).or_insert(Node::new(&board));
     }
 
-    fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
-        let res = if let Some(pos) = self.select(sim) {
-            pos
-        } else {
-            let node = sim.node.borrow();
-            *node.possible.choose(&mut thread_rng()).unwrap()
-        };
-        Some(res)
-    }
-
-    fn get_policy(&mut self, game: &Game) -> Option<(usize, usize)> {
-        for _ in 0..self.num_iter {
-            self.search(game);
-        }
-        let simulate = Simulate::from_game(game);
-        self.policy(&simulate)
-    }
-}
-
-impl BasicPolicy for DefaultPolicy {
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
@@ -198,15 +156,44 @@ impl BasicPolicy for DefaultPolicy {
             update(&sim);
         }
     }
+
+    fn search(&mut self, game: &Game) {
+        let mut simulate = Simulate::from_game(game);
+        self.init(&simulate);
+
+        let mut path = Vec::new();
+        while let Some((row, col)) = self.select(&simulate) {
+            path.push((row, col));
+            simulate.simulate_in(row, col);
+        }
+
+        if simulate.search_winner() != Player::None {
+            return;
+        }
+        let (row, col) = self.expand(&simulate);
+
+        path.push((row, col));
+        simulate.simulate_in(row, col);
+        self.update(&simulate, &path);
+    }
+
+    fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
+        let res = if let Some(pos) = self.select(sim) {
+            pos
+        } else {
+            let node = sim.node.borrow();
+            *node.possible.choose(&mut thread_rng()).unwrap()
+        };
+        Some(res)
+    }
 }
 
-pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
-    for row in 0..BOARD_SIZE {
-        for col in 0..BOARD_SIZE {
-            if board1[row][col] != board2[row][col] {
-                return Some((row, col))
-            }
+impl Policy for DefaultPolicy {
+    fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
+        for _ in 0..self.num_iter {
+            self.search(game);
         }
+        let simulate = Simulate::from_game(game);
+        self.policy(&simulate)
     }
-    return None
 }
