@@ -1,8 +1,7 @@
 pub use self::player::Player;
 pub use self::game_impl::{PlayResult, Game};
-pub use self::winner_searcher::search;
+pub use self::search_winner::search;
 
 mod player;
-mod position;
 mod game_impl;
-mod winner_searcher;
+mod search_winner;
