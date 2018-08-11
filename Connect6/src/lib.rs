@@ -1,6 +1,6 @@
-pub mod game;
 pub mod agent;
-pub mod mcts;
+pub mod game;
+pub mod policy;
 pub mod pybind;
 
 #[macro_use]
@@ -27,15 +27,13 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
 
 fn self_play(py: Python, object: PyObject) -> PyResult<PyTuple> {
     let mut policy = pybind::AlphaZero::new(py, object);
-    let mut mcts = mcts::SinglePolicyMCTS::new(&mut policy);
-    let result = mcts.run();
+    let result = agent::Agent::new(&mut policy).play();
     Ok(result.to_py_object(py))
 }
 
 fn debug(py: Python, object: PyObject) -> PyResult<PyTuple> {
     let mut policy = pybind::AlphaZero::new(py, object);
-    let mut mcts = mcts::SinglePolicyMCTS::debug(&mut policy);
-    let result = mcts.run();
+    let result = agent::Agent::debug(&mut policy).play();
     Ok(result.to_py_object(py))
 }
 
@@ -55,13 +53,8 @@ fn with_param(py: Python,
         c_puct
     };
     let mut policy = pybind::AlphaZero::with_param(py, object, param);
-    let mut mcts =
-        if debug {
-            mcts::SinglePolicyMCTS::debug(&mut policy)
-        } else {
-            mcts::SinglePolicyMCTS::new(&mut policy)
-        };
-
-    let result = mcts.run();
+    let result =
+        if debug { agent::Agent::new(&mut policy).play() }
+            else { agent::Agent::debug(&mut policy).play() };
     Ok(result.to_py_object(py))
 }
