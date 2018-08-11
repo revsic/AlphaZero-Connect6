@@ -49,8 +49,12 @@ impl Game {
 
     pub fn play(&mut self, pos: (usize, usize)) -> Result<PlayResult, Msg> {
         let (row, col) = pos;
+        if row >= BOARD_SIZE || col >= BOARD_SIZE {
+            return Err("game::play invalid position")
+        }
+
         if self.board[row][col] != Player::None {
-            return Err("Already set position");
+            return Err("game::play already set position");
         }
         self.board[row][col] = self.turn;
 
