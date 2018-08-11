@@ -1,7 +1,5 @@
 pub use self::agent_impl::*;
-pub use self::random_play::*;
-pub use self::io_interface::*;
+pub use self::container::*;
 
 mod agent_impl;
-mod random_play;
-mod io_interface;
+mod container;
