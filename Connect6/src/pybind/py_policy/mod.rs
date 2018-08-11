@@ -10,7 +10,9 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use super::pybind_impl::*;
-use super::super::{game::*, mcts::*, BOARD_SIZE, Board};
+use super::super::game::*;
+use super::super::policy::{Policy, Simulate, diff_board};
+use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;
@@ -180,6 +182,22 @@ impl<'a> AlphaZero<'a> {
             .map(|x| hash(&x.board))
     }
 
+    fn init(&mut self, sim: &Simulate) {
+        let node = sim.node.borrow();
+        let hashed = hash(&node.board);
+
+        if self.map.get(&hashed).is_none() {
+            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
+                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
+
+                entry.value = value[0];
+                entry.prob = policy[0];
+            } else {
+                panic!("alpha_zero::init couldn't get from py policy");
+            }
+        }
+    }
+
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
@@ -284,30 +302,6 @@ impl<'a> AlphaZero<'a> {
         self.expand(&simulate);
         self.update(&simulate, &path);
     }
-}
-
-fn hash(board: &Board) -> u64 {
-    let mut hasher = DefaultHasher::new();
-    board.hash(&mut hasher);
-    hasher.finish()
-}
-
-impl<'a> Policy for AlphaZero<'a> {
-    fn init(&mut self, sim: &Simulate) {
-        let node = sim.node.borrow();
-        let hashed = hash(&node.board);
-
-        if self.map.get(&hashed).is_none() {
-            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
-                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
-
-                entry.value = value[0];
-                entry.prob = policy[0];
-            } else {
-                panic!("alpha_zero::init couldn't get from py policy");
-            }
-        }
-    }
 
     fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
@@ -325,8 +319,16 @@ impl<'a> Policy for AlphaZero<'a> {
             .max_by(|n1, n2| prob(n1).partial_cmp(&prob(n2)).unwrap())
             .map(|max_node| diff_board(&node.board, &max_node.board).unwrap())
     }
+}
 
-    fn get_policy(&mut self, game: &Game) -> Option<(usize, usize)> {
+fn hash(board: &Board) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    board.hash(&mut hasher);
+    hasher.finish()
+}
+
+impl<'a> Policy for AlphaZero<'a> {
+    fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
         let simulate = Simulate::from_game(game);
         self.init(&simulate);
 
