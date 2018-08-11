@@ -1,11 +1,11 @@
-#[cfg(test)]
-mod tests;
-
 use super::Policy;
 use super::Game;
 use super::super::BOARD_SIZE;
 
 use std::io;
+
+#[cfg(test)]
+mod tests;
 
 pub struct IoPolicy<'a, 'b> {
     reader: &'a mut io::Read,
