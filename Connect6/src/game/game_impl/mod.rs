@@ -1,9 +1,9 @@
-#[cfg(test)]
-mod tests;
-
 use std::io;
 use super::*;
 use super::super::{BOARD_SIZE, Board};
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Debug, PartialEq)]
 pub struct PlayResult {
