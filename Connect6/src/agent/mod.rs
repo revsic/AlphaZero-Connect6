@@ -1,5 +1,5 @@
 pub use self::agent_impl::*;
-pub use self::container::*;
+pub use self::async_agent::*;
 
 mod agent_impl;
-mod container;
+mod async_agent;

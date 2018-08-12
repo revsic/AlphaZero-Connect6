@@ -72,8 +72,8 @@ impl<'a> Agent<'a> {
                     let (row, col) = result.position;
                     let row = (row as u8 + 0x61) as char;
                     let col = (col as u8 + 0x41) as char;
-                    println!("{:?} ({}, {}), remain {}, {} elapsed",
-                             result.player, row, col, result.num_remain, duration.as_secs());
+                    println!("{:?} ({}, {}), remain {}, {}.{} elapsed",
+                             result.player, row, col, result.num_remain, duration.as_secs(), duration.subsec_millis());
                 },
                 Err(err) => return Err(format!("agent::play : {}", err)),
             };
