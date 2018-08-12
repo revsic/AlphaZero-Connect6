@@ -10,9 +10,9 @@ fn test_random_play() {
 
     let now = Instant::now();
     let result = Agent::new(&mut policy).play();
-    let done = now.elapsed().as_secs();
+    let done = now.elapsed();
 
-    println!("{} elapsed", done);
+    println!("{}.{}s elapsed", done.as_secs(), done.subsec_millis());
     let result = result.map_err(|_| assert!(false)).unwrap();
     if let Some(last) = result.path.last() {
         if result.winner != Player::None {

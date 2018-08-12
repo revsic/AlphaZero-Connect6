@@ -26,20 +26,20 @@ py_class!(class PyPolicy |py| {
 });
 
 macro_rules! py_policy {
-    ($py:ident, $py_policy:ident) => {
+    () => {{
         let gil = Python::acquire_gil();
-        let $py = gil.python();
-        let $py_policy = PyPolicy::create_instance($py).unwrap().into_object();
-    }
+        let py = gil.python();
+        PyPolicy::create_instance(py).unwrap().into_object()
+    }}
 }
 
 #[test]
 fn test_select() {
-    py_policy!(py, py_policy);
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
 
-    let mut policy = AlphaZero::new(py, py_policy);
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::new(py_policy);
     policy.init(&sim);
 
     let mut path = Vec::new();
@@ -70,14 +70,14 @@ fn test_select() {
 
 #[test]
 fn test_expand() {
-    py_policy!(py, py_policy);
     let mut param = HyperParameter::default();
     param.num_expansion = BOARD_CAPACITY;
 
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
 
-    let mut policy = AlphaZero::with_param(py, py_policy, param);
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::with_param(py_policy, param);
     policy.init(&sim);
 
     while let Some((row, col)) = policy.select(&sim) {
@@ -121,10 +121,11 @@ fn test_expand() {
 
 #[test]
 fn test_update() {
-    py_policy!(py, py_policy);
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
-    let mut policy = AlphaZero::new(py, py_policy);
+
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::new(py_policy);
 
     policy.init(&sim);
     let mut path = Vec::new();
@@ -145,10 +146,11 @@ fn test_update() {
 
 #[test]
 fn test_get_policy() {
-    py_policy!(py, py_policy);
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
-    let mut policy = AlphaZero::new(py, py_policy);
+
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::new(py_policy);
 
     policy.init(&sim);
     let mut path = Vec::new();
@@ -171,19 +173,19 @@ fn test_get_policy() {
 
 #[test]
 fn test_self_play() {
-    py_policy!(py, py_policy);
     let mut param = HyperParameter::default();
     param.num_simulation = 10;
     param.num_expansion = 1;
 
-    let mut policy = AlphaZero::with_param(py, py_policy, param);
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::with_param(py_policy, param);
     let mut mcts = Agent::new(&mut policy);
 
     let now = Instant::now();
     let result = mcts.play();
-    let done = now.elapsed().as_secs();
+    let done = now.elapsed();
 
-    println!("{} elapsed", done);
+    println!("{}.{}s elapsed", done.as_secs(), done.subsec_millis());
     let result = result.map_err(|_| assert!(false)).unwrap();
     if let Some(last) = result.path.last() {
         if result.winner != Player::None {
