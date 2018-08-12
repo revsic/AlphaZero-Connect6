@@ -10,19 +10,21 @@ flags = tf.app.flags
 flags.DEFINE_float('learning_rate', 1e-3, 'float, learning rate, default 1e-3.')
 flags.DEFINE_float('momentum', 0.9, 'float, beta1 value in Adam, default 0.9.')
 flags.DEFINE_integer('board_size', 15, 'int, size of the board, default 15')
-flags.DEFINE_integer('max_buffer', 10000, 'int, max size of buffer, default 100000')
-flags.DEFINE_integer('start_train', 2000, 'int, start train when the size of buffer over given, default 60000')
-flags.DEFINE_integer('batch_size', 1, 'int, size of batch, default 32')
-flags.DEFINE_integer('mini_batch', 1024, 'int, size of mini-batch, default 2048.')
-flags.DEFINE_integer('ckpt_interval', 100, 'int, interval for writing checkpoint, default 5')
+flags.DEFINE_integer('max_buffer', 100000, 'int, max size of buffer, default 100000')
+flags.DEFINE_integer('start_train', 60000, 'int, start train when the size of buffer over given, default 60000')
+flags.DEFINE_integer('batch_size', 1024, 'int, size of batch, default 1024')
+flags.DEFINE_integer('mini_batch', 2048, 'int, size of mini-batch, default 2048.')
+flags.DEFINE_integer('ckpt_interval', 100, 'int, interval for writing checkpoint, default 100')
 flags.DEFINE_string('name', 'default', 'String, name of model, default `default`.')
-flags.DEFINE_string('summary_dir', '.\weighted\summary', 'String, dir name for saving tensor summary, default `./summary`.')
+flags.DEFINE_string('summary_dir', '.\weighted\summary', 'String, dir name for saving summary, default `./summary`.')
 flags.DEFINE_string('ckpt_dir', '.\weighted\ckpt', 'String, dir name for saving checkpoint, default `./ckpt_dir`.')
 FLAGS = flags.FLAGS
+
 
 def log(msg):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print('[{}] {}'.format(timestamp, msg))
+
 
 def main(_):
     ckpt_path = os.path.join(FLAGS.ckpt_dir, FLAGS.name)
@@ -32,8 +34,8 @@ def main(_):
         writer = tf.summary.FileWriter(os.path.join(FLAGS.summary_dir, FLAGS.name), sess.graph)
 
         param = pyconnect6.default_param()
-        param['num_simulation'] = 10
-        param['num_game_thread'] = 4
+        param['num_simulation'] = 500
+        param['num_game_thread'] = 12
         param['debug'] = True
 
         epoch = 0

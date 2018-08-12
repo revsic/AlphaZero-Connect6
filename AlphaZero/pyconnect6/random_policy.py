@@ -3,12 +3,14 @@ import numpy as np
 
 board_size = 15
 
+
 class RandomPolicy:
     def __call__(self, board):
         size = len(board)
         value = np.random.rand(size)
-        policy = np.random.rand(size, board_size * board_size)
-        return value, policy
+        rand_policy = np.random.rand(size, board_size * board_size)
+        return value, rand_policy
+
 
 policy = RandomPolicy()
 param = pyconnect6.default_param()

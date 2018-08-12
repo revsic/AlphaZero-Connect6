@@ -1,10 +1,13 @@
 import pyconnect6.connect6
 
+
 def self_play(policy):
     return connect6.self_play(policy)
 
+
 def debug(policy):
     return connect6.debug(policy)
+
 
 def default_param():
     return {
@@ -16,6 +19,7 @@ def default_param():
         'debug': False,
         'num_game_thread': 1,
     }
+
 
 def with_param(policy, param):
     return connect6.with_param(policy,

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Buffer(object):
     def __init__(self, max_size, board_size, num_sample):
         self.max_size = max_size
