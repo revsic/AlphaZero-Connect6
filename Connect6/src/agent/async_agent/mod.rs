@@ -3,43 +3,65 @@ extern crate tokio;
 
 use super::agent_impl::*;
 use super::super::policy::*;
-use self::futures::*;
 
-struct Container<P: Policy, F: FnOnce() -> P> {
-    policy_gen: Option<F>,
+use std::sync::mpsc;
+use std::time::Instant;
+use self::futures::future;
+use self::tokio::executor::thread_pool::ThreadPool;
+
+#[cfg(test)]
+mod tests;
+
+pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
+    policy_gen: F,
+    debug: bool,
 }
 
-struct Docker { }
-
-impl<P: Policy, F: FnOnce() -> P> Container<P, F> {
-    fn new(gen: F) -> Container<P, F> {
-        Container {
-            policy_gen: Some(gen),
+impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
+    pub fn new(policy_gen: F) -> AsyncAgent<P, F> {
+        AsyncAgent {
+            policy_gen,
+            debug: false,
         }
     }
-}
 
-impl<P: Policy, F: FnOnce() -> P> Future for Container<P, F> {
-    type Item = RunResult;
-    type Error = String;
-    fn poll(&mut self) -> Result<Async<RunResult>, String> {
-        if let Some(policy_gen) = self.policy_gen.take() {
-            let mut policy = policy_gen();
-            Agent::new(&mut policy).play().map(|x| Async::Ready(x))
-        } else {
-            Err(String::from("container::poll couldn't get policy generator"))
+    pub fn debug(policy_gen: F) -> AsyncAgent<P, F> {
+        AsyncAgent {
+            policy_gen,
+            debug: true,
         }
     }
-}
 
-impl Docker {
-    fn new() -> Docker {
-        Docker {}
-    }
+    pub fn run(&self, num: i32) -> Vec<RunResult> {
+        let thread_pool = ThreadPool::new();
+        let (sender, receiver) = mpsc::channel();
+        for id in 0..num {
+            let debug = self.debug;
+            let policy = (self.policy_gen)();
+            let sender = sender.clone();
+            thread_pool.spawn(future::lazy(move || {
+                let mut policy = policy;
 
-    fn run(num: i32) -> Vec<RunResult> {
-        
+                let now = Instant::now();
+                let res = Agent::new(&mut policy).play();
+                let elapsed = now.elapsed();
 
-        Vec::new()
+                if let Ok(result) = res {
+                    sender.send(result).unwrap();
+                }
+                if debug {
+                    println!("run: {}, elapsed {}.{}s", id, elapsed.as_secs(), elapsed.subsec_millis());
+                }
+                Ok(())
+            }));
+        }
+
+        let mut results = Vec::new();
+        for _ in 0..num {
+            let res = receiver.recv().unwrap();
+            results.push(res);
+        }
+        thread_pool.shutdown();
+        results
     }
 }
