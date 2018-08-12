@@ -5,10 +5,12 @@ pub mod pybind;
 
 #[macro_use]
 extern crate cpython;
+
 use cpython::*;
 
 const BOARD_SIZE: usize = 15;
 const BOARD_CAPACITY: usize = BOARD_SIZE * BOARD_SIZE;
+
 type Board = [[game::Player; BOARD_SIZE]; BOARD_SIZE];
 
 py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
@@ -22,7 +24,7 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
                                                        dirichlet_alpha: f64,
                                                        c_puct: f32,
                                                        debug: bool,
-                                                       num_thread: i32))));
+                                                       num_game_thread: i32))));
     Ok(())
 });
 
@@ -46,34 +48,39 @@ fn with_param(py: Python,
               dirichlet_alpha: f64,
               c_puct: f32,
               debug: bool,
-              num_thread: i32) -> PyResult<PyTuple> {
+              num_game_thread: i32) -> PyResult<PyTuple> {
     let param = pybind::HyperParameter {
         num_simulation,
         num_expansion,
         epsilon,
         dirichlet_alpha,
-        c_puct
+        c_puct,
     };
-    if num_thread == 1 {
+    if num_game_thread == 1 {
         let mut policy = pybind::AlphaZero::with_param(object, param);
         let result =
-            if debug { agent::Agent::new(&mut policy).play() }
-                else { agent::Agent::debug(&mut policy).play() };
+            if debug { agent::Agent::new(&mut policy).play() } else { agent::Agent::debug(&mut policy).play() };
         Ok(result.unwrap().to_py_object(py))
     } else {
-        py.allow_threads(|| {
-            let policy_gen = || pybind::AlphaZero::with_param(object.clone_ref(py), param);
+        let result = py.allow_threads(move || {
+            let policy_gen = || {
+                let object = {
+                    let gil = Python::acquire_gil();
+                    let py = gil.python();
+                    object.clone_ref(py)
+                };
+                pybind::AlphaZero::with_param(object, param)
+            };
             let async_agent =
-            if debug { agent::AsyncAgent::new(policy_gen) }
-                else { agent::AsyncAgent::debug(policy_gen) };
-        })
+                if debug { agent::AsyncAgent::new(policy_gen) } else { agent::AsyncAgent::debug(policy_gen) };
+            let result = async_agent.run(num_game_thread);
 
-
-        let result = async_agent.run(num_thread).iter()
-            .map(|x| x.to_py_object(py).into_object())
-            .collect::<Vec<_>>();
-
+            let gil = Python::acquire_gil();
+            let py = gil.python();
+            result.iter()
+                .map(|x| x.to_py_object(py).into_object())
+                .collect::<Vec<_>>()
+        });
         Ok(PyTuple::new(py, result.as_slice()))
     }
-
 }
