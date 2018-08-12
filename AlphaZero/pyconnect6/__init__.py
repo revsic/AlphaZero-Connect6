@@ -14,6 +14,7 @@ def default_param():
         'dirichlet_alpha': 0.03,
         'c_puct': 1,
         'debug': False,
+        'num_game_thread': 1,
     }
 
 def with_param(policy, param):
@@ -23,4 +24,5 @@ def with_param(policy, param):
                               param['epsilon'],
                               param['dirichlet_alpha'],
                               param['c_puct'],
-                              param['debug'])
+                              param['debug'],
+                              param['num_game_thread'])
