@@ -20,7 +20,7 @@ mod tests;
 #[derive(Clone, Debug)]
 struct Node {
     visit: i32,
-    value: f32, //probability of black win
+    value: f32,
     q_value: f32,
     q_sum: f32,
     n_prob: f32,
@@ -67,6 +67,7 @@ impl Node {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct HyperParameter {
     pub num_simulation: i32,
     pub num_expansion: usize,
@@ -76,7 +77,7 @@ pub struct HyperParameter {
 }
 
 impl HyperParameter {
-    fn default() -> HyperParameter {
+    pub fn default() -> HyperParameter {
         HyperParameter {
             num_simulation: 800,
             num_expansion: 1,
@@ -87,27 +88,24 @@ impl HyperParameter {
     }
 }
 
-pub struct AlphaZero<'a> {
-    py: Python<'a>,
+pub struct AlphaZero {
     obj: PyObject,
     map: HashMap<u64, Node>,
     param: HyperParameter,
 }
 
-impl<'a> AlphaZero<'a> {
-    pub fn new(py: Python<'a>, obj: PyObject) -> AlphaZero {
+impl AlphaZero {
+    pub fn new(obj: PyObject) -> AlphaZero {
         let param = HyperParameter::default();
         AlphaZero {
-            py,
             obj,
             map: HashMap::new(),
             param,
         }
     }
 
-    pub fn with_param(py: Python<'a>, obj: PyObject, param: HyperParameter) -> AlphaZero {
+    pub fn with_param(obj: PyObject, param: HyperParameter) -> AlphaZero {
         AlphaZero {
-            py,
             obj,
             map: HashMap::new(),
             param,
@@ -115,20 +113,26 @@ impl<'a> AlphaZero<'a> {
     }
 
     fn get_from(&self, boards: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
-        let pylist = pylist_from_multiple(self.py, boards);
-        let res = pycheck!(self.obj.call(self.py, (pylist, ), None), "alpha_zero::get_from couldn't call pyobject");
-        let pytuple = pycheck!(res.cast_into::<PyTuple>(self.py), "alpha_zero::get_from couldn't cast into pytuple");
+        let (value_vec, policy_vec) = {
+            let gil = Python::acquire_gil();
+            let py = gil.python();
 
-        let value = pytuple.get_item(self.py, 0);
-        let policy = pytuple.get_item(self.py, 1);
+            let pylist = pylist_from_multiple(py, boards);
+            let res = pycheck!(self.obj.call(py, (pylist, ), None), "alpha_zero::get_from couldn't call pyobject");
+            let pytuple = pycheck!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
 
-        let value_vec = pyseq_to_vec(self.py, value)?;
-        let policy_vec = policy.cast_into::<PySequence>(self.py).ok()?
-            .iter(self.py).ok()?
-            .filter_map(|x| x.ok())
-            .filter_map(|x| pyseq_to_vec(self.py, x))
-            .collect::<Vec<Vec<f32>>>();
+            let value = pytuple.get_item(py, 0);
+            let policy = pytuple.get_item(py, 1);
 
+            let value_vec = pyseq_to_vec(py, value)?;
+            let policy_vec = policy.cast_into::<PySequence>(py).ok()?
+                .iter(py).ok()?
+                .filter_map(|x| x.ok())
+                .filter_map(|x| pyseq_to_vec(py, x))
+                .collect::<Vec<Vec<f32>>>();
+
+            (value_vec, policy_vec)
+        };
         let alpha = self.param.dirichlet_alpha;
         let epsilon = self.param.epsilon;
         let mut masked = Vec::new();
@@ -250,12 +254,12 @@ impl<'a> AlphaZero<'a> {
                 for ((value, policy), hashed) in values.iter()
                     .zip(policies.iter())
                     .zip(hashes.iter())
-                {
-                    let node = self.map.get_mut(hashed).unwrap();
-                    node.visit += 1;
-                    node.value = *value;
-                    node.prob = *policy;
-                }
+                    {
+                        let node = self.map.get_mut(hashed).unwrap();
+                        node.visit += 1;
+                        node.value = *value;
+                        node.prob = *policy;
+                    }
             } else {
                 panic!("alpha_zero::expand couldn't get from python object")
             }
@@ -327,7 +331,7 @@ fn hash(board: &Board) -> u64 {
     hasher.finish()
 }
 
-impl<'a> Policy for AlphaZero<'a> {
+impl Policy for AlphaZero {
     fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
         let simulate = Simulate::from_game(game);
         self.init(&simulate);
