@@ -34,8 +34,8 @@ impl Node {
     fn prob(player: &Player) -> (fn(&Node) -> f32) {
         match *player {
             Player::None => panic!("couldn't calculate none user's prob"),
-            Player::Black => |node: &Node| node.black_win as f32 / node.visit as f32,
-            Player::White => |node: &Node| 1. - (node.black_win as f32 / node.visit as f32),
+            Player::Black => |node: &Node| node.black_win as f32 / (1. + node.visit as f32),
+            Player::White => |node: &Node| 1. - (node.black_win as f32 / (1. + node.visit as f32)),
         }
     }
 }
