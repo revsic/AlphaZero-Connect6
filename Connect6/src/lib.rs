@@ -51,8 +51,8 @@ fn self_play(py: Python,
     if num_game_thread == 1 {
         let mut policy = pybind::AlphaZero::with_param(object, param);
         let result =
-            if debug { agent::Agent::new(&mut policy).play() }
-                else { agent::Agent::debug(&mut policy).play() };
+            if debug { agent::Agent::debug(&mut policy).play() }
+                else { agent::Agent::new(&mut policy).play() };
         Ok(result.unwrap().to_py_object(py))
     } else {
         let result = py.allow_threads(move || {
@@ -65,8 +65,8 @@ fn self_play(py: Python,
                 pybind::AlphaZero::with_param(object, param)
             };
             let async_agent =
-                if debug { agent::AsyncAgent::new(policy_gen) }
-                    else { agent::AsyncAgent::debug(policy_gen) };
+                if debug { agent::AsyncAgent::debug(policy_gen) }
+                    else { agent::AsyncAgent::new(policy_gen) };
             async_agent.run(num_game_thread)
         });
         let py_result = result.iter()
