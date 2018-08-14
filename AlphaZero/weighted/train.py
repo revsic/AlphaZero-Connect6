@@ -33,22 +33,23 @@ def main(_):
     with tf.Session() as sess:
         if FLAGS.load_ckpt != 0:
             policy = WeightedPolicy.load(sess, ckpt_path + str(FLAGS.load_ckpt))
+            param = pyconnect6.load_param(ckpt_path)
         else:
             policy = WeightedPolicy(sess, FLAGS.board_size, FLAGS.learning_rate, FLAGS.momentum)
             sess.run(tf.global_variables_initializer())
+            param = pyconnect6.default_param()
+
+            param['num_simulation'] = 500
+            param['num_game_thread'] = 12
+            param['debug'] = True
 
         writer = tf.summary.FileWriter(os.path.join(FLAGS.summary_dir, FLAGS.name), sess.graph)
-
-        param = pyconnect6.default_param()
-        param['num_simulation'] = 500
-        param['num_game_thread'] = 12
-        param['debug'] = True
 
         num_game = 0
         epoch = FLAGS.load_ckpt
         while True:
             num_game += 1
-            result = pyconnect6.with_param(policy, param)
+            result = pyconnect6.self_play(policy, param)
             for game_result in result:
                 buffer.push_game(game_result)
             log('self-play async game#{}'.format(num_game))
@@ -65,6 +66,7 @@ def main(_):
 
                 if epoch % FLAGS.ckpt_interval == 0:
                     policy.dump(ckpt_path + str(epoch))
+                    pyconnect6.dump_param(ckpt_path, param)
                     log('ckpt saved')
 
                 log('epoch#{}'.format(epoch))
