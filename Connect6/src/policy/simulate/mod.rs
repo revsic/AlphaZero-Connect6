@@ -98,6 +98,14 @@ impl Simulate {
         true
     }
 
+    pub fn next_turn(&self) -> Player {
+        if self.num_remain <= 1 {
+            self.turn.switch()
+        } else {
+            self.turn
+        }
+    }
+
     pub fn simulate(&self, row: usize, col: usize) -> Simulate {
         let mut node = self.node.borrow_mut();
         let item = node.possible.iter()

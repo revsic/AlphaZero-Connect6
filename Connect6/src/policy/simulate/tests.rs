@@ -64,6 +64,18 @@ mod simulate_tests {
     }
 
     #[test]
+    fn next_turn() {
+        let mut simulate = Simulate::new();
+        assert_eq!(simulate.next_turn(), Player::White);
+
+        simulate.simulate_in(0, 0);
+        assert_eq!(simulate.next_turn(), Player::White);
+
+        simulate.simulate_in(0, 1);
+        assert_eq!(simulate.next_turn(), Player::Black);
+    }
+
+    #[test]
     fn test_simulate() {
         let game = Game::new();
         let simulate = Simulate::from_game(&game);
