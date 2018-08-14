@@ -85,6 +85,7 @@ impl<'a> Agent<'a> {
             }
         }
 
+        if self.debug { game.print(&mut io::stdout()).unwrap(); }
         Ok(RunResult { winner, path })
     }
 }
