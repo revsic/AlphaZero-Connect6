@@ -19,10 +19,11 @@ mod tests;
 
 #[derive(Clone, Debug)]
 struct Node {
+    turn: Player,
     visit: i32,
     value: f32,
-    q_value: f32,
     q_sum: f32,
+    q_value: f32,
     n_prob: f32,
     prob: [[f32; BOARD_SIZE]; BOARD_SIZE],
     num_player: usize,
@@ -36,10 +37,11 @@ impl Node {
             .map(|x| x.iter().filter(|x| **x != Player::None).count())
             .sum();
         Node {
+            turn: Player::None,
             visit: 0,
             value: 0.,
-            q_value: 0.,
             q_sum: 0.,
+            q_value: 0.,
             n_prob: 0.,
             prob: [[0.; BOARD_SIZE]; BOARD_SIZE],
             num_player,
@@ -50,10 +52,11 @@ impl Node {
 
     fn new_with_num(board: &Board, num_player: usize) -> Node {
         Node {
+            turn: Player::None,
             visit: 0,
             value: 0.,
-            q_value: 0.,
             q_sum: 0.,
+            q_value: 0.,
             n_prob: 0.,
             prob: [[0.; BOARD_SIZE]; BOARD_SIZE],
             num_player,
@@ -112,13 +115,15 @@ impl AlphaZero {
         }
     }
 
-    fn get_from(&self, boards: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
+    fn get_from(&self, next_turn: Player, boards: &Vec<Board>)
+        -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let (value_vec, policy_vec) = {
             let gil = Python::acquire_gil();
             let py = gil.python();
 
-            let pylist = pylist_from_multiple(py, boards);
-            let res = pycheck!(self.obj.call(py, (pylist, ), None), "alpha_zero::get_from couldn't call pyobject");
+            let py_turn = (next_turn as i32).to_py_object(py);
+            let py_board = pylist_from_multiple(py, boards);
+            let res = pycheck!(self.obj.call(py, (py_turn, py_board), None), "alpha_zero::get_from couldn't call pyobject");
             let pytuple = pycheck!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
 
             let value = pytuple.get_item(py, 0);
@@ -133,57 +138,51 @@ impl AlphaZero {
 
             (value_vec, policy_vec)
         };
-        let alpha = self.param.dirichlet_alpha;
-        let epsilon = self.param.epsilon;
-        let mut masked = Vec::new();
+
+        let mut vec = Vec::new();
         for (board, policy) in boards.iter().zip(policy_vec.iter()) {
-            let mut count = 0;
-            let mut vec = Vec::new();
             let mut temporal = [[0.; BOARD_SIZE]; BOARD_SIZE];
             for i in 0..BOARD_SIZE {
                 for j in 0..BOARD_SIZE {
                     let mask = (board[i][j] == Player::None) as i32 as f32;
                     temporal[i][j] = policy[i * BOARD_SIZE + j] * mask;
-
-                    if mask != 0. {
-                        count += 1;
-                        vec.push((i, j));
-                    }
                 }
             }
-            if count > 1 {
-                let mut dirichlet = Dirichlet::new_with_param(alpha, count);
-                let sample = dirichlet.sample(&mut rand::thread_rng());
-                for (i, j) in vec {
-                    count -= 1;
-                    temporal[i][j] = (1. - epsilon) * temporal[i][j] + epsilon * sample[count] as f32;
-                }
-            }
-            masked.push(temporal);
+            vec.push(temporal)
         }
-        Some((value_vec, masked))
+        Some((value_vec, vec))
     }
 
     fn maximum_from(&self, sim: &Simulate) -> Option<u64> {
+        let next_turn = sim.next_turn();
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
         let child_nodes = tree_node.next_node.iter()
-            .map(|x| self.map.get(x).unwrap()).collect::<Vec<_>>();
+            .map(|x| self.map.get(x).unwrap())
+            .filter(|x| x.turn == next_turn)
+            .collect::<Vec<_>>();
+        if child_nodes.is_empty() {
+            return None
+        } else if child_nodes.len() == 1 {
+            return Some(hash(&child_nodes[0].board))
+        }
+
+        let epsilon = self.param.epsilon;
+        let alpha = self.param.dirichlet_alpha;
+        let dirichlet = Dirichlet::new_with_param(alpha, child_nodes.len());
 
         let c_puct = self.param.c_puct;
         let visit_sum = child_nodes.iter().map(|x| x.visit).sum::<i32>() as f32;
-        let prob = |unary: fn(f32) -> f32|
-            move |node: &Node| unary(node.q_value)
-                + c_puct * unary(node.n_prob) * (visit_sum - node.visit as f32).sqrt() / (1. + node.visit as f32);
-
-        let prob = match sim.turn {
-            Player::None => panic!("alpha_zero::maximum_from couldn't get prob from none"),
-            Player::Black => prob(|x| -x),
-            Player::White => prob(|x| x),
+        let puct = |node: &Node, noise: &f64| {
+            let prob = epsilon * *noise as f32 + (1. - epsilon) * node.n_prob;
+            let visit = node.visit as f32;
+            prob * (visit_sum - visit).sqrt() / (1. + visit)
         };
+        let prob = |(node, noise): &(&Node, f64)| node.q_value + c_puct * puct(node, noise);
         child_nodes.into_iter()
+            .zip(dirichlet.sample(&mut thread_rng()))
             .max_by(|n1, n2| prob(n1).partial_cmp(&prob(n2)).unwrap())
-            .map(|x| hash(&x.board))
+            .map(|x| hash(&x.0.board))
     }
 
     fn init(&mut self, sim: &Simulate) {
@@ -191,9 +190,9 @@ impl AlphaZero {
         let hashed = hash(&node.board);
 
         if self.map.get(&hashed).is_none() {
-            if let Some((value, policy)) = self.get_from(&vec![node.board]) {
+            if let Some((value, policy)) = self.get_from(sim.turn, &vec![node.board]) {
                 let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
-
+                entry.turn = sim.turn;
                 entry.value = value[0];
                 entry.prob = policy[0];
             } else {
@@ -205,13 +204,13 @@ impl AlphaZero {
     fn select(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
-        if tree_node.next_node.is_empty() {
-            return None;
+        let hashed = self.maximum_from(sim);
+        if let Some(hashed) = hashed {
+            let node = self.map.get(&hashed).unwrap();
+            diff_board(&node.board, &tree_node.board)
+        } else {
+            None
         }
-
-        let hashed = self.maximum_from(sim).unwrap();
-        let node = self.map.get(&hashed).unwrap();
-        return diff_board(&node.board, &tree_node.board);
     }
 
     fn expand(&mut self, sim: &Simulate) {
@@ -228,29 +227,34 @@ impl AlphaZero {
             (parent_node.num_player + 1, parent_node.prob)
         };
         let mut idx = 0;
+        let next_turn = sim.next_turn();
         let mut hashes = Vec::new();
         let mut boards = Vec::new();
         let n_expansion = min(possible.len(), self.param.num_expansion);
-        for (row, col) in possible.iter() {
-            let board = sim.simulate(*row, *col).board();
+        for (row, col) in possible.into_iter() {
+            let board = sim.simulate(row, col).board();
             let hashed = hash(&board);
-            { // borrow mut self.map: HashMap
-                let parent_node = self.map.get_mut(&parent_hashed).unwrap();
-                parent_node.next_node.push(hashed);
-            }
-            if self.map.get(&hashed).is_none() {
-                self.map.insert(hashed, Node::new_with_num(&board, child_num));
+            hashes.push(hashed);
+
+            let entry = self.map.entry(hashed).or_insert(Node::new_with_num(&board, child_num));
+            if entry.turn != next_turn {
+                entry.turn = next_turn;
                 if idx < n_expansion {
                     boards.push(board);
-                    hashes.push(hashed);
                 }
                 idx += 1;
             }
-            let node = self.map.get_mut(&hashed).unwrap();
-            node.n_prob = prob[*row][*col];
+            entry.n_prob = prob[row][col];
         }
+        { // borrow mut self.map: HashMap
+            let parent_node = self.map.get_mut(&parent_hashed).unwrap();
+            for hashed in hashes.iter() {
+                parent_node.next_node.push(*hashed);
+            }
+        }
+
         if boards.len() > 0 {
-            if let Some((values, policies)) = self.get_from(&boards) {
+            if let Some((values, policies)) = self.get_from(next_turn, &boards) {
                 for ((value, policy), hashed) in values.iter()
                     .zip(policies.iter())
                     .zip(hashes.iter())
@@ -308,10 +312,12 @@ impl AlphaZero {
     }
 
     fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
+        let next_turn = sim.next_turn();
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
         let child_node = tree_node.next_node.iter()
             .map(|x| self.map.get(x).unwrap())
+            .filter(|x| x.turn == next_turn)
             .collect::<Vec<_>>();
 
         let visit_sum = child_node.iter().map(|x| x.visit).sum::<i32>() as f32;
