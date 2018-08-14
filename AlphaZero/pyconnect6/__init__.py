@@ -5,8 +5,8 @@ def self_play(policy):
     return connect6.self_play(policy)
 
 
-def debug(policy):
-    return connect6.debug(policy)
+def play_with(policy):
+    return connect6.play_with(policy)
 
 
 def default_param():

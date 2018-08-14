@@ -33,3 +33,7 @@ class Buffer(object):
             poses.append(pos)
 
         return values, boards, poses
+
+    def clear_half(self):
+        length = len(self.buffer) // 2
+        self.buffer = self.buffer[length:]
