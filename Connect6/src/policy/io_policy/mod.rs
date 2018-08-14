@@ -20,8 +20,6 @@ impl<'a, 'b> IoPolicy<'a, 'b> {
 
 impl<'a, 'b> Policy for IoPolicy<'a, 'b> {
     fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
-        game.print(self.writer).unwrap();
-
         let mut pos = None;
         loop {
             let mut buffer = [0; 10];
