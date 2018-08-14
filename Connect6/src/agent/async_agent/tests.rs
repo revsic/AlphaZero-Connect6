@@ -10,8 +10,8 @@ use self::cpython::*;
 use std::time::Instant;
 
 py_class!(class PyPolicy |py| {
-    def __call__(&self, arg: PyObject) -> PyResult<PyObject> {
-        let len = arg.cast_into::<PyList>(py)?.len(py);
+    def __call__(&self, _turn: PyObject, boards: PyObject) -> PyResult<PyObject> {
+        let len = boards.cast_into::<PyList>(py)?.len(py);
 
         let value = (0..len)
             .map(|_| rand::random::<f32>().to_py_object(py).into_object())
