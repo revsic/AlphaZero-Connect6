@@ -1,3 +1,4 @@
+"""Baseline for using pyconnect6 modules, example by random policy"""
 import pyconnect6
 import numpy as np
 
@@ -5,6 +6,16 @@ board_size = 15
 
 
 class RandomPolicy:
+    """ Random Policy for introducing pyconnect6 usage.
+
+    Policy must have method `__call__(self, board): (value, prob)`,
+        where board is num_simulation by board_capacity size 2D list contains integers,
+        where board_capacity = board_size ** 2
+    `board[i]` represent board states and each cell represent { -1: Black Stone, 0: Empty Cell, 1: White Stone }
+    `value` is `num_simulation` size list contains floats, represent probability of winning.
+    `prob` is num_simulation by board_capacity size 2D list contains floats,
+        represent probability of choosing each cell.
+    """
     def __call__(self, board):
         size = len(board)
         value = np.random.rand(size)
@@ -14,7 +25,11 @@ class RandomPolicy:
 
 policy = RandomPolicy()
 param = pyconnect6.default_param()
+param['num_simulation'] = 1
+param['num_game_thread'] = 1
 param['debug'] = True
 
-winner, path = pyconnect6.with_param(policy, param)
+# pass policy to pyconnect6.self_play,
+# and connect6::self_play method will be use given policy to make choice
+winner, path = pyconnect6.self_play(policy, param)
 print('winner {}, len {}'.format(winner, len(path)))

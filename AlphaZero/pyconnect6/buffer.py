@@ -2,6 +2,13 @@ import numpy as np
 
 
 class Buffer(object):
+    """ Replay Buffer for Training AlphaZero
+
+    Attributes:
+        max_size: int, max size of buffer
+        board_size: int, size of the board
+        num_sample: int, number of replay data return from method `sample`
+    """
     def __init__(self, max_size, board_size, num_sample):
         self.max_size = max_size
         self.board_size = board_size
@@ -13,6 +20,7 @@ class Buffer(object):
         return len(self.buffer)
 
     def push_game(self, game_result):
+        """push game result to the buffer, each element consist of (winner, board, position)"""
         win, path = game_result
 
         for (_, board, pos) in path:
@@ -24,6 +32,7 @@ class Buffer(object):
             self.buffer = self.buffer[-self.max_size:]
 
     def sample(self):
+        """sample from buffer, return `self.num_sample` values"""
         index_set = np.random.choice(len(self.buffer), self.num_sample, replace=False)
         values, boards, poses = [], [], []
         for i in index_set:
