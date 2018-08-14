@@ -10,6 +10,8 @@ flags = tf.app.flags
 flags.DEFINE_float('learning_rate', 1e-3, 'float, learning rate, default 1e-3.')
 flags.DEFINE_float('momentum', 0.9, 'float, beta1 value in Adam, default 0.9.')
 flags.DEFINE_integer('board_size', 15, 'int, size of the board, default 15')
+flags.DEFINE_integer('num_simulation', 800, 'int, number of mcts simulation per turn, default 800')
+flags.DEFINE_integer('num_game_thread', 12, 'int, number of thread asynchronously run self-play, default 12')
 flags.DEFINE_integer('max_buffer', 100000, 'int, max size of buffer, default 100000')
 flags.DEFINE_integer('start_train', 40000, 'int, start train when the size of buffer over given, default 40000')
 flags.DEFINE_integer('batch_size', 1024, 'int, size of batch, default 1024')
@@ -39,9 +41,8 @@ def main(_):
             sess.run(tf.global_variables_initializer())
             param = pyconnect6.default_param()
 
-            param['num_simulation'] = 500
-            param['num_game_thread'] = 12
-            param['debug'] = True
+            param['num_simulation'] = FLAGS.num_simulation
+            param['num_game_thread'] = FLAGS.num_game_thread
 
         writer = tf.summary.FileWriter(os.path.join(FLAGS.summary_dir, FLAGS.name), sess.graph)
 
@@ -50,8 +51,11 @@ def main(_):
         while True:
             num_game += 1
             result = pyconnect6.self_play(policy, param)
-            for game_result in result:
-                buffer.push_game(game_result)
+            if param['num_game_thread'] == 1:
+                buffer.push_game(result)
+            else:
+                for game_result in result:
+                    buffer.push_game(game_result)
             log('self-play async game#{}'.format(num_game))
 
             if len(buffer) > FLAGS.start_train:
