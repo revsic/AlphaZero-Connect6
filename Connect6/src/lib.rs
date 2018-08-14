@@ -16,7 +16,7 @@ type Board = [[game::Player; BOARD_SIZE]; BOARD_SIZE];
 py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     try!(m.add(py, "__doc__", "This module is implemented in Rust, for Simulating Connect6"));
     try!(m.add(py, "self_play", py_fn!(py, self_play(object: PyObject))));
-    try!(m.add(py, "debug", py_fn!(py, debug(object: PyObject))));
+    try!(m.add(py, "play_with", py_fn!(py, play_with(object: PyObject))));
     try!(m.add(py, "with_param", py_fn!(py, with_param(object: PyObject,
                                                        num_simulation: i32,
                                                        num_expansion: usize,
@@ -34,9 +34,13 @@ fn self_play(py: Python, object: PyObject) -> PyResult<PyTuple> {
     Ok(result.unwrap().to_py_object(py))
 }
 
-fn debug(py: Python, object: PyObject) -> PyResult<PyTuple> {
-    let mut policy = pybind::AlphaZero::new(object);
-    let result = agent::Agent::debug(&mut policy).play();
+fn play_with(py: Python, object: PyObject) -> PyResult<PyTuple> {
+    let mut stdin = std::io::stdin();
+    let mut stdout = std::io::stdout();
+    let mut io_policy = policy::IoPolicy::new(&mut stdin, &mut stdout);
+    let mut py_policy = pybind::AlphaZero::new(object);
+    let mut multi_policy = policy::MultiPolicy::new(&mut py_policy, &mut io_policy);
+    let result = agent::Agent::new(&mut multi_policy).play();
     Ok(result.unwrap().to_py_object(py))
 }
 
