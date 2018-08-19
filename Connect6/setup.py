@@ -19,7 +19,7 @@ import sys
 from setuptools import setup
 
 try:
-    from setuptools_rust import RustExtension
+    from setuptools_rust import Binding, RustExtension
 except ImportError:
     import subprocess
 
@@ -28,13 +28,14 @@ except ImportError:
         print('Please install setuptools-rust package')
         raise SystemExit(errno)
     else:
-        from setuptools_rust import RustExtension
+        from setuptools_rust import Binding, RustExtension
 
 setup(
     name='connect6',
     version='0.1.0',
-    packages=['..\\Connect6'],
-    rust_extensions=[RustExtension('connect6', 'Cargo.toml')],
-    setup_requires=['setuptools', 'setuptools_rust'],
+    packages=['pyconnect6'],
+    rust_extensions=[RustExtension('pyconnect6.connect6',
+                                   'Cargo.toml',
+                                   binding=Binding.RustCPython)],
     zip_safe=False,
 )
