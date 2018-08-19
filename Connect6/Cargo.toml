@@ -11,7 +11,4 @@ crate-type = ["dylib"]
 rand = { git = "https://github.com/revsic/rand" }
 futures = "0.1.23"
 tokio = "0.1.7"
-
-[dependencies.cpython]
-version = "0.2.0"
-features = ["extension-module"]
+cpython = "0.2.0"
