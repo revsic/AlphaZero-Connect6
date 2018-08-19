@@ -7,9 +7,10 @@ def self_play(policy, param=None):
 
     Args:
         policy: callable object, connect6::self_play will play game with given policy to make choice
-            IT MUST CONTAIN METHOD `__call__(self, board): (value, prob)`,
+            IT MUST CONTAIN METHOD `__call__(self, turn, board): (value, prob)`,
             because connect6::self_play call object with cpython and get proper values from policy.
 
+            turn: current turn, { -1: Black, 0: None, 1: White }
             board: param['num_simulation'] by board_capacity size 2D list, where board_capacity = board_size ** 2
                 each board[i] represent board status reshaped as first dimension.
                 each cell represent { -1: Black Stone Exist, 0: Empty Cell, 1: White Stone Exist }
