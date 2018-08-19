@@ -8,7 +8,7 @@ name = "connect6"
 crate-type = ["dylib"]
 
 [dependencies]
-rand = { git = "https://github.com/rust-lang-nursery/rand" }
+rand = { git = "https://github.com/revsic/rand" }
 futures = "0.1.23"
 tokio = "0.1.7"
 
