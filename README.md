@@ -20,7 +20,7 @@ To install lib `connect6`, rust compiler is required, [rustup](https://rustup.rs
 ```
 curl https://sh.rustup.rs -sSf | sh  #for linux user
 ```
-Then install connect6 with [setup.py](Connect6/setup.py).
+Install connect6 with [setup.py](Connect6/setup.py).
 ```
 cd Connect6; python setup.py build; pyton setup.py install;
 ```
