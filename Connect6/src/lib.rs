@@ -1,3 +1,34 @@
+//! [Rust](https://www.rust-lang.org) bindings for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
+//!
+//! This crate consists of several modules, agent, game, policy, pybind.
+//! Module `game` is implementation of game [Connect6](https://en.wikipedia.org/wiki/Connect6).
+//! Module `agent` is for playing game with given policy.
+//! Module `policy` define 'How to play game' like user selection, random play, mcts etc..
+//! Module `pybind` is rust binding for playing connect6 with python interface.
+//!
+//! In module `pybind::py_policy`, mcts part of [AlphaZero](https://arxiv.org/abs/1712.01815) is implemented as struct `AlphaZero`.
+//! We can join AlphaZero just implement callable object with method `__call__(self, turn, board): (value, prob)`.
+//! It provides MCTS hyper parameter control and multi thread asynchronous self-play.
+//!
+//! # Examples
+//! ```
+//! import connect6
+//! import numpy as np
+//!
+//! board_size = 15
+//! play_result = connect6.self_play(
+//!     lambda turn, board: np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2)
+//!     10,     # num_simulation
+//!     1,      # num_expansion
+//!     0.25,   # epsilon
+//!     0.03,   # dirichlet_alpha
+//!     1,      # c_puct
+//!     True,   # debug
+//!     1)      # num_game_thread
+//!
+//! win, path = play_result
+//! print(win)
+//! ```
 pub mod agent;
 pub mod game;
 pub mod policy;
@@ -32,6 +63,24 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     Ok(())
 });
 
+/// Returns Connect6 self-playing results with given python policy and hyper parameters
+///
+/// # Arguments
+///
+/// * `py` - Python GIL, provided by rust-cpython.
+/// * `object` - PyObject, callable object for AlphaZero python policy.
+/// * `num_simulation` - i32, number of simulations for each turn.
+/// * `num_expansion` - usize, number of child node expansion per simulation.
+/// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
+/// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
+/// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS
+/// * `debug` - bool, enable debug mode. if enable, selection and board status will be printed
+/// * `num_game_thread` - i32, number of threads asynchronously self-playing connect6
+///
+/// # Panics
+///
+/// If PyObject isn't callable object, pybind::py_policy::AlphaZero::get_from will panic
+///
 fn self_play(py: Python,
              object: PyObject,
              num_simulation: i32,
@@ -76,6 +125,22 @@ fn self_play(py: Python,
     }
 }
 
+/// Returns Connect6 results with given python policy and user selection as io_policy
+///
+/// # Arguments
+///
+/// * `py` - Python GIL, provided by rust-cpython.
+/// * `object` - PyObject, callable object for AlphaZero python policy.
+/// * `num_simulation` - i32, number of simulations for each turn.
+/// * `num_expansion` - usize, number of child node expansion per simulation.
+/// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
+/// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
+/// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS
+///
+/// # Panics
+///
+/// If PyObject isn't callable object, pybind::py_policy::AlphaZero::get_from will panic
+///
 fn play_with(py: Python,
              object: PyObject,
              num_simulation: i32,
