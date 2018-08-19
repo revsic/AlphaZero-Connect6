@@ -14,11 +14,11 @@
 //!
 //! # Examples
 //! ```
-//! import connect6
+//! import pyconnect6
 //! import numpy as np
 //!
 //! board_size = 15
-//! play_result = connect6.self_play(
+//! play_result = pyconnect6.self_play(
 //!     lambda turn, board: np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2)
 //!     10,     # num_simulation
 //!     1,      # num_expansion
