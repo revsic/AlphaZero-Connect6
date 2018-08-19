@@ -65,8 +65,8 @@ def main(_):
             if len(buffer) > FLAGS.start_train:
                 epoch += 1
                 for _ in range(FLAGS.batch_size):
-                    value, board, pos = buffer.sample()
-                    policy.train(board, value, pos)
+                    win, player, board, pos = buffer.sample()
+                    policy.train(player, board, win, pos)
 
                 value, board, pos = buffer.sample()
                 summary = policy.inference(policy.summary, board, value, pos)
