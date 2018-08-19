@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://revsic.github.io/AlphaZero-Connect6/")]
+// #![doc(html_logo_url = "https://raw.githubusercontent.com/revsic/AlphaZero-Connect6/master/logo.png")]
 //! [Rust](https://www.rust-lang.org) bindings for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
 //!
 //! This crate consists of several modules, agent, game, policy, pybind.
