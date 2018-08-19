@@ -22,9 +22,11 @@ def main(_):
     ckpt_path = os.path.join(FLAGS.ckpt_dir, FLAGS.name)
     with tf.Session() as sess:
         if FLAGS.load_ckpt != 0:
+            # load ckpt
             policy = WeightedPolicy.load(sess, ckpt_path + str(FLAGS.load_ckpt))
             param = pyconnect6.load_param(ckpt_path)
         else:
+            # initialize new
             policy = WeightedPolicy(sess, FLAGS.board_size, 0, 0)
             param = pyconnect6.default_param()
             sess.run(tf.global_variables_initializer())
