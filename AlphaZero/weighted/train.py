@@ -34,9 +34,11 @@ def main(_):
     buffer = Buffer(FLAGS.max_buffer, FLAGS.board_size, FLAGS.mini_batch)
     with tf.Session() as sess:
         if FLAGS.load_ckpt != 0:
+            # load ckpt
             policy = WeightedPolicy.load(sess, ckpt_path + str(FLAGS.load_ckpt))
             param = pyconnect6.load_param(ckpt_path)
         else:
+            # initialize new
             policy = WeightedPolicy(sess, FLAGS.board_size, FLAGS.learning_rate, FLAGS.momentum)
             sess.run(tf.global_variables_initializer())
             param = pyconnect6.default_param()
@@ -52,8 +54,10 @@ def main(_):
             num_game += 1
             result = pyconnect6.self_play(policy, param)
             if param['num_game_thread'] == 1:
+                # single game_result return
                 buffer.push_game(result)
             else:
+                # multiple game_result return
                 for game_result in result:
                     buffer.push_game(game_result)
             log('self-play async game#{}'.format(num_game))
@@ -69,11 +73,13 @@ def main(_):
                 writer.add_summary(summary, global_step=epoch)
 
                 if epoch % FLAGS.ckpt_interval == 0:
+                    # create checkpoint with current epoch
                     policy.dump(ckpt_path + str(epoch))
                     pyconnect6.dump_param(ckpt_path, param)
                     log('ckpt saved')
 
                 log('epoch#{}'.format(epoch))
+                # clear half of the buffer
                 buffer.clear_half()
 
 
