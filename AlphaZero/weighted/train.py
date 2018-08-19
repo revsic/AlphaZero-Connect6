@@ -68,8 +68,8 @@ def main(_):
                     win, player, board, pos = buffer.sample()
                     policy.train(player, board, win, pos)
 
-                value, board, pos = buffer.sample()
-                summary = policy.inference(policy.summary, board, value, pos)
+                win, player, board, pos = buffer.sample()
+                summary = policy.inference(policy.summary, player, board, win, pos)
                 writer.add_summary(summary, global_step=epoch)
 
                 if epoch % FLAGS.ckpt_interval == 0:
