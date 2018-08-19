@@ -20,12 +20,12 @@ class Buffer(object):
         return len(self.buffer)
 
     def push_game(self, game_result):
-        """push game result to the buffer, each element consist of (player, board, position)"""
+        """push game result to the buffer, each element consist of (winner, player, board, position)"""
         win, path = game_result
         for (player, board, pos) in path:
             row, col = pos
             pos = row * self.board_size + col
-            self.buffer.append((player, board, pos))
+            self.buffer.append((win, player, board, pos))
 
         if len(self.buffer) > self.max_size:
             self.buffer = self.buffer[-self.max_size:]
@@ -33,14 +33,15 @@ class Buffer(object):
     def sample(self):
         """sample from buffer, return `self.num_sample` values"""
         index_set = np.random.choice(len(self.buffer), self.num_sample, replace=False)
-        values, boards, poses = [], [], []
+        wins, players, boards, policies = [], [], [], []
         for i in index_set:
-            value, board, pos = self.buffer[i]
-            values.append(value)
+            win, player, board, policy = self.buffer[i]
+            wins.append(win)
+            players.append(player)
             boards.append(board)
-            poses.append(pos)
+            policies.append(policy)
 
-        return values, boards, poses
+        return wins, players, boards, policies
 
     def clear_half(self):
         length = len(self.buffer) // 2
