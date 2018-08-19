@@ -16,28 +16,28 @@ Suppose to build Connect6 at Rust 1.28.0 or later.
 
 ## Usage
 
-To use lib `connect6`, first install rust compiler [rustup](https://rustup.rs).
-
+To install lib `connect6`, rust compiler is required, [rustup](https://rustup.rs).
 ```
-python setup.py build; pyton setup.py install;
+curl https://sh.rustup.rs -sSf | sh  #for linux user
 ```
-
 Then install connect6 with [setup.py](Connect6/setup.py).
+```
+cd Connect6; python setup.py build; pyton setup.py install;
+```
+Example program playing connect6 with random policy.
 
+For more complicated example, reference [weighted](AlphaZero/weighted)
 ```python
 import pyconnect6
 import numpy as np
 
 board_size = 15
-play_result = pyconnect6.self_play(
-    lambda turn, board: np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2)
-    10,     # num_simulation
-    1,      # num_expansion
-    0.25,   # epsilon
-    0.03,   # dirichlet_alpha
-    1,      # c_puct
-    True,   # debug
-    1)      # num_game_thread
+param = pyconnect6.default_param()
+param['num_simulation'] = 10
+param['debug'] = True
+
+policy = lambda turn, board: (np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2))
+play_result = pyconnect6.self_play(policy, param)
 
 win, path = play_result
 print(win)

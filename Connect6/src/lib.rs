@@ -13,20 +13,17 @@
 //! It provides MCTS hyper parameter control and multi thread asynchronous self-play.
 //!
 //! # Examples
-//! ```
+//! ```python
 //! import pyconnect6
 //! import numpy as np
 //!
 //! board_size = 15
-//! play_result = pyconnect6.self_play(
-//!     lambda turn, board: np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2)
-//!     10,     # num_simulation
-//!     1,      # num_expansion
-//!     0.25,   # epsilon
-//!     0.03,   # dirichlet_alpha
-//!     1,      # c_puct
-//!     True,   # debug
-//!     1)      # num_game_thread
+//! param = pyconnect6.default_param()
+//! param['num_simulation'] = 10
+//! param['debug'] = True
+//!
+//! policy = lambda turn, board: (np.random.rand(len(board)), np.random.rand(len(board), board_size ** 2))
+//! play_result = pyconnect6.self_play(policy, param)
 //!
 //! win, path = play_result
 //! print(win)
