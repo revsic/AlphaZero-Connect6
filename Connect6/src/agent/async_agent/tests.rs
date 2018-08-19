@@ -59,6 +59,7 @@ fn test_run() {
 }
 
 #[test]
+#[ignore]
 fn test_alphazero_run() {
     let mut param = HyperParameter::default();
     param.num_simulation = 10;
