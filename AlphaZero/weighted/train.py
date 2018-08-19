@@ -3,7 +3,7 @@ import tensorflow as tf
 from datetime import datetime
 
 import pyconnect6
-from pyconnect6.buffer import Buffer
+from utils.buffer import Buffer
 from weighted.model import WeightedPolicy
 
 flags = tf.app.flags
