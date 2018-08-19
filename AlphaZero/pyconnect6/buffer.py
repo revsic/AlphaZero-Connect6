@@ -20,13 +20,12 @@ class Buffer(object):
         return len(self.buffer)
 
     def push_game(self, game_result):
-        """push game result to the buffer, each element consist of (winner, board, position)"""
+        """push game result to the buffer, each element consist of (player, board, position)"""
         win, path = game_result
-
-        for (_, board, pos) in path:
+        for (player, board, pos) in path:
             row, col = pos
             pos = row * self.board_size + col
-            self.buffer.append((win, board, pos))
+            self.buffer.append((player, board, pos))
 
         if len(self.buffer) > self.max_size:
             self.buffer = self.buffer[-self.max_size:]
