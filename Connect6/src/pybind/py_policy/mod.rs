@@ -116,7 +116,7 @@ impl AlphaZero {
     }
 
     fn get_from(&self, next_turn: Player, boards: &Vec<Board>)
-        -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
+                -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let (value_vec, policy_vec) = {
             let gil = Python::acquire_gil();
             let py = gil.python();
@@ -162,9 +162,9 @@ impl AlphaZero {
             .filter(|x| x.turn == next_turn)
             .collect::<Vec<_>>();
         if child_nodes.is_empty() {
-            return None
+            return None;
         } else if child_nodes.len() == 1 {
-            return Some(hash(&child_nodes[0].board))
+            return Some(hash(&child_nodes[0].board));
         }
 
         let epsilon = self.param.epsilon;
@@ -174,8 +174,9 @@ impl AlphaZero {
         let c_puct = self.param.c_puct;
         let visit_sum = child_nodes.iter().map(|x| x.visit).sum::<i32>() as f32;
         let puct = |node: &Node, noise: &f64| {
-            let prob = epsilon * *noise as f32 + (1. - epsilon) * node.n_prob;
+            let noise = *noise as f32;
             let visit = node.visit as f32;
+            let prob = epsilon * noise + (1. - epsilon) * node.n_prob;
             prob * (visit_sum - visit).sqrt() / (1. + visit)
         };
         let prob = |(node, noise): &(&Node, f64)| node.q_value + c_puct * puct(node, noise);
@@ -271,21 +272,20 @@ impl AlphaZero {
     }
 
     fn update(&mut self, sim: &Simulate, path: &Vec<(usize, usize)>) {
-        let node = sim.node.borrow();
-        let hashed = hash(&node.board);
+        let hashed = hash(&sim.board());
         let q_sum = {
             let tree_node = self.map.get(&hashed).unwrap();
             tree_node.next_node.iter()
                 .map(|x| self.map.get(x).unwrap().value)
                 .sum::<f32>()
         };
-        { // borrow mut map: HashMap
+        {
             let tree_node = self.map.get_mut(&hashed).unwrap();
             tree_node.visit += 1;
-            tree_node.q_sum = q_sum;
+            tree_node.q_sum =
+                if sim.next_turn() == sim.turn { q_sum } else { -q_sum };
             tree_node.recalc_q();
         }
-
         let mut sim = sim.deep_clone();
         for (row, col) in path.iter().rev() {
             sim.rollback_in(*row, *col);
