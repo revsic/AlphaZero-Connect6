@@ -104,6 +104,7 @@ class WeightedPolicy(object):
 
     def _get_loss(self):
         value_loss = tf.reduce_mean(tf.square(self.plc_value - self.value))
+        policy = tf.one_hot(self.plc_policy, self.board_size ** 2)
         policy_loss = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.plc_policy, logits=self.policy))
+            tf.nn.softmax_cross_entropy_with_logits_v2(labels=policy, logits=self.policy))
         return value_loss, policy_loss
