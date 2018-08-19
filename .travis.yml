@@ -1,4 +1,5 @@
 language: rust
+script: cd Connect6; cargo build --verbose; cargo test --verbose
 after_success: |-
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
