@@ -1,3 +1,20 @@
+//! Implementation of agent.
+//!
+//! Agent is structure for playing game with given single policy.
+//! As we pass the single policy, agent play the game with given policy in the loop.
+//! `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
+//!
+//! # Examples
+//! For black-white seperable policy, reference [MultiPolicy](../../policy/multi_policy).
+//! ```rust
+//! let mut stdin = std::io::stdin();
+//! let mut stdout = std::io::stdout();
+//! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+//! let mut rand_policy = RandomPolicy::new();
+//!
+//! let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+//! let result = Agent::debug(&mut multi_policy).play();
+//! ```
 extern crate cpython;
 
 use super::super::game::*;
@@ -13,6 +30,7 @@ use std::time::Instant;
 #[cfg(test)]
 mod tests;
 
+/// Unit of playing history, turn, board and selected position.
 #[derive(Debug, PartialEq)]
 pub struct Path {
     pub turn: Player,
@@ -20,11 +38,13 @@ pub struct Path {
     pub pos: (usize, usize),
 }
 
+/// Result of playing game, winner and path (history of game).
 pub struct RunResult {
     pub winner: Player,
     pub path: Vec<Path>,
 }
 
+/// Structure for playing game with given policy
 pub struct Agent<'a> {
     game: RefCell<Game>,
     debug: bool,
@@ -32,6 +52,7 @@ pub struct Agent<'a> {
 }
 
 impl<'a> Agent<'a> {
+    /// Construct a new `Agent` with given policy.
     pub fn new(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
             game: RefCell::new(Game::new()),
@@ -40,6 +61,7 @@ impl<'a> Agent<'a> {
         }
     }
 
+    /// Construct a debug mode `Agent` with given policy.
     pub fn debug(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
             game: RefCell::new(Game::new()),
@@ -48,6 +70,10 @@ impl<'a> Agent<'a> {
         }
     }
 
+    /// Self-play the game with given policy.
+    ///
+    /// # Errors
+    /// if selected position raise Err at [game.play](../../game/game_impl/Game).
     pub fn play(&mut self) -> Result<RunResult, String> {
         let mut winner = Player::None;
         let mut path = Vec::new();
@@ -61,6 +87,7 @@ impl<'a> Agent<'a> {
             let pos = self.policy.next(&game);
             let duration = before.elapsed();
 
+            // if policy could't generate next selection
             if pos.is_none() {
                 break;
             }
@@ -69,6 +96,7 @@ impl<'a> Agent<'a> {
 
             match game.play(pos) {
                 Ok(result) => if self.debug {
+                    // log the selection info
                     let (row, col) = result.position;
                     let row = (row as u8 + 0x61) as char;
                     let col = (col as u8 + 0x41) as char;
@@ -78,6 +106,7 @@ impl<'a> Agent<'a> {
                 Err(err) => return Err(format!("agent::play : {}", err)),
             };
 
+            // if game end, method return the winner, or None.
             let is_end = game.is_game_end();
             if is_end != Player::None {
                 winner = is_end;

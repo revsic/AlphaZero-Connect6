@@ -1,3 +1,16 @@
+//! Agent for playing multiple game asynchronously.
+//!
+//! Like [A3C](https://arxiv.org/abs/1602.01783), `AsyncAgent` play multiple games with tokio thread-pool.
+//! It pass the policy generator and return the vector of game result.
+//!
+//! # Examples
+//! ```rust
+//! let policy_gen = || RandomPolicy::new();
+//! let async_agent = AsyncAgent::debug(policy_gen);
+//!
+//! let result = async_agent.run(4)
+//! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
+//! ```
 extern crate futures;
 extern crate tokio;
 
@@ -12,12 +25,15 @@ use self::tokio::executor::thread_pool::ThreadPool;
 #[cfg(test)]
 mod tests;
 
+/// Agent for playing multiple game at thread-pool
 pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
     policy_gen: F,
     debug: bool,
 }
 
 impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
+    /// Construct a new AsyncAgent.
+    /// Get policy generator as callable object that return policy trait impl.
     pub fn new(policy_gen: F) -> AsyncAgent<P, F> {
         AsyncAgent {
             policy_gen,
@@ -25,6 +41,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
         }
     }
 
+    /// Construct a debug mode AsyncAgent, it will display the dbg info.
     pub fn debug(policy_gen: F) -> AsyncAgent<P, F> {
         AsyncAgent {
             policy_gen,
@@ -32,6 +49,10 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
         }
     }
 
+    /// Self-play the given number of games asynchronously at thread pool.
+    ///
+    /// # Panics
+    /// if some games return the Err when playing game with `Agent`
     pub fn run(&self, num: i32) -> Vec<RunResult> {
         let thread_pool = ThreadPool::new();
         let (sender, receiver) = mpsc::channel();
@@ -58,6 +79,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
 
         let mut results = Vec::new();
         for _ in 0..num {
+            // able to panic, when agent return Err instead RunResult
             let res = receiver.recv().unwrap();
             results.push(res);
         }

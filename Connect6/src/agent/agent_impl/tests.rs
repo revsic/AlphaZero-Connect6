@@ -74,6 +74,7 @@ fn test_play() {
         ((0, 5), (0, 6)), // white
     ];
 
+    // playing game
     for (turn1, turn2) in record.iter() {
         sender.send(*turn1).unwrap();
         sender.send(*turn2).unwrap();
@@ -115,6 +116,7 @@ fn test_play() {
         assert_eq!(*path, Path { turn, board, pos });
     };
 
+    // expect history equal to record
     for (turn1, turn2) in record.iter() {
         test(*turn1);
         test(*turn2);

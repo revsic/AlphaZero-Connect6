@@ -4,10 +4,11 @@
 //! `agent_impl` is implementation of loop based single policy agent.
 //! As we pass the policy, method `play` return the `PlayResult` consisted of winner and playing history (called path).
 //!
-//! `async_agent` is multi-thread based agent, pass the policy generator and return vector of `PlayResult`.
+//! `async_agent` is multi-thread based agent, playing multiple game asynchronously.
+//! It pass the policy generator and return the vector of `PlayResult`.
 //!
 //! # Examples
-//! agent_impl
+//! Playing single game with single policy.
 //! ```rust
 //! let mut policy = RandomPolicy::new();
 //! let mut agent = Agent::new(&mut policy);
@@ -15,7 +16,7 @@
 //! let result = agent.play();
 //! println!("winner: {:?}", result.winner);
 //! ```
-//! async_agent
+//! Playing multiple game asynchronously.
 //! ```rust
 //! let policy_gen = || RandomPolicy::new();
 //! let async_agent = AsyncAgent::debug(policy_gen);
