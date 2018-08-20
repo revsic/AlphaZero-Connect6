@@ -1,4 +1,4 @@
-//! Agent for playing multiple game asynchronously.
+//! Agent for playing multiple games asynchronously.
 //!
 //! Like [A3C](https://arxiv.org/abs/1602.01783), `AsyncAgent` play multiple games with tokio thread-pool.
 //! It pass the policy generator and return the vector of game result.
@@ -34,6 +34,12 @@ pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
 impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     /// Construct a new AsyncAgent.
     /// Get policy generator as callable object that return policy trait impl.
+    ///
+    /// # Examples
+    /// ```rust
+    /// let gen = || RandomPolicy::new();
+    /// let async_agent = AsyncAgent::new(gen);
+    /// ```
     pub fn new(policy_gen: F) -> AsyncAgent<P, F> {
         AsyncAgent {
             policy_gen,
@@ -42,6 +48,12 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     }
 
     /// Construct a debug mode AsyncAgent, it will display the dbg info.
+    ///
+    /// # Examples
+    /// ```rust
+    /// let gen = || RandomPolicy::new();
+    /// let async_agent = AsyncAgent::debug(gen);
+    /// ```
     pub fn debug(policy_gen: F) -> AsyncAgent<P, F> {
         AsyncAgent {
             policy_gen,
@@ -51,8 +63,17 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
 
     /// Self-play the given number of games asynchronously at thread pool.
     ///
+    /// # Examples
+    /// ```rust
+    /// let gen = || RandomPolicy::new();
+    /// let async_agent = AsyncAgent::new(gen);
+    ///
+    /// let result = async_agent.run(4);
+    /// println!("result: {}", result.map(|x| x.winner as i32).sum::<i32>());
+    /// ```
+    ///
     /// # Panics
-    /// if some games return the Err when playing game with `Agent`
+    /// if some games return the Err from `Agent`
     pub fn run(&self, num: i32) -> Vec<RunResult> {
         let thread_pool = ThreadPool::new();
         let (sender, receiver) = mpsc::channel();

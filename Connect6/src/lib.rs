@@ -1,16 +1,14 @@
 #![doc(html_root_url = "https://revsic.github.io/AlphaZero-Connect6/")]
 // #![doc(html_logo_url = "https://raw.githubusercontent.com/revsic/AlphaZero-Connect6/master/logo.png")]
-//! [Rust](https://www.rust-lang.org) bindings for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
+//! [Rust](https://www.rust-lang.org) implementation of connect6 and policies
+//! for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
 //!
-//! This crate consists of several modules, agent, game, policy and pybind.
-//! Module `game` is implementation of game [Connect6](https://en.wikipedia.org/wiki/Connect6).
-//! Module `agent` is for playing game with given policy.
-//! Module `policy` define 'How to play game' like user selection, random play, mcts etc..
-//! Module `pybind` is rust binding for playing connect6 with python interface.
+//! Connect6 provides game environment and policy based self-playing agent with some pre-defined policies.
+//! It also provides multi-thread async self-playing agent
+//! and MCTS policy [AlphaZero](https://arxiv.org/abs/1712.01815) with some hyperparameters control.
 //!
-//! In module `pybind::py_policy`, mcts part of [AlphaZero](https://arxiv.org/abs/1712.01815) is implemented as struct `AlphaZero`.
-//! We can join AlphaZero just implement callable object with method `__call__(self, turn, board): (value, prob)`.
-//! It provides MCTS hyper parameter control and multi thread asynchronous self-play.
+//! You can install `pyconnect6` with `setup.py` and join the AlphaZero self-playing agent
+//! just passing the callable python object with method `__call__(self, turn, board): (value, prob)`.
 //!
 //! # Examples
 //! ```python
@@ -99,8 +97,7 @@ fn self_play(py: Python,
     if num_game_thread == 1 {
         let mut policy = pybind::AlphaZero::with_param(object, param);
         let result =
-            if debug { agent::Agent::debug(&mut policy).play() }
-                else { agent::Agent::new(&mut policy).play() };
+            if debug { agent::Agent::debug(&mut policy).play() } else { agent::Agent::new(&mut policy).play() };
         Ok(result.unwrap().to_py_object(py))
     } else {
         let result = py.allow_threads(move || {
@@ -113,8 +110,7 @@ fn self_play(py: Python,
                 pybind::AlphaZero::with_param(object, param)
             };
             let async_agent =
-                if debug { agent::AsyncAgent::debug(policy_gen) }
-                    else { agent::AsyncAgent::new(policy_gen) };
+                if debug { agent::AsyncAgent::debug(policy_gen) } else { agent::AsyncAgent::new(policy_gen) };
             async_agent.run(num_game_thread)
         });
         let py_result = result.iter()

@@ -53,6 +53,12 @@ pub struct Agent<'a> {
 
 impl<'a> Agent<'a> {
     /// Construct a new `Agent` with given policy.
+    ///
+    /// # Examples
+    /// ```rust
+    /// let mut policy = RandomPolicy::new();
+    /// let mut agent = Agent::new(&mut policy);
+    /// ```
     pub fn new(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
             game: RefCell::new(Game::new()),
@@ -61,7 +67,13 @@ impl<'a> Agent<'a> {
         }
     }
 
-    /// Construct a debug mode `Agent` with given policy.
+    /// Construct a debug mode `Agent` with given policy, it will display the dbg info.
+    ///
+    /// # Examples
+    /// ```rust
+    /// let mut policy = RandomPolicy::new();
+    /// let mut agent = Agent::debug(&mut policy);
+    /// ```
     pub fn debug(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
             game: RefCell::new(Game::new()),
@@ -71,6 +83,15 @@ impl<'a> Agent<'a> {
     }
 
     /// Self-play the game with given policy.
+    ///
+    /// # Examples
+    /// ```rust
+    /// let mut policy = RandomPolicy::new();
+    /// let mut agent = Agent::new(&mut policy);
+    ///
+    /// let result = agent.play().unwrap();
+    /// println!("winner: {:?}", result.winner);
+    /// ```
     ///
     /// # Errors
     /// if selected position raise Err at [game.play](../../game/game_impl/Game).
@@ -121,6 +142,8 @@ impl<'a> Agent<'a> {
 
 impl ToPyObject for Path {
     type ObjectType = PyTuple;
+
+    /// Return `PyTuple`, (turn: int, board: list(int, board_size ** 2), pos: (int, int))
     fn to_py_object(&self, py: Python) -> PyTuple {
         let turn = (self.turn as i32).to_py_object(py).into_object();
         let board = pylist_from_board(py, &self.board);
@@ -137,6 +160,8 @@ impl ToPyObject for Path {
 
 impl ToPyObject for RunResult {
     type ObjectType = PyTuple;
+
+    /// Return `PyTuple`, (winner: int, path: list(Path as PyTuple))
     fn to_py_object(&self, py: Python) -> PyTuple {
         let win = (self.winner as i32).to_py_object(py).into_object();
         let path = self.path.iter()

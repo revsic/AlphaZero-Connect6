@@ -1,6 +1,6 @@
 //! Agent for playing game with given policy
 //!
-//! This module exports two modules, agent_impl and async_agent.
+//! This module consists of two submodules, agent_impl and async_agent.
 //! `agent_impl` is implementation of loop based single policy agent.
 //! As we pass the policy, method `play` return the `PlayResult` consisted of winner and playing history (called path).
 //!
@@ -8,7 +8,7 @@
 //! It pass the policy generator and return the vector of `PlayResult`.
 //!
 //! # Examples
-//! Playing single game with single policy.
+//! Play single game with single policy.
 //! ```rust
 //! let mut policy = RandomPolicy::new();
 //! let mut agent = Agent::new(&mut policy);
@@ -16,7 +16,7 @@
 //! let result = agent.play();
 //! println!("winner: {:?}", result.winner);
 //! ```
-//! Playing multiple game asynchronously.
+//! Play multiple game asynchronously.
 //! ```rust
 //! let policy_gen = || RandomPolicy::new();
 //! let async_agent = AsyncAgent::debug(policy_gen);
