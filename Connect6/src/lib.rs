@@ -2,7 +2,7 @@
 // #![doc(html_logo_url = "https://raw.githubusercontent.com/revsic/AlphaZero-Connect6/master/logo.png")]
 //! [Rust](https://www.rust-lang.org) bindings for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
 //!
-//! This crate consists of several modules, agent, game, policy, pybind.
+//! This crate consists of several modules, agent, game, policy and pybind.
 //! Module `game` is implementation of game [Connect6](https://en.wikipedia.org/wiki/Connect6).
 //! Module `agent` is for playing game with given policy.
 //! Module `policy` define 'How to play game' like user selection, random play, mcts etc..

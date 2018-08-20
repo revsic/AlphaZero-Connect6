@@ -16,7 +16,7 @@ Suppose to build Connect6 at Rust 1.28.0 or later.
 
 ## Usage
 
-To install lib `connect6`, rust compiler is required, [rustup](https://rustup.rs).
+Rust compiler is required to install lib 'pyconnect6'. [rustup](https://rustup.rs)
 ```
 curl https://sh.rustup.rs -sSf | sh  #for linux user
 ```
