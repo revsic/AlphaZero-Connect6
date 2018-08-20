@@ -73,7 +73,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     /// ```
     ///
     /// # Panics
-    /// if some games return the Err from `Agent`
+    /// If some games return the Err from [Agent::play](./struct.Agent.html#method.play).
     pub fn run(&self, num: i32) -> Vec<RunResult> {
         let thread_pool = ThreadPool::new();
         let (sender, receiver) = mpsc::channel();

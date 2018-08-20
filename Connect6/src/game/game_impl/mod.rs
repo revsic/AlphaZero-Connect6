@@ -88,8 +88,8 @@ impl Game {
     /// ```
     ///
     /// # Errors
-    /// - "game::play invalid position" : if given position out of board.
-    /// - "game::play already set position" : if other stone place already in given position.
+    /// 1. If given position out of board.
+    /// 2. If other stone place already in given position.
     pub fn play(&mut self, pos: (usize, usize)) -> Result<PlayResult, Msg> {
         let (row, col) = pos;
         // position param validation

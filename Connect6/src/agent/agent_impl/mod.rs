@@ -94,7 +94,7 @@ impl<'a> Agent<'a> {
     /// ```
     ///
     /// # Errors
-    /// if selected position raise Err at [game.play](../../game/game_impl/Game).
+    /// if selected position raise Err at [Game::play](../game/struct.Game.html#method.play).
     pub fn play(&mut self) -> Result<RunResult, String> {
         let mut winner = Player::None;
         let mut path = Vec::new();
