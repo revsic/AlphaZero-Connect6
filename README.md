@@ -9,14 +9,14 @@ Tensorflow implementation of AlphaZero for Connect6 written in Rust, Python
 Copyright (c) 2018 YoungJoong Kim.
 AlphaZero-Connect6 is licensed under the [MIT license](http://opensource.org/licenses/MIT).
 
-- Supported Python version for connect6 lib is dependent on [rust-cpython](https://github.com/dgrunwald/rust-cpython).
+- Supported Python version for lib connect6 is dependent on [rust-cpython](https://github.com/dgrunwald/rust-cpython).
 - Tensorflow impl of AlphaZero is based on python3.6
 
 Suppose to build Connect6 at Rust 1.28.0 or later.
 
 ## Usage
 
-Rust compiler is required to install lib 'pyconnect6'. [rustup](https://rustup.rs)
+Rust compiler is required to install lib pyconnect6. [rustup](https://rustup.rs)
 ```
 curl https://sh.rustup.rs -sSf | sh  #for linux user
 ```

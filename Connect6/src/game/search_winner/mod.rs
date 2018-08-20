@@ -175,13 +175,13 @@ impl Block {
 /// Find the continuous 6 stones on 4 directions, vertical, horizontal, two diagonals.
 ///
 /// # Examples
-//! ```rust
-//! let mut game = Game::new();
-//! game.play((3, 4)).unwrap();
-//!
-//! let winner = search(game.get_board());
-//! assert_eq!(winner, Player::None);
-//! ```
+/// ```rust
+/// let mut game = Game::new();
+/// game.play((3, 4)).unwrap();
+///
+/// let winner = search(game.get_board());
+/// assert_eq!(winner, Player::None);
+/// ```
 pub fn search(table: &Board) -> Player {
     let mut black = Block::new();
     let mut white = Block::new();
