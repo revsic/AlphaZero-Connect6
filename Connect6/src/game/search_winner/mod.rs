@@ -172,19 +172,19 @@ impl Block {
     }
 }
 
-//! Algorithm implementation for finding winner of the Connect6.
-//!
-//! Algorithm finds the continuous 6 stones on 4 directions, vertical, horizontal, two diagonals.
-//! Use dynamic programming to implement algorithm and swaping memories to obtain the memory efficiency.
-//!
-//! # Examples
-//! ```rust
-//! let mut game = Game::new();
-//! game.play((3, 4)).unwrap();
-//!
-//! let winner = search(game.get_board());
-//! assert_eq!(winner, Player::None);
-//! ```
+/// Algorithm implementation for finding winner of the Connect6.
+///
+/// Algorithm finds the continuous 6 stones on 4 directions, vertical, horizontal, two diagonals.
+/// Use dynamic programming to implement algorithm and swaping memories to obtain the memory efficiency.
+///
+/// # Examples
+/// ```rust
+/// let mut game = Game::new();
+/// game.play((3, 4)).unwrap();
+///
+/// let winner = search(game.get_board());
+/// assert_eq!(winner, Player::None);
+/// ```
 pub fn search(table: &Board) -> Player {
     let mut black = Block::new();
     let mut white = Block::new();
