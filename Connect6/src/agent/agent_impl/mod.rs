@@ -23,7 +23,6 @@ use super::super::pybind::*;
 use super::super::Board;
 
 use cpython::*;
-use std::cell::RefCell;
 use std::io;
 use std::time::Instant;
 
