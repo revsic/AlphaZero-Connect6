@@ -61,7 +61,23 @@ impl PlayResult {
 
 type Msg = &'static str;
 
-/// Define connect6 game status
+/// Implementation of Game Connect6
+///
+/// It defines the game connect6 with some visualization utilities.
+///
+/// # Examples
+/// ```rust
+/// let mut game = Game::new();
+/// let result = game.play((0, 0));
+/// game.print(&mut std::io::stdout()).unwrap();
+///
+/// let winner = game.is_game_end();
+/// if winner != Player::None {
+///     println!("game end, winner: {:?}", winner);
+/// } else {
+///     println!("playing result: {:?}", result);
+/// }
+/// ```
 pub struct Game {
     turn: Player,
     num_remain: i32,

@@ -44,7 +44,23 @@ pub struct RunResult {
     pub path: Vec<Path>,
 }
 
-/// Structure for playing game with given policy
+/// Implementation of agent.
+///
+/// Agent is structure for playing game with given single policy.
+/// As we pass the single policy, agent play the game with given policy in the loop.
+/// `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
+///
+/// # Examples
+/// For black-white seperable policy, reference [MultiPolicy](../../policy/multi_policy).
+/// ```rust
+/// let mut stdin = std::io::stdin();
+/// let mut stdout = std::io::stdout();
+/// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+/// let mut rand_policy = RandomPolicy::new();
+///
+/// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+/// let result = Agent::debug(&mut multi_policy).play();
+/// ```
 pub struct Agent<'a> {
     game: Game,
     debug: bool,

@@ -70,6 +70,25 @@ impl Node {
 }
 
 /// Game simulator with shared memory for efficient tree searching
+///
+/// It provides simulation structure and some utilies to make next decision in policy.
+///
+/// It shares possible selections and board by `Node` to make simulation without copying it.
+/// It generate new simulation with `simulate` and recover the shared memory `Node` when it drop.
+/// It can simulate itself mutablely by `simulate_in` and recover it by `rollback_in`.
+///
+/// # Examples
+/// ```rust
+/// let game = Game::new();
+/// let sim = Simulate::from_game(&game);
+/// {
+///     let sim2 = sim.simulate(0, 0);
+///     let board = sim2.board();
+///     assert_eq!(board[0][0], Player::Black);
+/// }
+/// let board = sim.board();
+/// assert_eq!(board[0][0][, Player::None);
+/// ```
 pub struct Simulate {
     pub turn: Player,
     pub num_remain: i32,

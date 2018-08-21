@@ -25,7 +25,19 @@ use self::tokio::executor::thread_pool::ThreadPool;
 #[cfg(test)]
 mod tests;
 
-/// Agent for playing multiple game at thread-pool
+/// Agent for playing multiple games asynchronously.
+///
+/// Like [A3C](https://arxiv.org/abs/1602.01783), `AsyncAgent` play multiple games with tokio thread-pool.
+/// It pass the policy generator and return the vector of game result.
+///
+/// # Examples
+/// ```rust
+/// let policy_gen = || RandomPolicy::new();
+/// let async_agent = AsyncAgent::debug(policy_gen);
+///
+/// let result = async_agent.run(4)
+/// println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
+/// ```
 pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
     policy_gen: F,
     debug: bool,

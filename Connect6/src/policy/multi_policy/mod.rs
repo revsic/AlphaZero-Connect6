@@ -19,7 +19,21 @@ use super::super::game::*;
 #[cfg(test)]
 mod tests;
 
-/// Black-White seperable policy.
+/// Black-White seperable policy
+///
+/// Because `Agent` get single policy to play game, policy structure for black-white seperation is required.
+/// It get two different policies and playing game with given seperately, black and white.
+///
+/// # Examples
+/// ```rust
+/// let mut stdin = std::io::stdin();
+/// let mut stdout = std::io::stdout();
+/// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+/// let mut rand_policy = RandomPolicy::new();
+///
+/// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+/// Agent::debug(&mut multi_policy).play().unwrap();
+/// ```
 pub struct MultiPolicy<'a, 'b> {
     black_policy: &'a mut Policy,
     white_policy: &'b mut Policy,

@@ -25,6 +25,22 @@ use std::io;
 mod tests;
 
 /// Policy for in-game user selection with stdio
+///
+/// Input format is "{row lowercase}{col uppercase}" such as "sS" or "aC".
+/// If invalid format or position is given, policy will write retrying message to stdout.
+/// *Note* if given position raise Err from `Game` like `already set position`, game will be terminated by `Agent`.
+///
+/// *Note* We suggest that if you use IoPolicy, construct `Agent` with `Agent::debug`.
+/// IoPolicy don't displaying the board when you make the choice,
+/// so that if you want to confirm the board, you have to construct `Agent` in debug mode.
+///
+/// # Examples
+/// ```rust
+/// let mut stdin = std::io::stdin();
+/// let mut stdout = std::io::stdout();
+/// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+/// Agent::debug(&mut io_policy).play().unwrap();
+/// ```
 pub struct IoPolicy<'a, 'b> {
     reader: &'a mut io::Read,
     writer: &'b mut io::Write,

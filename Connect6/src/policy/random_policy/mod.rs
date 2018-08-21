@@ -14,7 +14,14 @@ mod tests;
 use self::rand::seq::*;
 use super::*;
 
-/// define policy with random selection
+/// Play game with random selection.
+///
+/// # Examples
+/// ```rust
+/// let mut policy = RandomPolicy();
+/// let result = Agent::new(&mut policy).play();
+/// assert!(result.is_ok());
+/// ```
 pub struct RandomPolicy { }
 
 impl RandomPolicy {
