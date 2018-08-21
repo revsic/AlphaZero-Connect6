@@ -8,7 +8,10 @@
 //!
 //! # Examples
 //! ```rust
-//!
+//! // python : pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
+//! let mut policy = AlphaZero::new(pyobj);
+//! let result = Agent::new(&mut policy).play();
+//! assert!(result.is_ok());
 //! ```
 pub use self::py_policy::*;
 pub use self::pybind_impl::*;
