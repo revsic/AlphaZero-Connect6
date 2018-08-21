@@ -46,7 +46,7 @@ pub struct RunResult {
 
 /// Structure for playing game with given policy
 pub struct Agent<'a> {
-    game: RefCell<Game>,
+    game: Game,
     debug: bool,
     policy: &'a mut Policy
 }
@@ -61,7 +61,7 @@ impl<'a> Agent<'a> {
     /// ```
     pub fn new(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
-            game: RefCell::new(Game::new()),
+            game: Game::new(),
             debug: false,
             policy,
         }
@@ -76,7 +76,7 @@ impl<'a> Agent<'a> {
     /// ```
     pub fn debug(policy: &'a mut Policy) -> Agent<'a> {
         Agent {
-            game: RefCell::new(Game::new()),
+            game: Game::new(),
             debug: true,
             policy,
         }
@@ -98,7 +98,7 @@ impl<'a> Agent<'a> {
     pub fn play(&mut self) -> Result<RunResult, String> {
         let mut winner = Player::None;
         let mut path = Vec::new();
-        let mut game = self.game.borrow_mut();
+        let game = &mut self.game;
 
         loop {
             if self.debug {
