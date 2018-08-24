@@ -17,12 +17,12 @@
 //! ```
 extern crate cpython;
 
-use super::super::game::*;
-use super::super::policy::*;
-use super::super::pybind::*;
+use super::super::game::{Game, Player};
+use super::super::policy::{Policy, DefaultPolicy};
+use super::super::pybind::pylist_from_board;
 use super::super::Board;
 
-use cpython::*;
+use cpython::{Python, PythonObject, PyList, PyTuple, ToPyObject};
 use std::io;
 use std::time::Instant;
 
@@ -63,7 +63,7 @@ pub struct RunResult {
 pub struct Agent<'a> {
     game: Game,
     debug: bool,
-    policy: &'a mut Policy
+    policy: &'a mut Policy,
 }
 
 impl<'a> Agent<'a> {
@@ -128,7 +128,7 @@ impl<'a> Agent<'a> {
                 break;
             }
             let pos = pos.unwrap();
-            path.push(Path { turn: game.get_turn(), board: *game.get_board(), pos, });
+            path.push(Path { turn: game.get_turn(), board: *game.get_board(), pos });
 
             match game.play(pos) {
                 Ok(result) => if self.debug {
