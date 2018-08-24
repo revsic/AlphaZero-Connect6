@@ -145,6 +145,12 @@ impl Simulate {
         node.board
     }
 
+    /// Get the possible selections from node.
+    pub fn possible(&self) -> Vec<(usize, usize)> {
+        let node = self.node.borrow();
+        node.possible.clone()
+    }
+
     /// Find either the winner or game end, like `Game::is_game_end`.
     ///
     /// # Examples
