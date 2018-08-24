@@ -20,7 +20,7 @@
 //! ```
 use std::cell::RefCell;
 use std::rc::Rc;
-use super::super::game::*;
+use super::super::game::{Game, Player, search};
 use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
