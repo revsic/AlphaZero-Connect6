@@ -1,5 +1,5 @@
 use super::*;
-use super::super::*;
+use super::super::{DefaultPolicy, RandomPolicy};
 use super::super::super::agent::Agent;
 use super::super::super::game::Player;
 

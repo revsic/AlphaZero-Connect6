@@ -14,7 +14,7 @@
 //! Agent::debug(&mut multi_policy).play().unwrap();
 //! ```
 use super::Policy;
-use super::super::game::*;
+use super::super::game::{Game, Player};
 
 #[cfg(test)]
 mod tests;
