@@ -14,8 +14,8 @@
 extern crate futures;
 extern crate tokio;
 
-use super::agent_impl::*;
-use super::super::policy::*;
+use super::{Agent, RunResult};
+use super::super::policy::{Policy, AlphaZero, HyperParameter, RandomPolicy};
 
 use std::sync::mpsc;
 use std::time::Instant;
