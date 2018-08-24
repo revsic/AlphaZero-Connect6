@@ -43,3 +43,13 @@ impl Player {
 impl Default for Player {
     fn default() -> Player { Player::None }
 }
+
+impl From<i32> for Player {
+    fn from(num: i32) -> Player {
+        match num {
+            -1 => Player::Black,
+            1 => Player::White,
+            _ => Player::None,
+        }
+    }
+}
