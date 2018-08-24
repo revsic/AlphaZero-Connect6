@@ -26,6 +26,9 @@
 //! win, path = play_result
 //! print(win)
 //! ```
+#[macro_use]
+mod macro_def;
+
 pub mod agent;
 pub mod game;
 pub mod policy;
@@ -87,7 +90,7 @@ fn self_play(py: Python,
              c_puct: f32,
              debug: bool,
              num_game_thread: i32) -> PyResult<PyTuple> {
-    let param = pybind::HyperParameter {
+    let param = policy::HyperParameter {
         num_simulation,
         num_expansion,
         epsilon,
@@ -95,7 +98,7 @@ fn self_play(py: Python,
         c_puct,
     };
     if num_game_thread == 1 {
-        let mut policy = pybind::AlphaZero::with_param(object, param);
+        let mut policy = policy::AlphaZero::with_param(object, param);
         let result =
             if debug { agent::Agent::debug(&mut policy).play() } else { agent::Agent::new(&mut policy).play() };
         Ok(result.unwrap().to_py_object(py))
@@ -107,7 +110,7 @@ fn self_play(py: Python,
                     let py = gil.python();
                     object.clone_ref(py)
                 };
-                pybind::AlphaZero::with_param(object, param)
+                policy::AlphaZero::with_param(object, param)
             };
             let async_agent =
                 if debug { agent::AsyncAgent::debug(policy_gen) } else { agent::AsyncAgent::new(policy_gen) };
@@ -143,14 +146,14 @@ fn play_with(py: Python,
              epsilon: f32,
              dirichlet_alpha: f64,
              c_puct: f32) -> PyResult<PyTuple> {
-    let param = pybind::HyperParameter {
+    let param = policy::HyperParameter {
         num_simulation,
         num_expansion,
         epsilon,
         dirichlet_alpha,
         c_puct,
     };
-    let mut py_policy = pybind::AlphaZero::with_param(object, param);
+    let mut py_policy = policy::AlphaZero::with_param(object, param);
 
     let mut stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
