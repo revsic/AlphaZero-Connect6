@@ -9,14 +9,13 @@
 extern crate rand;
 
 use std::collections::HashMap;
-use std::collections::hash_map::*;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-use self::rand::seq::*;
-use self::rand::prelude::*;
+use self::rand::prelude::{SliceRandom, thread_rng};
 use super::Policy;
 use super::simulate::Simulate;
-use super::super::game::*;
+use super::super::game::{Game, Player};
 use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
