@@ -21,7 +21,6 @@ use self::rand::thread_rng;
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::mem::swap;
 
 use super::{Policy, Simulate, diff_board};
 use super::super::pybind::{pylist_from_multiple, pyseq_to_vec};
@@ -32,6 +31,8 @@ mod augment;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod augment_test;
 
 /// Tree node, get next node as hash value of board
 #[derive(Clone, Debug)]
@@ -117,7 +118,6 @@ impl Node {
 #[derive(Copy, Clone)]
 pub struct HyperParameter {
     pub num_simulation: i32,
-    pub num_expansion: usize,
     pub epsilon: f32,
     pub dirichlet_alpha: f64,
     pub c_puct: f32,
@@ -127,7 +127,6 @@ impl HyperParameter {
     pub fn default() -> HyperParameter {
         HyperParameter {
             num_simulation: 800,
-            num_expansion: 1,
             epsilon: 0.25,
             dirichlet_alpha: 0.03,
             c_puct: 1.,
@@ -293,29 +292,17 @@ impl AlphaZero {
     ///
     /// For the first tree search, tree must be initialized with game status.
     /// `Init` initialize the tree with given `Simulate`
-    ///
-    /// # Panics
-    /// If `init` couldn't get proper value and prob from `get_from`.
     fn init(&mut self, sim: &Simulate) {
-        let node = sim.node.borrow();
-        let hashed = hash(&node.board);
-
-        // didn't visit current simulation in history
-        if self.map.get(&hashed).is_none() {
-            if let Some((value, policy)) = self.get_from(sim.turn, &node.board) {
-                let entry = self.map.entry(hashed).or_insert(Node::new(&node.board));
-                entry.turn = sim.turn;
-                entry.value = value;
-                entry.prob = policy;
-            } else {
-                panic!("alpha_zero::init couldn't get from py policy");
-            }
-        }
+        let hashed = hash(&sim.board());
+        let node = self.map.entry(hashed).or_insert(Node::new(&node.board));
+        node.turn = sim.turn;
     }
 
+    // TODO : 지금 turn이라는 개념이 모호함, evaluator 인지 진짜 turn 인지 확실시 하는게 좋을거 같음
+    // TODO : 근데 또 보면 evaluator 가 고정이어야 하는거로 보임 그니까 결국은 self-play지만 self.map을 나누어 가지고 있다고 가정해야 될 듯 함
+    // TODO : 그렇게 되면 evaluator가 필요하지 않고 turn을 가지고 selection 때 자식 노드와 turn 매칭 해서 ?
+    // TODO : 필요할진 모르겠지만 참고하면 좋을 듯 합
     /// Select position based on policy
-    ///
-    /// *Note* Given simulation must be initialized by `init` or `expand`.
     ///
     /// # Errors
     /// - if given simulation is end game.
@@ -339,9 +326,9 @@ impl AlphaZero {
     /// # Panics
     /// - if method couldn't get value and prob from pyobject.
     fn expand(&mut self, sim: &Simulate) {
-        let node = sim.node.borrow();
-        if let Some((value, prob)) = self.get_from(sim.turn, &node.board) {
-            let parent_hashed = hash(&node.board);
+        let board = sim.board();
+        if let Some((value, prob)) = self.get_from(sim.turn, &board) {
+            let parent_hashed = hash(&board);
             let child_num = { // borrow mut self.map: HasMap
                 let parent_node = self.map.get_mut(&parent_hashed).unwrap();
                 parent_node.value = value;
@@ -351,14 +338,14 @@ impl AlphaZero {
             };
 
             let mut hashed_vec = Vec::new();
-            for (row, col) in node.possible.iter() {
-                let sim = sim.simulate(*row, *col);
+            for (row, col) in sim.possible() {
+                let sim = sim.simulate(row, col);
                 let board = sim.board();
                 let hashed = hash(&board);
                 hashed_vec.push(hashed);
 
                 let tree_node = self.map.entry(hashed).or_insert(Node::new_with_num(&board, child_num));
-                tree_node.n_prob = prob[*row][*col];
+                tree_node.n_prob = prob[row][col];
                 tree_node.turn = sim.turn;
             }
 
