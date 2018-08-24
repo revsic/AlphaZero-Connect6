@@ -4,6 +4,7 @@
 //! This module provides 4 predefined policies, random policy, io policy, multi-policy and default MCTS policy.
 //!
 //! - Policy : trait for playing game with `Agent`.
+//! - AlphaZero : implementation of policy [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961).
 //! - RandomPolicy : select possible position with randomness.
 //! - IoPolicy : read user input.
 //! - MultiPolicy : Black-White seperable policy, pass two different policies as initialize parameter.
@@ -20,11 +21,13 @@
 //! assert_eq!(result, Err(String::from("game::play already set position")));
 //! ```
 pub use self::simulate::*;
+pub use self::alphazero_policy::*;
 pub use self::default_policy::*;
 pub use self::io_policy::*;
 pub use self::multi_policy::*;
 pub use self::random_policy::*;
 
+mod alphazero_policy;
 mod default_policy;
 mod io_policy;
 mod multi_policy;
