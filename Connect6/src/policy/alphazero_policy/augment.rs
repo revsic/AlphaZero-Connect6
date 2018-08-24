@@ -4,7 +4,7 @@ use std::ops::Add;
 
 type GenericBoard<T> = [[T; BOARD_SIZE]; BOARD_SIZE];
 
-fn rotate_left<T: Copy + Default>(board: &mut GenericBoard<T>) {
+pub fn rotate_left<T: Copy + Default>(board: &mut GenericBoard<T>) {
     let mut rotate = [[Default::default(); BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
@@ -14,7 +14,7 @@ fn rotate_left<T: Copy + Default>(board: &mut GenericBoard<T>) {
     *board = rotate;
 }
 
-fn rotate_right<T: Copy + Default>(board: &mut GenericBoard<T>) {
+pub fn rotate_right<T: Copy + Default>(board: &mut GenericBoard<T>) {
     let mut rotate = [[Default::default(); BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
@@ -24,26 +24,27 @@ fn rotate_right<T: Copy + Default>(board: &mut GenericBoard<T>) {
     *board = rotate;
 }
 
-fn flip_vertical<T>(board: &mut GenericBoard<T>) { // axis |
-    for i in 0..BOARD_SIZE / 2 {
-        for j in 0..BOARD_SIZE {
+pub fn flip_vertical<T>(board: &mut GenericBoard<T>) { // axis |
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE / 2 {
             // swap(board[i][BOARD_SIZE - j], board[i][j]);
-            board[i].swap(BOARD_SIZE - j, j);
+            board[i].swap(BOARD_SIZE - j - 1, j);
         }
     }
 }
 
-fn flip_horizontal<T>(board: &mut GenericBoard<T>) { // axis --
+pub fn flip_horizontal<T: Copy>(board: &mut GenericBoard<T>) { // axis --
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE / 2 {
             // swap(board[BOARD_SIZE - j][i], board[j][i]);
-            let (front, back) = board.split_at_mut(j);
-            swap(&mut front[0][i], &mut back[back.len() - j][i]);
+            let tmp = board[BOARD_SIZE - j - 1][i];
+            board[BOARD_SIZE - j - 1][i] = board[j][i];
+            board[j][i] = tmp;
         }
     }
 }
 
-fn sum_board<T>(board1: &mut GenericBoard<T>, board2: &GenericBoard<T>)
+pub fn sum_board<T>(board1: &mut GenericBoard<T>, board2: &GenericBoard<T>)
     where T: Add<T, Output = T> + Copy + Default
 {
     for i in 0..BOARD_SIZE {
@@ -72,10 +73,8 @@ pub fn recover_way8(mut probs: Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>) -> [[f32; B
     let mut total = [[0.; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..4 {
         flip_vertical(&mut probs[i * 2 + 1]);
-        { // borrow mut probs: Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>
-            let (o, f) = probs.split_at_mut(i * 2);
-            sum_board(&mut o[0], &f[0]);
-        }
+        let flipped = probs[i * 2 + 1];
+        sum_board(&mut probs[i * 2], &flipped);
         for _ in 0..(i+1) {
             rotate_right(&mut probs[i * 2]);
         }
