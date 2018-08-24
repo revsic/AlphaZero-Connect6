@@ -44,7 +44,6 @@ def default_param():
     """create default parameter base on connect6::pybind::HyperParameter"""
     return {
         'num_simulation': 800,      # number of mcts simulaton for each turn
-        'num_expansion': 1,         # number of node expansion for each simulation
         'epsilon': 0.25,            # ratio for adding random probability from dirichlet distribution
         'dirichlet_alpha': 0.03,    # parameter of dirichlet distribution
         'c_puct': 1,                # parameter for puct (metamorphism of upper confidence tree algorithm)
@@ -55,7 +54,6 @@ def default_param():
 
 def param_to_tuple(param):
     return param['num_simulation'],\
-           param['num_expansion'],\
            param['epsilon'],\
            param['dirichlet_alpha'],\
            param['c_puct'],\

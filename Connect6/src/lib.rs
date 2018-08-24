@@ -48,7 +48,6 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
     try!(m.add(py, "__doc__", "This module is implemented in Rust, for Simulating Connect6"));
     try!(m.add(py, "self_play", py_fn!(py, self_play(object: PyObject,
                                                      num_simulation: i32,
-                                                     num_expansion: usize,
                                                      epsilon: f32,
                                                      dirichlet_alpha: f64,
                                                      c_puct: f32,
@@ -56,7 +55,6 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
                                                      num_game_thread: i32))));
     try!(m.add(py, "play_with", py_fn!(py, play_with(object: PyObject,
                                                      num_simulation: i32,
-                                                     num_expansion: usize,
                                                      epsilon: f32,
                                                      dirichlet_alpha: f64,
                                                      c_puct: f32))));
@@ -84,7 +82,6 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
 fn self_play(py: Python,
              object: PyObject,
              num_simulation: i32,
-             num_expansion: usize,
              epsilon: f32,
              dirichlet_alpha: f64,
              c_puct: f32,
@@ -92,7 +89,6 @@ fn self_play(py: Python,
              num_game_thread: i32) -> PyResult<PyTuple> {
     let param = policy::HyperParameter {
         num_simulation,
-        num_expansion,
         epsilon,
         dirichlet_alpha,
         c_puct,
@@ -142,13 +138,11 @@ fn self_play(py: Python,
 fn play_with(py: Python,
              object: PyObject,
              num_simulation: i32,
-             num_expansion: usize,
              epsilon: f32,
              dirichlet_alpha: f64,
              c_puct: f32) -> PyResult<PyTuple> {
     let param = policy::HyperParameter {
         num_simulation,
-        num_expansion,
         epsilon,
         dirichlet_alpha,
         c_puct,
