@@ -1,6 +1,6 @@
 use super::*;
-use super::super::super::agent::*;
-use super::super::super::game::*;
+use super::super::super::agent::Agent;
+use super::super::super::game::Player;
 
 use std::time::Instant;
 

@@ -8,11 +8,12 @@
 //! ```
 extern crate rand;
 
+use super::{Policy, Simulate};
+use super::super::game::Game;
+use self::rand::prelude::SliceRandom;
+
 #[cfg(test)]
 mod tests;
-
-use self::rand::seq::*;
-use super::*;
 
 /// Play game with random selection.
 ///
