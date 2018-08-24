@@ -10,22 +10,6 @@ use super::super::{BOARD_SIZE, Board};
 #[cfg(test)]
 mod tests;
 
-/// Panic with given error string if given Result is Err
-///
-/// # Examples
-/// ```rust
-/// let pyseq = pycheck!(obj.cast_into::<PySequence>(py), "couldn't cast obj into PySequence");
-/// ```
-#[macro_export]
-macro_rules! pycheck {
-    ($e:expr, $err:expr) => {
-        match $e {
-            Ok(obj) => obj,
-            Err(e) => panic!("{} : {:?}", $err, e),
-        }
-    }
-}
-
 /// Convert PySequence to Vec<f32>
 ///
 /// # Examples
@@ -39,8 +23,8 @@ macro_rules! pycheck {
 /// - If casted `obj` couldn't generate `PyIterator`.
 /// ```
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
-    let pyseq = pycheck!(obj.cast_into::<PySequence>(py), "pyseq_to_vec couldn't cast obj into pyseq");
-    let pyiter = pycheck!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
+    let pyseq = must!(obj.cast_into::<PySequence>(py), "pyseq_to_vec couldn't cast obj into pyseq");
+    let pyiter = must!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
     let vec = pyiter
         .filter_map(|x| x.ok())
         .filter_map(|x| x.extract::<f32>(py).ok())
