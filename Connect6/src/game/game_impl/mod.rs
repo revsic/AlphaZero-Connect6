@@ -16,7 +16,7 @@
 //! }
 //! ```
 use std::io;
-use super::*;
+use super::Player;
 use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
