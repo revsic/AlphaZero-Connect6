@@ -1,3 +1,5 @@
+use std::default::Default;
+
 #[cfg(test)]
 mod tests;
 
@@ -36,4 +38,8 @@ impl Player {
     pub fn mut_switch(&mut self) {
         *self = self.switch();
     }
+}
+
+impl Default for Player {
+    fn default() -> Player { Player::None }
 }

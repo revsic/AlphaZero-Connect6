@@ -1,4 +1,4 @@
-use super::Player;
+use super::*;
 
 #[test]
 fn test_switch() {
