@@ -1,6 +1,9 @@
 language: rust
 cache: cargo
+
 dist: trusty
+sudo: required
+
 os:
   - linux
   - osx
@@ -9,11 +12,6 @@ rust:
   - nightly
   - beta
   - stable
-
-sudo: true
-
-before_install:
-  - sudo apt-get update
 
 addons:
   apt:
