@@ -1,6 +1,5 @@
 use super::*;
-use super::super::super::agent::*;
-use super::super::super::BOARD_CAPACITY;
+use super::super::super::agent::Agent;
 
 use cpython::PythonObject;
 use std::time::Instant;
@@ -39,7 +38,7 @@ fn test_select() {
     let pos = node.possible.iter().position(|x| *x == (row, col));
     assert!(pos.is_some());
 }
-//TODO : expand 마저 수정
+
 #[test]
 fn test_expand() {
     let game = Game::new();
@@ -59,7 +58,6 @@ fn test_expand() {
     assert!(root.is_some());
 
     let root = root.unwrap();
-    assert_eq!(root.turn, Player::Black);
     assert_eq!(root.visit, 1);
     assert_ne!(root.value, 0.);
     assert_eq!(root.q_value, 0.);
@@ -79,7 +77,6 @@ fn test_expand() {
             assert!(root.next_node.contains(&hashed));
 
             let node = policy.map.get(&hashed).unwrap();
-            assert_eq!(node.)
             assert_eq!(node.visit, 0);
             assert_eq!(node.value, 0.);
             assert_eq!(node.n_prob, root.prob[i][j]);
@@ -90,78 +87,116 @@ fn test_expand() {
     }
 }
 
-//#[test]
-//fn test_update() {
-//    let game = Game::new();
-//    let mut sim = Simulate::from_game(&game);
-//
-//    let py_policy = py_policy!();
-//    let mut policy = AlphaZero::new(py_policy);
-//
-//    policy.init(&sim);
-//    let mut path = Vec::new();
-//    while let Some((row, col)) = policy.select(&sim) {
-//        sim.simulate_in(row, col);
-//        path.push((row, col));
-//    }
-//    policy.expand(&sim);
-//    policy.update(&sim, &path);
-//
-//    let node = policy.map.get(&hash(&[[Player::None; BOARD_SIZE]; BOARD_SIZE]));
-//    assert!(node.is_some());
-//
-//    let node = node.unwrap();
-//    assert_ne!(node.q_value, 0.);
-//    assert_eq!(node.visit, 1);
-//}
+#[test]
+fn test_update() {
+    let game = Game::new();
+    let sim = Simulate::from_game(&game);
 
-//#[test]
-//fn test_get_policy() {
-//    let game = Game::new();
-//    let mut sim = Simulate::from_game(&game);
-//
-//    let py_policy = py_policy!();
-//    let mut policy = AlphaZero::new(py_policy);
-//
-//    policy.init(&sim);
-//    let mut path = Vec::new();
-//    while let Some((row, col)) = policy.select(&sim) {
-//        sim.simulate_in(row, col);
-//        path.push((row, col));
-//    }
-//    policy.expand(&sim);
-//    policy.update(&sim, &path);
-//
-//    let sim = Simulate::from_game(&game);
-//    // let (row, col) = policy.get_policy(&game);
-//    let (row, col) = policy.policy(&sim).unwrap();
-//    assert!(sim.validate(row, col));
-//
-//    let node = sim.node.borrow();
-//    let pos = node.possible.iter().position(|x| *x == (row, col));
-//    assert!(pos.is_some());
-//}
-//
-//#[test]
-//fn test_self_play() {
-//    let mut param = HyperParameter::default();
-//    param.num_simulation = 10;
-//    param.num_expansion = 1;
-//
-//    let py_policy = py_policy!();
-//    let mut policy = AlphaZero::with_param(py_policy, param);
-//    let mut mcts = Agent::new(&mut policy);
-//
-//    let now = Instant::now();
-//    let result = mcts.play();
-//    let done = now.elapsed();
-//
-//    println!("{}.{}s elapsed", done.as_secs(), done.subsec_millis());
-//    let result = result.map_err(|_| assert!(false)).unwrap();
-//    if let Some(last) = result.path.last() {
-//        if result.winner != Player::None {
-//            assert_eq!(last.turn, result.winner);
-//        }
-//    }
-//    assert!(true);
-//}
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::new(py_policy);
+    policy.init(&sim);
+
+    for _ in 0..2 {
+        let mut sim = sim.deep_clone();
+        let mut path = Vec::new();
+        while let Some((row, col)) = policy.select(&sim) {
+            sim.simulate_in(row, col);
+            path.push((row, col));
+        }
+        policy.expand(&sim);
+        policy.update(&sim, &path);
+    }
+    let node = policy.map.get(&hash(game.get_board()));
+    assert!(node.is_some());
+
+    let node = node.unwrap();
+    assert_ne!(node.q_value, 0.);
+    assert_eq!(node.visit, 2);
+    assert_eq!(node.next_node.len(), BOARD_CAPACITY);
+
+    let child_hashed = node.next_node.iter()
+        .filter(|x| policy.map.get(x).unwrap().value != 0.)
+        .collect::<Vec<_>>();
+    assert_eq!(child_hashed.len(), 1);
+
+    let child = policy.map.get(child_hashed[0]);
+    assert!(child.is_some());
+
+    let child = child.unwrap();
+    assert_ne!(child.n_prob, 0.);
+    assert_eq!(node.q_value * 2., child.value);
+
+    let diff = diff_board(&node.board, &child.board);
+    assert!(diff.is_some());
+
+    let (row, col) = diff.unwrap();
+    assert_eq!(node.prob[row][col], child.n_prob)
+}
+
+#[test]
+fn test_policy() {
+    let game = Game::new();
+    let sim = Simulate::from_game(&game);
+
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::new(py_policy);
+    policy.init(&sim);
+
+    for _ in 0..2 {
+        let mut sim = sim.deep_clone();
+        let mut path = Vec::new();
+        while let Some((row, col)) = policy.select(&sim) {
+            sim.simulate_in(row, col);
+            path.push((row, col));
+        }
+        policy.expand(&sim);
+        policy.update(&sim, &path);
+    }
+
+    let pos = policy.policy(&sim);
+    assert!(pos.is_some());
+
+    // validation
+    let (row, col) = pos.unwrap();
+    assert!(sim.validate(row, col));
+
+    let pos = sim.possible().iter()
+        .position(|x| *x == (row, col));
+    assert!(pos.is_some());
+
+    let node = policy.map.get(&hash(&sim.board()));
+    assert!(node.is_some());
+
+    let child = node.unwrap().next_node.iter()
+        .filter(|x| policy.map.get(x).unwrap().value != 0.)
+        .collect::<Vec<_>>();
+    assert_eq!(child.len(), 1);
+
+    let child_node = policy.map.get(child[0]).unwrap();
+    let diff = diff_board(game.get_board(), &child_node.board);
+    assert!(diff.is_some());
+    assert_eq!((row, col), diff.unwrap());
+}
+
+#[test]
+fn test_self_play() {
+    let mut param = HyperParameter::default();
+    param.num_simulation = 10;
+
+    let py_policy = py_policy!();
+    let mut policy = AlphaZero::with_param(py_policy, param);
+    let mut mcts = Agent::new(&mut policy);
+
+    let now = Instant::now();
+    let result = mcts.play();
+    let done = now.elapsed();
+
+    println!("{}.{}s elapsed", done.as_secs(), done.subsec_millis());
+    let result = result.map_err(|_| assert!(false)).unwrap();
+    if let Some(last) = result.path.last() {
+        if result.winner != Player::None {
+            assert_eq!(last.turn, result.winner);
+        }
+    }
+    assert!(true);
+}

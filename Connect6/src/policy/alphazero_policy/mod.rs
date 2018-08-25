@@ -25,7 +25,7 @@ use std::hash::{Hash, Hasher};
 use super::{Policy, Simulate, diff_board};
 use super::super::pybind::{pylist_from_multiple, pyseq_to_vec};
 use super::super::game::{Game, Player};
-use super::super::{BOARD_SIZE, Board};
+use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
 
 mod augment;
 
@@ -37,7 +37,6 @@ mod augment_test;
 /// Tree node, get next node as hash value of board
 #[derive(Clone, Debug)]
 struct Node {
-    turn: Player,
     visit: i32,
     value: f32,
     q_sum: f32,
@@ -65,7 +64,6 @@ impl Node {
             .map(|x| x.iter().filter(|x| **x != Player::None).count())
             .sum();
         Node {
-            turn: Player::None,
             visit: 0,
             value: 0.,
             q_sum: 0.,
@@ -87,7 +85,6 @@ impl Node {
     /// ```
     fn new_with_num(board: &Board, num_player: usize) -> Node {
         Node {
-            turn: Player::None,
             visit: 0,
             value: 0.,
             q_sum: 0.,
@@ -216,7 +213,7 @@ impl AlphaZero {
             let value_vec = pyseq_to_vec(py, value)?;
             let policy_vec = policy.cast_into::<PySequence>(py).ok()?
                 .iter(py).ok()?
-                .filter_map(|x| x.ok())
+                .filter_map(|x| x.ok()) // pyiter returns iterator of Result
                 .filter_map(|x| pyseq_to_vec(py, x))
                 .collect::<Vec<Vec<f32>>>();
 
@@ -238,6 +235,7 @@ impl AlphaZero {
         let mut recovered = augment::recover_way8(vec);
         for i in 0..BOARD_SIZE {
             for j in 0..BOARD_SIZE {
+                // masking already set point
                 recovered[i][j] *= (board[i][j] == Player::None) as i32 as f32;
             }
         }
@@ -252,12 +250,10 @@ impl AlphaZero {
     /// # Panics
     /// - if result of `prob` is NaN.
     fn maximum_from(&self, sim: &Simulate) -> Option<u64> {
-        let next_turn = sim.next_turn();
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
         let child_nodes = tree_node.next_node.iter()
             .map(|x| self.map.get(x).unwrap())
-            .filter(|x| x.turn == next_turn)
             .collect::<Vec<_>>();
         if child_nodes.is_empty() {
             // couldn't get maximum value from empty child
@@ -280,8 +276,13 @@ impl AlphaZero {
             let prob = epsilon * noise + (1. - epsilon) * node.n_prob;
             prob * (visit_sum - visit).sqrt() / (1. + visit)
         };
+        let unary: fn(f32) -> f32 = match sim.turn {
+            Player::Black => |x| -x,
+            Player::White => |x| x,
+            Player::None => panic!("alpha_zero::maximum_from couldn't get unary function from player none")
+        };
         // formula
-        let prob = |(node, noise): &(&Node, f64)| node.q_value + c_puct * puct(node, noise);
+        let prob = |(node, noise): &(&Node, f64)| unary(node.q_value) + c_puct * puct(node, noise);
         child_nodes.into_iter()
             .zip(dirichlet.sample(&mut thread_rng()))
             .max_by(|n1, n2| prob(n1).partial_cmp(&prob(n2)).unwrap())
@@ -293,15 +294,11 @@ impl AlphaZero {
     /// For the first tree search, tree must be initialized with game status.
     /// `Init` initialize the tree with given `Simulate`
     fn init(&mut self, sim: &Simulate) {
-        let hashed = hash(&sim.board());
-        let node = self.map.entry(hashed).or_insert(Node::new(&node.board));
-        node.turn = sim.turn;
+        let node = sim.node.borrow();
+        let hashed = hash(&node.board);
+        self.map.entry(hashed).or_insert(Node::new(&node.board));
     }
 
-    // TODO : 지금 turn이라는 개념이 모호함, evaluator 인지 진짜 turn 인지 확실시 하는게 좋을거 같음
-    // TODO : 근데 또 보면 evaluator 가 고정이어야 하는거로 보임 그니까 결국은 self-play지만 self.map을 나누어 가지고 있다고 가정해야 될 듯 함
-    // TODO : 그렇게 되면 evaluator가 필요하지 않고 turn을 가지고 selection 때 자식 노드와 turn 매칭 해서 ?
-    // TODO : 필요할진 모르겠지만 참고하면 좋을 듯 합
     /// Select position based on policy
     ///
     /// # Errors
@@ -327,8 +324,21 @@ impl AlphaZero {
     /// - if method couldn't get value and prob from pyobject.
     fn expand(&mut self, sim: &Simulate) {
         let board = sim.board();
+        let parent_hashed = hash(&board);
+        { // borrow self.map: HashMap
+            let cost = sim.turn as i32 as f32;
+            let node = self.map.get_mut(&parent_hashed).unwrap();
+            if node.num_player == BOARD_CAPACITY {
+                let winner = sim.search_winner();
+                if winner == sim.turn { // current player win
+                    node.value = cost;
+                } else if winner != Player::None { // current player is lose
+                    node.value = -cost;
+                }
+                return;
+            }
+        }
         if let Some((value, prob)) = self.get_from(sim.turn, &board) {
-            let parent_hashed = hash(&board);
             let child_num = { // borrow mut self.map: HasMap
                 let parent_node = self.map.get_mut(&parent_hashed).unwrap();
                 parent_node.value = value;
@@ -346,7 +356,6 @@ impl AlphaZero {
 
                 let tree_node = self.map.entry(hashed).or_insert(Node::new_with_num(&board, child_num));
                 tree_node.n_prob = prob[row][col];
-                tree_node.turn = sim.turn;
             }
 
             let parent_node = self.map.get_mut(&parent_hashed).unwrap();
@@ -384,7 +393,6 @@ impl AlphaZero {
         }
     }
 
-    // TODO : check empty child node and no-one win
     /// Search the tree. Pack of select, expand, update.
     fn search(&mut self, simulate: &Simulate) {
         // 1. initialize
@@ -397,9 +405,6 @@ impl AlphaZero {
             simulate.simulate_in(row, col);
         }
 
-        if simulate.search_winner() != Player::None {
-            return;
-        }
         // 3. expansion
         self.expand(&simulate);
         // 4. update
@@ -412,12 +417,10 @@ impl AlphaZero {
     /// - If comparison error occured between two floats
     /// - If boards of selected child node and parent node have no difference.
     fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
-        let next_turn = sim.next_turn();
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
         let child_node = tree_node.next_node.iter()
             .map(|x| self.map.get(x).unwrap())
-            .filter(|x| x.turn == next_turn)
             .collect::<Vec<_>>();
 
         // total visit count of child nodes
