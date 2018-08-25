@@ -18,7 +18,7 @@
 extern crate cpython;
 
 use super::super::game::{Game, Player};
-use super::super::policy::{Policy, DefaultPolicy};
+use super::super::policy::Policy;
 use super::super::pybind::pylist_from_board;
 use super::super::Board;
 

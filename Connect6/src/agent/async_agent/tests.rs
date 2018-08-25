@@ -3,6 +3,7 @@ extern crate cpython;
 
 use super::*;
 use super::super::super::game::Player;
+use super::super::super::policy::{AlphaZero, HyperParameter, RandomPolicy};
 use self::cpython::{Python, PythonObject, PyClone};
 
 use std::time::Instant;

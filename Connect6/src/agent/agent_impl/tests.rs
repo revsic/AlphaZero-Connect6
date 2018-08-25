@@ -1,5 +1,6 @@
 use super::*;
 use super::super::super::BOARD_SIZE;
+use super::super::super::policy::DefaultPolicy;
 
 use std::sync::mpsc;
 use std::thread;
