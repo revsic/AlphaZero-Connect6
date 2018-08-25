@@ -19,3 +19,7 @@ version = "0.2.0"
 # for python2
 # default-features = false
 # features = ["python27-sys", "extension-module-2-7"]
+
+[badges]
+travis-ci = { repository = "revsic/AlphaZero-Connect6", branch = "master" }
+codecov = { repository = "revsic/AlphaZero-Connect6", branch = "master", service = "github" }
