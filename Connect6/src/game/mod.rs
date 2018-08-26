@@ -1,6 +1,6 @@
 //! Implementation of Game Connect6
 //!
-//! It defines the game connect6 and provides the algorithm to find either game end or winner.
+//! It defines the game connect6 and provides the algorithm to find the winner.
 //!
 //! # Examples
 //! ```rust
