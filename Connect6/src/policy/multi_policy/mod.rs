@@ -5,9 +5,7 @@
 //!
 //! # Examples
 //! ```rust
-//! let mut stdin = std::io::stdin();
-//! let mut stdout = std::io::stdout();
-//! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+//! io_policy_stdio!(io_policy);
 //! let mut rand_policy = RandomPolicy::new();
 //!
 //! let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
@@ -26,9 +24,7 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
-/// let mut stdin = std::io::stdin();
-/// let mut stdout = std::io::stdout();
-/// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+//! io_policy_stdio!(io_policy);
 /// let mut rand_policy = RandomPolicy::new();
 ///
 /// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
