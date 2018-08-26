@@ -2,7 +2,7 @@
 //!
 /// Agent is structure for playing game with given policy.
 /// As we pass the policy, agent play the game with given based on loop.
-/// `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
+/// Method `play` return the `PlayResult` and it can be converted as `PyObject`.
 ///
 /// # Examples
 /// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
@@ -45,7 +45,7 @@ pub struct RunResult {
 ///
 /// Agent is structure for playing game with given policy.
 /// As we pass the policy, agent play the game with given based on loop.
-/// `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
+/// Method `play` return the `PlayResult` and it can be converted as `PyObject`.
 ///
 /// # Examples
 /// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).

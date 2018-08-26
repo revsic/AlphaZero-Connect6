@@ -27,7 +27,7 @@ mod tests;
 
 /// Agent for playing multiple games asynchronously.
 ///
-/// Like [A3C](https://arxiv.org/abs/1602.01783), `AsyncAgent` play multiple games with tokio thread-pool.
+/// `AsyncAgent` play multiple games on tokio thread-pool.
 /// It pass the policy generator and return the vector of game result.
 ///
 /// # Examples
