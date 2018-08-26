@@ -17,7 +17,7 @@ extern crate rand;
 
 use cpython::{Python, PyObject, PySequence, PyTuple, ObjectProtocol, ToPyObject};
 use self::rand::distributions::{Distribution, Dirichlet};
-use self::rand::thread_rng;
+use self::rand::prelude::{IteratorRandom, thread_rng};
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -270,8 +270,8 @@ impl AlphaZero {
 
         let c_puct = self.param.c_puct;
         let visit_sum = child_nodes.iter().map(|x| x.visit).sum::<i32>() as f32;
-        let puct = |node: &Node, noise: &f64| {
-            let noise = *noise as f32;
+        let puct = |node: &Node, noise: f64| {
+            let noise = noise as f32;
             let visit = node.visit as f32;
             let prob = epsilon * noise + (1. - epsilon) * node.n_prob;
             prob * (visit_sum - visit).sqrt() / (1. + visit)
@@ -282,11 +282,19 @@ impl AlphaZero {
             Player::None => panic!("alpha_zero::maximum_from couldn't get unary function from player none")
         };
         // formula
-        let prob = |(node, noise): &(&Node, f64)| unary(node.q_value) + c_puct * puct(node, noise);
-        child_nodes.into_iter()
+        let prob = |(node, noise): (&Node, f64)| unary(node.q_value) + c_puct * puct(node, noise);
+        let probs = child_nodes.into_iter()
             .zip(dirichlet.sample(&mut thread_rng()))
-            .max_by(|n1, n2| prob(n1).partial_cmp(&prob(n2)).unwrap())
-            .map(|x| hash(&x.0.board))
+            .map(|n| (n.0, prob(n)))
+            .collect::<Vec<_>>();
+
+        let max = probs.iter()
+            .max_by(|(_, p1), (_, p2)| p1.partial_cmp(p2).unwrap())?;
+
+        probs.iter()
+            .filter(|(_, p)| *p == max.1)
+            .choose(&mut thread_rng())
+            .map(|(n, _)| hash(&n.board))
     }
 
     /// Initialize Policy

@@ -181,7 +181,7 @@ fn test_policy() {
 #[test]
 fn test_self_play() {
     let mut param = HyperParameter::default();
-    param.num_simulation = 10;
+    param.num_simulation = 2;
 
     let py_policy = py_policy!();
     let mut policy = AlphaZero::with_param(py_policy, param);
