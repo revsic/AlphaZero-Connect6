@@ -1,11 +1,11 @@
-/// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
-///
-/// `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
-/// and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
-///
-/// It pass callable python object with method `__call__(self, turn, board): (value, prob)`
-/// and make decision with combined MCTS and value, probability approximator as given.
-///
+//! Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
+//!
+//! `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
+//! and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
+//!
+//! It pass callable python object with method `__call__(self, turn, board): (value, prob)`
+//! and make decision with combined MCTS and value, probability approximator as given.
+//!
 //! # Examples
 //! ```rust
 //! // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
