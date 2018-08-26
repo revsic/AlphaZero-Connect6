@@ -1,13 +1,14 @@
-//! Implementation of policy `AlphaZero` based on combined MCTS and non-linear value, prob approximator.
-//!
-//! `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
-//! and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
-//! It pass callable python object with method `__call__(self, turn, board): (value, prob)`
-//! and make decision with combined mcts and value, probability approximator.
-//!
+/// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
+///
+/// `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
+/// and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
+///
+/// It pass callable python object with method `__call__(self, turn, board): (value, prob)`
+/// and make decision with combined MCTS and value, probability approximator as given.
+///
 //! # Examples
 //! ```rust
-//! // python : pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
+//! // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
 //! let mut policy = AlphaZero::new(pyobj);
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
@@ -52,7 +53,7 @@ impl Node {
     /// Construct a new Node
     ///
     /// It generate the number of stones in board.
-    /// To avoid the overhead, use method `use_with_num`
+    /// To avoid the overhead, use method `new_with_num`
     ///
     /// # Exmaples
     /// ```rust
@@ -105,12 +106,11 @@ impl Node {
 
 /// Hyperparameter for implementing `AlphaZero`.
 ///
-/// Default parameter is based on paper 'AlphaGo Zero'
+/// Default parameter is based on paper [AlphaGo Zero](https://www.nature.com/articles/nature24270)
 /// - `num_simulation` : number of simulation in tree search, default 800.
-/// - `num_expansion` : number of child node generation in expansion step, default 1.
-/// - `epsilon` : param for exploit, exploration, `e * noise + (1 - e) * prob`,  default 0.24.
+/// - `epsilon` : param for exploit, exploration, `e * noise + (1 - e) * prob`,  default 0.25.
 /// - `dirichlet_alpha` : param for diriclet random distribution, default 0.03.
-/// - `c_puct` : param for modulating q_value and probability, default 1..
+/// - `c_puct` : param for modulating q_value and probability, default 1.
 ///
 #[derive(Copy, Clone)]
 pub struct HyperParameter {
@@ -121,6 +121,7 @@ pub struct HyperParameter {
 }
 
 impl HyperParameter {
+    /// Generate default HyperParameter
     pub fn default() -> HyperParameter {
         HyperParameter {
             num_simulation: 800,
@@ -131,16 +132,17 @@ impl HyperParameter {
     }
 }
 
-/// Implementation of policy `AlphaZero` based on combined MCTS and non-linear value, prob approximator.
+/// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
 ///
 /// `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
 /// and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
+///
 /// It pass callable python object with method `__call__(self, turn, board): (value, prob)`
-/// and make decision with combined mcts and value, probability approximator.
+/// and make decision with combined MCTS and value, probability approximator as given.
 ///
 /// # Examples
 /// ```rust
-/// // python : pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
+/// // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
 /// let mut policy = AlphaZero::new(pyobj);
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
@@ -156,7 +158,7 @@ impl AlphaZero {
     ///
     /// # Examples
     /// ```rust
-    /// // python : pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
+    /// // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
     /// let mut policy = AlphaZero::new(pyobj);
     /// ```
     pub fn new(obj: PyObject) -> AlphaZero {
