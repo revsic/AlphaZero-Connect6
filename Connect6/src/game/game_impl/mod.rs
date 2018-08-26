@@ -22,7 +22,7 @@ use super::super::{BOARD_SIZE, Board};
 #[cfg(test)]
 mod tests;
 
-/// Result of playing game for each turn.
+/// Result of setting stone
 #[derive(Debug, PartialEq)]
 pub struct PlayResult {
     pub player: Player,
@@ -94,7 +94,7 @@ impl Game {
         }
     }
 
-    /// Set the stone of current player with given position, zero-indexed (row, col).
+    /// Set the stone of current player with given position as zero-indexed (row, col).
     ///
     /// # Examples
     /// ```rust
@@ -156,7 +156,7 @@ impl Game {
     /// ```
     /// Expected results
     /// ```
-    /// 0 A B C D E F G H I J K L M N O P Q R S
+    /// 0 A B C D E F G H I J K L M N O
     /// a _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     /// b _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     /// c _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
@@ -176,7 +176,7 @@ impl Game {
     pub fn print(&self, writer: &mut io::Write) -> io::Result<usize> {
         // generate ascii canvas
         let mut paint = Paint::new(writer);
-        paint.push(b"0 A B C D E F G H I J K L M N O P Q R S\n");
+        paint.push(b"0 A B C D E F G H I J K L M N O\n");
 
         for i in 0..BOARD_SIZE {
             let row_name = [0x61 + i as u8, ' ' as u8];
