@@ -1,4 +1,3 @@
-use super::*;
 use super::super::super::agent::Agent;
 use super::super::super::game::Player;
 
@@ -7,12 +6,9 @@ use std::time::Instant;
 #[test]
 #[ignore]
 fn test_agent_io() {
-    let mut stdin = io::stdin();
-    let mut stdout = io::stdout();
-    let mut policy = IoPolicy::new(&mut stdin, &mut stdout);
-
+    io_policy_stdio!(policy);
     let now = Instant::now();
-    let result = Agent::new(&mut policy).play();
+    let result = Agent::debug(&mut policy).play();
     let done = now.elapsed();
 
     println!("{}.{}s elapsed", done.as_secs(), done.subsec_millis());
