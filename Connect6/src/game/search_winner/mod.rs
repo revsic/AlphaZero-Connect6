@@ -172,7 +172,7 @@ impl Block {
     }
 }
 
-/// Algorithm implementation for finding winner of the Connect6.
+/// Algorithm for finding winner of the Connect6.
 ///
 /// Algorithm finds the continuous 6 stones on 4 directions, vertical, horizontal, two diagonals.
 /// Use dynamic programming to implement algorithm and swaping memories to obtain the memory efficiency.
