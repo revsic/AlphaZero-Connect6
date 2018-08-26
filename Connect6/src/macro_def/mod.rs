@@ -24,6 +24,13 @@ macro_rules! must {
     }
 }
 
+/// Create random python policy for testing policy AlphaZero
+///
+/// # Examples
+/// ```rust
+/// let py_policy = py_policy!();
+/// let mut policy = AlphaZero::new(py_policy);
+/// ```
 #[macro_export]
 macro_rules! py_policy {
     () => {{
@@ -31,4 +38,22 @@ macro_rules! py_policy {
         let py = gil.python();
         $crate::macro_def::create_pypolicy(py).unwrap().into_object()
     }}
+}
+
+/// Create IoPolicy with stdio
+///
+/// # Examples
+/// ```rust
+/// stdio_policy(policy);
+/// let result = Agent::new(&mut policy).play();
+/// assert!(result.is_ok());
+/// ```
+#[macro_export]
+macro_rules! io_policy_stdio {
+    ($policy:ident) => {
+        use std;
+        let mut stdin = std::io::stdin();
+        let mut stdout = std::io::stdout();
+        let mut $policy = $crate::policy::IoPolicy::new(&mut stdin, &mut stdout);
+    }
 }
