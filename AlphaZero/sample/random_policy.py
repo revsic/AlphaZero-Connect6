@@ -26,7 +26,7 @@ class RandomPolicy:
 
 policy = RandomPolicy()
 param = pyconnect6.default_param()
-param['num_simulation'] = 1
+param['num_simulation'] = 2
 param['num_game_thread'] = 1
 param['debug'] = True
 
