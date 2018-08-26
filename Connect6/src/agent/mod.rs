@@ -1,10 +1,10 @@
 //! Agent for playing game with given policy
 //!
-//! This module consists of two submodules, agent_impl and async_agent.
-//! `agent_impl` is implementation of loop based single policy agent.
+//! This module consists of two structures, `Agent` and `AsyncAgent`.
+//! `Agent` is implementation of loop based single policy agent.
 //! As we pass the policy, method `play` return the `PlayResult` consisted of winner and playing history (called path).
 //!
-//! `async_agent` is multi-thread based agent, playing multiple game asynchronously.
+//! `AsyncAgent` is multi-thread based agent, playing multiple game asynchronously.
 //! It pass the policy generator and return the vector of `PlayResult`.
 //!
 //! # Examples
