@@ -15,7 +15,7 @@ python -m weighted.play --load_ckpt=[n_epoch] --name=[model_name]
 pyconnect6 will display the board status and you can input like 'aD' or 'sB'.
 ```
 White (a, C), remain 1, 7.276 elapsed
-0 A B C D E F G H I J K L M N O P Q R S
+0 A B C D E F G H I J K L M N O
 a O O O _ _ _ X _ _ _ _ _ _ _ _
 b _ _ X _ _ _ _ _ _ _ _ _ _ _ _
 c _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
