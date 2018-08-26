@@ -24,7 +24,7 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
-//! io_policy_stdio!(io_policy);
+/// io_policy_stdio!(io_policy);
 /// let mut rand_policy = RandomPolicy::new();
 ///
 /// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
