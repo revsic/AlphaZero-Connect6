@@ -14,14 +14,13 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
-/// // python : obj = [1.0, 2.0, 3.0]
+/// // obj = [1.0, 2.0, 3.0]
 /// let vec = pyseq_to_vec(py, obj);
 /// assert_eq!(vec, Som(vec![1., 2., 3.]));
-///
+///```
 /// # Panics
 /// - If given `obj` couldn't cast into `PySequence`.
 /// - If casted `obj` couldn't generate `PyIterator`.
-/// ```
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
     let pyseq = must!(obj.cast_into::<PySequence>(py), "pyseq_to_vec couldn't cast obj into pyseq");
     let pyiter = must!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
@@ -38,7 +37,7 @@ pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
 /// ```rust
 /// let game = Game::new();
 /// let obj = pylist_from_board(py, game.get_board());
-/// // python : assert obj == [0, 0, 0, ...]
+/// // assert obj == [0, 0, 0, ...]
 /// ```
 pub fn pylist_from_board(py: Python, board: &Board) -> PyObject {
     let mut ordered: Vec<PyObject> = Vec::with_capacity(BOARD_SIZE * BOARD_SIZE);
@@ -61,7 +60,7 @@ pub fn pylist_from_board(py: Python, board: &Board) -> PyObject {
 ///     vec.push(sim.board());
 /// }
 /// let result = pylist_from_multiple(py, &vec);
-/// // python : assert result == [[-1, 0, ...], [-1, 1, 0, ...], [-1, 1, 1, 0, ...], ...]
+/// // assert result == [[-1, 0, ...], [-1, 1, 0, ...], [-1, 1, 1, 0, ...], ...]
 /// ```
 pub fn pylist_from_multiple(py: Python, boards: &Vec<Board>) -> PyObject {
     let lists = boards.iter()
