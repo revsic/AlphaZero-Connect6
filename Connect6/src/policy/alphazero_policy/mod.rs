@@ -107,10 +107,10 @@ impl Node {
 /// Hyperparameter for implementing `AlphaZero`.
 ///
 /// Default parameter is based on paper [AlphaGo Zero](https://www.nature.com/articles/nature24270)
-/// - `num_simulation` : number of simulation in tree search, default 800.
-/// - `epsilon` : param for exploit, exploration, `e * noise + (1 - e) * prob`,  default 0.25.
-/// - `dirichlet_alpha` : param for diriclet random distribution, default 0.03.
-/// - `c_puct` : param for modulating q_value and probability, default 1.
+/// - num_simulation : number of simulation in tree search, default 800.
+/// - epsilon : exploit, exploration parameter, default 0.25.
+/// - dirichlet_alpha : param for diriclet random distribution, default 0.03.
+/// - c_puct : param for modulating q_value and probability, default 1.
 ///
 #[derive(Copy, Clone)]
 pub struct HyperParameter {

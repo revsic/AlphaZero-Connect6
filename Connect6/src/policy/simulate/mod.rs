@@ -200,7 +200,7 @@ impl Simulate {
     /// By memory sharing of structure `Node`, once the new simulation is created,
     /// node of parents simulations would be also modified.
     /// This means, valid simulation is only *one* in the same time.
-    /// Simulation will recover the shared memory if it dropped.
+    /// Simulation will recover the shared memory when it dropped.
     /// It can make the tree searching more efficiently and precisely under the borrowing system of Rust.
     ///
     /// # Examples

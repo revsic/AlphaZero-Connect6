@@ -29,7 +29,7 @@ mod tests;
 /// Input format is {row lowercase}{col uppercase} such as "sS" or "aC".
 /// If invalid format or position is given, policy will write retrying message to stdout.
 ///
-/// *Note* if given position raise Err from `Game, game will be terminated by `Agent`.
+/// *Note* if given position raise Err from Game, game will be terminated by `Agent`.
 ///
 /// *Note* We suggest that if you use IoPolicy, construct `Agent` with `Agent::debug`.
 /// IoPolicy don't displaying the board when you make the choice,
