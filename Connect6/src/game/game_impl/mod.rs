@@ -47,7 +47,7 @@ impl PlayResult {
     /// let game = Game::new();
     /// let position = (0, 0);
     ///
-    /// let play_result = PlayResult::new(&game, position);
+    /// let play_result = PlayResult::with_game(&game, position);
     /// assert_eq!(play_result, PlayResult{ player: Player::Black, num_remain: 1, position: (0, 0) });
     /// ```
     fn with_game(game: &Game, position: (usize, usize)) -> PlayResult {
