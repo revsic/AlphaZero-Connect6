@@ -1,6 +1,6 @@
 //! Agent for playing multiple games asynchronously.
 //!
-//! Like [A3C](https://arxiv.org/abs/1602.01783), `AsyncAgent` play multiple games with tokio thread-pool.
+//! `AsyncAgent` play multiple games on tokio thread-pool.
 //! It pass the policy generator and return the vector of game result.
 //!
 //! # Examples
@@ -9,7 +9,7 @@
 //! let async_agent = AsyncAgent::debug(policy_gen);
 //!
 //! let result = async_agent.run(4)
-//! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
+//! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>() as f32 / 4.);
 //! ```
 extern crate futures;
 extern crate tokio;
@@ -45,7 +45,8 @@ pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
 
 impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     /// Construct a new AsyncAgent.
-    /// Get policy generator as callable object that return policy trait impl.
+    ///
+    /// Get policy generator as callable object which return impl `Policy`.
     ///
     /// # Examples
     /// ```rust
@@ -73,7 +74,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
         }
     }
 
-    /// Self-play the given number of games asynchronously at thread pool.
+    /// Self-play the given number of games asynchronously on thread pool.
     ///
     /// # Examples
     /// ```rust
