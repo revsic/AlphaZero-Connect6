@@ -3,7 +3,7 @@ use std::default::Default;
 #[cfg(test)]
 mod tests;
 
-/// enum `Player`, describe {Black: -1, None: 0, White: 1}
+/// enum `Player`, Black: -1, None: 0, White: 1
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Player {
     Black = -1,
@@ -27,7 +27,7 @@ impl Player {
         }
     }
 
-    /// mutable Switch
+    /// Switch mutably
     ///
     /// # Examples
     /// ```rust
