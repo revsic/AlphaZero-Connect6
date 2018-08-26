@@ -1,20 +1,18 @@
 //! Implementation of agent.
 //!
-//! Agent is structure for playing game with given single policy.
-//! As we pass the single policy, agent play the game with given policy in the loop.
-//! `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
-//!
-//! # Examples
-//! For black-white seperable policy, reference [MultiPolicy](../../policy/multi_policy).
-//! ```rust
-//! let mut stdin = std::io::stdin();
-//! let mut stdout = std::io::stdout();
-//! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
-//! let mut rand_policy = RandomPolicy::new();
-//!
-//! let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
-//! let result = Agent::debug(&mut multi_policy).play();
-//! ```
+/// Agent is structure for playing game with given policy.
+/// As we pass the policy, agent play the game with given based on loop.
+/// `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
+///
+/// # Examples
+/// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
+/// ```rust
+/// io_policy_stdio!(io_policy);
+/// let mut rand_policy = RandomPolicy::new();
+///
+/// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+/// let result = Agent::debug(&mut multi_policy).play();
+/// ```
 extern crate cpython;
 
 use super::super::game::{Game, Player};
@@ -37,24 +35,22 @@ pub struct Path {
     pub pos: (usize, usize),
 }
 
-/// Result of playing game, winner and path (history of game).
+/// Result of playing game, consists of winner and path (history of game).
 pub struct RunResult {
     pub winner: Player,
     pub path: Vec<Path>,
 }
 
-/// Implementation of agent.
+/// Loop based single policy agent.
 ///
-/// Agent is structure for playing game with given single policy.
-/// As we pass the single policy, agent play the game with given policy in the loop.
+/// Agent is structure for playing game with given policy.
+/// As we pass the policy, agent play the game with given based on loop.
 /// `agent.play` return the `PlayResult` and it can be converted as `PyObject`.
 ///
 /// # Examples
-/// For black-white seperable policy, reference [MultiPolicy](../../policy/multi_policy).
+/// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
 /// ```rust
-/// let mut stdin = std::io::stdin();
-/// let mut stdout = std::io::stdout();
-/// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
+/// io_policy_stdio!(io_policy);
 /// let mut rand_policy = RandomPolicy::new();
 ///
 /// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
@@ -158,7 +154,7 @@ impl<'a> Agent<'a> {
 impl ToPyObject for Path {
     type ObjectType = PyTuple;
 
-    /// Return `PyTuple`, (turn: int, board: list(int, board_size ** 2), pos: (int, int))
+    /// Return `PyTuple, (turn: int, board: list(int, board_size ** 2), pos: (int, int))`
     fn to_py_object(&self, py: Python) -> PyTuple {
         let turn = (self.turn as i32).to_py_object(py).into_object();
         let board = pylist_from_board(py, &self.board);
