@@ -71,11 +71,11 @@ impl Node {
 
 /// Game simulator with shared memory for efficient tree searching
 ///
-/// It provides simulation structure and some utilies to make next decision in policy.
+/// It provides simulation structure and some utilities to make next decision in policy.
 ///
-/// It shares possible selections and board by `Node` to make simulation without copying it.
-/// It generate new simulation with `simulate` and recover the shared memory `Node` when it drop.
-/// It can simulate itself mutablely by `simulate_in` and recover it by `rollback_in`.
+/// It shares possible selections and board by struct `Node` to make simulation without copying it.
+/// It generate new simulation with method `simulate` and recover the shared memory `Node` when it dropped.
+/// It can also simulate itself mutablely by `simulate_in` and recover it by `rollback_in`.
 ///
 /// # Examples
 /// ```rust
@@ -123,10 +123,10 @@ impl Simulate {
         }
     }
 
-    /// *Deep* clone the simulation.
+    /// Deep clone the simulation.
     ///
-    /// With `Rc<RefCell<Node>>`, the `Clone` implementation make the shallow copy of `Node`.
-    /// By this reason, we require the `deep_clone` implementation which make the *deep* copy of `Node`.
+    /// With `Rc<RefCell<Node>>`, the default `Clone` implementation make the shallow copy of `Node`.
+    /// By this reason, we require the `deep_clone` implementation which makes the *deep* copy of `Node`.
     pub fn deep_clone(&self) -> Simulate {
         let node = self.node.borrow();
         let board = node.board;
@@ -151,7 +151,7 @@ impl Simulate {
         node.possible.clone()
     }
 
-    /// Find either the winner or game end, like `Game::is_game_end`.
+    /// Find the winner of game
     ///
     /// # Examples
     /// ```rust
@@ -164,7 +164,7 @@ impl Simulate {
         search(board)
     }
 
-    /// Validate the position, invalid position or already selected position.
+    /// Validate the position, check invalid position err or already selected position err.
     ///
     /// # Examples
     /// ```rust
@@ -198,9 +198,9 @@ impl Simulate {
     /// Make the new simulation with given position.
     ///
     /// By memory sharing of structure `Node`, once the new simulation is created,
-    /// node of parents simulations will be also modified.
-    /// This means, valid simulation is only *one* in same time.
-    /// Simulation will recover the shared memory If it dropped,
+    /// node of parents simulations would be also modified.
+    /// This means, valid simulation is only *one* in the same time.
+    /// Simulation will recover the shared memory if it dropped.
     /// It can make the tree searching more efficiently and precisely under the borrowing system of Rust.
     ///
     /// # Examples
@@ -240,8 +240,8 @@ impl Simulate {
     /// Modify the current state to simulate given position.
     ///
     /// It is for making simulation in the loop.
-    /// It modify the inner state to simulate given state and do not make the new one.
-    /// If you want to recover the inner state, reference `rollback_in`
+    /// It modify the inner state to simulate given position and do not make the new one.
+    /// If you want to recover the inner state, reference [rollback_in](#method.rollback_in)
     ///
     /// # Examples
     /// ```rust
