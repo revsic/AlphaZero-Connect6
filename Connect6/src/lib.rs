@@ -4,7 +4,7 @@
 //! for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
 //!
 //! Connect6 provides game environment and policy based self-playing agent with some pre-defined policies.
-//! It also provides multi-thread async self-playing agent
+//! It also provides multi-threading agent
 //! and MCTS policy [AlphaZero](https://arxiv.org/abs/1712.01815) with some hyperparameters control.
 //!
 //! You can install `pyconnect6` with `setup.py` and join the AlphaZero self-playing agent
