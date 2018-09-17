@@ -2,10 +2,8 @@
 //!
 //! `rust-cpython` based rust bindings.
 //! It provides some utilities related to implement AlphaZero.
-extern crate cpython;
-
-use cpython::*;
 use super::super::{BOARD_SIZE, Board};
+use cpython::*;
 
 #[cfg(test)]
 mod tests;

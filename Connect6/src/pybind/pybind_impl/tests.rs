@@ -1,5 +1,3 @@
-extern crate rand;
-
 use super::*;
 use super::super::super::{BOARD_CAPACITY, game::*};
 
