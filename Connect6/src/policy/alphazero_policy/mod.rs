@@ -33,7 +33,7 @@ mod augment;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
-mod augment_test;
+mod augment_tests;
 
 /// Tree node, get next node as hash value of board
 #[derive(Clone, Debug)]
@@ -130,6 +130,11 @@ impl HyperParameter {
             c_puct: 1.,
         }
     }
+}
+
+/// Evaluator for applying value, policy approximator to `AlphaZero`.
+pub trait Evaluator {
+    fn eval(turn: Player, board: Vec<Board>) -> (Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>);
 }
 
 /// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
