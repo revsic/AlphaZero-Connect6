@@ -14,7 +14,7 @@
 //! assert!(result.is_ok());
 //! ```
 use super::{Policy, Simulate, diff_board};
-use super::super::pybind::{pylist_from_multiple, pyseq_to_vec};
+use super::super::pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
 use super::super::game::{Game, Player};
 use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
 
@@ -131,7 +131,7 @@ impl HyperParameter {
 
 /// Evaluator for applying value, policy approximator to `AlphaZero`.
 pub trait Evaluator {
-    fn eval(turn: Player, board: Vec<Board>) -> (Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>);
+    fn eval(&self, turn: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)>;
 }
 
 /// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
@@ -150,13 +150,13 @@ pub trait Evaluator {
 /// assert!(result.is_ok());
 /// ```
 pub struct AlphaZero {
-    obj: PyObject,
     map: HashMap<u64, Node>,
     param: HyperParameter,
+    evaluator: Box<Evaluator + Send>,
 }
 
 impl AlphaZero {
-    /// Construct a new `AlphaZero` policy.
+    /// Construct a new `AlphaZero` policy with python evaluator
     ///
     /// # Examples
     /// ```rust
@@ -166,9 +166,9 @@ impl AlphaZero {
     pub fn new(obj: PyObject) -> AlphaZero {
         let param = HyperParameter::default();
         AlphaZero {
-            obj,
             map: HashMap::new(),
             param,
+            evaluator: Box::new(PyEval::new(obj)),
         }
     }
 
@@ -181,62 +181,25 @@ impl AlphaZero {
     /// ```
     pub fn with_param(obj: PyObject, param: HyperParameter) -> AlphaZero {
         AlphaZero {
-            obj,
             map: HashMap::new(),
             param,
+            evaluator: Box::new(PyEval::new(obj)),
         }
     }
 
     /// Get value and prob from `PyObject`
     ///
     /// # Panics
-    /// - If `self.obj` is not callable object, or method `__call__` is not a type of `__call__(self, turn, board): (value, prob)`
-    /// - if return value of `self.obj.call()` is not a tuple type object.
+    /// - If `self.evaluator` raise panics
     ///
     /// # Errors
-    /// - if `value` is not a sequence type object consists of floats.
-    /// - if `policy` is not a 2D sequence type object consists of floats.
-    /// - if `policy` is not shaped `[boards.len(), BOARD_SIZE ** 2]`
+    /// - if `self.evaluator` returns `None` object
     fn get_from(&self, turn: Player, board: &Board)
                 -> Option<(f32, [[f32; BOARD_SIZE]; BOARD_SIZE])> {
-        let (value_vec, policy_vec) = {
-            // acquire python gil
-            let gil = Python::acquire_gil();
-            let py = gil.python();
-
-            // convert parameter to python object
-            let py_turn = (turn as i32).to_py_object(py);
-            let py_board = pylist_from_multiple(py, &augment::augment_way8(board));
-            let res = must!(self.obj.call(py, (py_turn, py_board), None), "alpha_zero::get_from couldn't call pyobject");
-            let pytuple = must!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
-
-            let value = pytuple.get_item(py, 0);
-            let policy = pytuple.get_item(py, 1);
-
-            // convert python object to proper vector
-            let value_vec = pyseq_to_vec(py, value)?;
-            let policy_vec = policy.cast_into::<PySequence>(py).ok()?
-                .iter(py).ok()?
-                .filter_map(|x| x.ok()) // pyiter returns iterator of Result
-                .filter_map(|x| pyseq_to_vec(py, x))
-                .collect::<Vec<Vec<f32>>>();
-
-            (value_vec, policy_vec)
-        };
+        let (value_vec, policy_vec) = self.evaluator.eval(turn, &augment::augment_way8(board))?;
         let value = value_vec.iter().sum::<f32>() / 8.;
 
-        let mut vec = Vec::new();
-        // unpack the board
-        for policy in policy_vec.iter() {
-            let mut temporal = [[0.; BOARD_SIZE]; BOARD_SIZE];
-            for i in 0..BOARD_SIZE {
-                for j in 0..BOARD_SIZE {
-                    temporal[i][j] = policy[i * BOARD_SIZE + j];
-                }
-            }
-            vec.push(temporal);
-        }
-        let mut recovered = augment::recover_way8(vec);
+        let mut recovered = augment::recover_way8(policy_vec);
         for i in 0..BOARD_SIZE {
             for j in 0..BOARD_SIZE {
                 // masking already set point
