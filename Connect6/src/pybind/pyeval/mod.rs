@@ -41,43 +41,37 @@ impl Evaluator for PyEval {
     /// - if `policy` is not a 2D sequence type object consists of floats.
     /// - if `policy` is not shaped `[boards.len(), BOARD_SIZE ** 2]`
     fn eval(&self, turn: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
-        let (value_vec, policy_vec) = {
-            // acquire python gil
-            let gil = Python::acquire_gil();
-            let py = gil.python();
+        // acquire python gil
+        let gil = Python::acquire_gil();
+        let py = gil.python();
 
-            // convert parameter to python object
-            let py_turn = (turn as i32).to_py_object(py);
-            let py_board = pylist_from_multiple(py, board);
-            let res = must!(self.pyobj.call(py, (py_turn, py_board), None), "alpha_zero::get_from couldn't call pyobject");
-            let pytuple = must!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
+        // convert parameter to python object
+        let py_turn = (turn as i32).to_py_object(py);
+        let py_board = pylist_from_multiple(py, board);
+        let res = must!(self.pyobj.call(py, (py_turn, py_board), None), "alpha_zero::get_from couldn't call pyobject");
+        let pytuple = must!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
 
-            let value = pytuple.get_item(py, 0);
-            let policy = pytuple.get_item(py, 1);
+        let value = pytuple.get_item(py, 0);
+        let policy = pytuple.get_item(py, 1);
 
-            // convert python object to proper vector
-            let value_vec = pyseq_to_vec(py, value)?;
-            let policy_vec = policy.cast_into::<PySequence>(py).ok()?
-                .iter(py).ok()?
-                .filter_map(|x| x.ok()) // pyiter returns iterator of Result
-                .filter_map(|x| pyseq_to_vec(py, x))
-                .collect::<Vec<Vec<f32>>>();
+        // convert python object to proper vector
+        let value_vec = pyseq_to_vec(py, value)?;
+        let policy_iter = policy.cast_into::<PySequence>(py).ok()?
+            .iter(py).ok()?
+            .filter_map(|x| x.ok()) // pyiter returns iterator of Result
+            .filter_map(|x| pyseq_to_vec(py, x));
 
-            (value_vec, policy_vec)
-        };
-
-        let mut vec = Vec::new();
-        // unpack the board
-        for policy in policy_vec.iter() {
+        let mut policy_vec = Vec::with_capacity(board.len());
+        for policy in policy_iter {
             let mut temporal = [[0.; BOARD_SIZE]; BOARD_SIZE];
             for i in 0..BOARD_SIZE {
                 for j in 0..BOARD_SIZE {
                     temporal[i][j] = policy[i * BOARD_SIZE + j];
                 }
             }
-            vec.push(temporal);
+            policy_vec.push(temporal);
         }
 
-        Some((value_vec, vec))
+        Some((value_vec, policy_vec))
     }
 }
