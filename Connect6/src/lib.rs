@@ -28,7 +28,9 @@
 //! ```
 #[macro_use]
 extern crate cpython;
+extern crate futures;
 extern crate rand;
+extern crate tokio;
 
 #[macro_use]
 mod macro_def;

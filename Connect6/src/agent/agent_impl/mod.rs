@@ -13,16 +13,14 @@
 /// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
 /// let result = Agent::debug(&mut multi_policy).play();
 /// ```
-extern crate cpython;
-
 use super::super::game::{Game, Player};
 use super::super::policy::Policy;
 use super::super::pybind::pylist_from_board;
 use super::super::Board;
 
-use cpython::{Python, PythonObject, PyList, PyTuple, ToPyObject};
 use std::io;
 use std::time::Instant;
+use cpython::{Python, PythonObject, PyList, PyTuple, ToPyObject};
 
 #[cfg(test)]
 mod tests;
