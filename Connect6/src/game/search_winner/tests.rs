@@ -1,6 +1,5 @@
-extern crate rand;
-
 use super::*;
+use rand;
 
 #[cfg(test)]
 mod block_tests {

@@ -1,4 +1,3 @@
-extern crate rand;
 use super::*;
 
 #[test]

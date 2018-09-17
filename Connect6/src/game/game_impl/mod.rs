@@ -15,9 +15,10 @@
 //!     println!("playing result: {:?}", result);
 //! }
 //! ```
-use std::io;
 use super::Player;
 use super::super::{BOARD_SIZE, Board};
+
+use std::io;
 
 #[cfg(test)]
 mod tests;

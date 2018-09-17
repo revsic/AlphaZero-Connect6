@@ -12,7 +12,6 @@
 //! assert_eq!(winner, Player::None);
 //! ```
 use super::Player;
-
 use super::super::{BOARD_SIZE, Board};
 
 #[cfg(test)]
