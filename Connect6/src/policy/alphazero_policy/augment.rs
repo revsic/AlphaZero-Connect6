@@ -55,7 +55,7 @@ pub fn sum_board<T>(board1: &mut GenericBoard<T>, board2: &GenericBoard<T>)
 }
 
 pub fn augment_way8(board: &Board) -> Vec<Board> {
-    let mut vec = Vec::new();
+    let mut vec = Vec::with_capacity(8);
     let mut board = *board;
 
     for _ in 0..4 {
