@@ -6,11 +6,11 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-extern crate rand;
-
 use super::{Policy, Simulate};
 use super::super::game::Game;
-use self::rand::prelude::SliceRandom;
+
+use rand;
+use rand::prelude::SliceRandom;
 
 #[cfg(test)]
 mod tests;

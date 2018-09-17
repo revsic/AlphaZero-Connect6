@@ -1,4 +1,5 @@
 use super::*;
+use rand;
 
 #[test]
 fn test_rotate_left() {

@@ -18,10 +18,11 @@
 //! let board = sim.board();
 //! assert_eq!(board[0][0][, Player::None);
 //! ```
-use std::cell::RefCell;
-use std::rc::Rc;
 use super::super::game::{Game, Player, search};
 use super::super::{BOARD_SIZE, Board};
+
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[cfg(test)]
 mod tests;

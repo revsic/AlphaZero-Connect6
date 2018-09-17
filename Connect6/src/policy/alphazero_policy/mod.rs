@@ -13,20 +13,17 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-extern crate cpython;
-extern crate rand;
-
-use cpython::{Python, PyObject, PySequence, PyTuple, ObjectProtocol, ToPyObject};
-use self::rand::distributions::{Distribution, Dirichlet};
-use self::rand::prelude::{IteratorRandom, thread_rng};
-use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-
 use super::{Policy, Simulate, diff_board};
 use super::super::pybind::{pylist_from_multiple, pyseq_to_vec};
 use super::super::game::{Game, Player};
 use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
+
+use cpython::{Python, PyObject, PySequence, PyTuple, ObjectProtocol, ToPyObject};
+use rand::distributions::{Distribution, Dirichlet};
+use rand::prelude::{IteratorRandom, thread_rng};
+use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 mod augment;
 

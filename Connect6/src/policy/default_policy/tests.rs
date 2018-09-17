@@ -1,7 +1,7 @@
 use super::*;
+use super::super::super::agent::Agent;
 
 use std::time::Instant;
-use super::super::super::agent::Agent;
 
 #[test]
 fn test_select() {
