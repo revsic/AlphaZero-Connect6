@@ -27,15 +27,16 @@
 //! print(win)
 //! ```
 #[macro_use]
+extern crate cpython;
+extern crate rand;
+
+#[macro_use]
 mod macro_def;
 
 pub mod agent;
 pub mod game;
 pub mod policy;
 pub mod pybind;
-
-#[macro_use]
-extern crate cpython;
 
 use cpython::*;
 
