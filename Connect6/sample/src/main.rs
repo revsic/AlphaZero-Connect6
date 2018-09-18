@@ -1,6 +1,6 @@
 extern crate connect6;
 
-use connect6::{agent, policy, game::Player};
+use connect6::{agent, game::Player, policy};
 use std::time::Instant;
 
 fn main() {
