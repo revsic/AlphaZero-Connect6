@@ -6,8 +6,8 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use policy::{Policy, Simulate};
 use game::Game;
+use policy::{Policy, Simulate};
 
 use rand;
 use rand::prelude::SliceRandom;
@@ -23,12 +23,12 @@ mod tests;
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
 /// ```
-pub struct RandomPolicy { }
+pub struct RandomPolicy {}
 
 impl RandomPolicy {
     /// Construct a new RandomPolicy
     pub fn new() -> RandomPolicy {
-        RandomPolicy { }
+        RandomPolicy {}
     }
 }
 
@@ -38,7 +38,6 @@ impl Policy for RandomPolicy {
         let sim = Simulate::from_game(game);
         let node = sim.node.borrow();
         // choose position from vector `possible`
-        node.possible.choose(&mut rand::thread_rng())
-            .map(|x| *x)
+        node.possible.choose(&mut rand::thread_rng()).map(|x| *x)
     }
 }

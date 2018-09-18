@@ -23,12 +23,12 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_err());
 //! ```
-pub use self::simulate::*;
 pub use self::alphazero_policy::*;
 pub use self::default_policy::*;
 pub use self::io_policy::*;
 pub use self::multi_policy::*;
 pub use self::random_policy::*;
+pub use self::simulate::*;
 
 mod alphazero_policy;
 mod default_policy;

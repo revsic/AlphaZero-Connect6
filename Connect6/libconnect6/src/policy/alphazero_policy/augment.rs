@@ -24,7 +24,8 @@ pub fn rotate_right<T: Copy + Default>(board: &mut GenericBoard<T>) {
     *board = rotate;
 }
 
-pub fn flip_vertical<T>(board: &mut GenericBoard<T>) { // axis |
+pub fn flip_vertical<T>(board: &mut GenericBoard<T>) {
+    // axis |
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE / 2 {
             // swap(board[i][BOARD_SIZE - j], board[i][j]);
@@ -33,7 +34,8 @@ pub fn flip_vertical<T>(board: &mut GenericBoard<T>) { // axis |
     }
 }
 
-pub fn flip_horizontal<T: Copy>(board: &mut GenericBoard<T>) { // axis --
+pub fn flip_horizontal<T: Copy>(board: &mut GenericBoard<T>) {
+    // axis --
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE / 2 {
             // swap(board[BOARD_SIZE - j][i], board[j][i]);
@@ -45,7 +47,8 @@ pub fn flip_horizontal<T: Copy>(board: &mut GenericBoard<T>) { // axis --
 }
 
 pub fn sum_board<T>(board1: &mut GenericBoard<T>, board2: &GenericBoard<T>)
-    where T: Add<T, Output = T> + Copy + Default
+where
+    T: Add<T, Output = T> + Copy + Default,
 {
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
@@ -69,18 +72,21 @@ pub fn augment_way8(board: &Board) -> Vec<Board> {
     vec
 }
 
-pub fn recover_way8(mut probs: Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>) -> [[f32; BOARD_SIZE]; BOARD_SIZE] {
+pub fn recover_way8(
+    mut probs: Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>,
+) -> [[f32; BOARD_SIZE]; BOARD_SIZE] {
     let mut total = [[0.; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..4 {
         flip_vertical(&mut probs[i * 2 + 1]);
         let flipped = probs[i * 2 + 1];
         sum_board(&mut probs[i * 2], &flipped);
-        for _ in 0..(i+1) {
+        for _ in 0..(i + 1) {
             rotate_right(&mut probs[i * 2]);
         }
         sum_board(&mut total, &probs[i * 2]);
     }
-    total.iter_mut().for_each(|x|
-        x.iter_mut().for_each(|x| *x /= 8.));
+    total
+        .iter_mut()
+        .for_each(|x| x.iter_mut().for_each(|x| *x /= 8.));
     total
 }

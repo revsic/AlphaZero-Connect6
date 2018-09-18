@@ -6,15 +6,15 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use policy::Policy;
-use policy::simulate::Simulate;
 use game::{Game, Player};
-use {BOARD_SIZE, Board};
+use policy::simulate::Simulate;
+use policy::Policy;
+use {Board, BOARD_SIZE};
 
 use rand;
-use rand::prelude::{SliceRandom, thread_rng};
-use std::collections::HashMap;
+use rand::prelude::{thread_rng, SliceRandom};
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 #[cfg(test)]
@@ -75,11 +75,11 @@ pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
             if board1[row][col] != board2[row][col] {
-                return Some((row, col))
+                return Some((row, col));
             }
         }
     }
-    return None
+    return None;
 }
 /// Policy for pure Monte Carlo tree search implementation
 ///
@@ -143,12 +143,11 @@ impl DefaultPolicy {
         };
         let prob = |node: &Node| unary(node.black_win as f32 / (1. + node.visit as f32));
         // get the maximum probability node
-        let max = tree_node.next_node.iter()
-            .max_by(|n1, n2| {
-                let node1 = self.map.get(*n1).unwrap();
-                let node2 = self.map.get(*n2).unwrap();
-                prob(node1).partial_cmp(&prob(node2)).unwrap()
-            });
+        let max = tree_node.next_node.iter().max_by(|n1, n2| {
+            let node1 = self.map.get(*n1).unwrap();
+            let node2 = self.map.get(*n2).unwrap();
+            prob(node1).partial_cmp(&prob(node2)).unwrap()
+        });
 
         // if tree_node.next_node is not empty
         if let Some(hashed) = max {

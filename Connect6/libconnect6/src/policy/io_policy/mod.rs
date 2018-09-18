@@ -15,8 +15,8 @@
 //! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
 //! Agent::debug(&mut io_policy).play().unwrap();
 //! ```
-use policy::Policy;
 use game::Game;
+use policy::Policy;
 use BOARD_SIZE;
 
 use std::io;
@@ -67,12 +67,15 @@ impl<'a, 'b> Policy for IoPolicy<'a, 'b> {
         loop {
             // get from buffer
             let mut buffer = [0; 10];
-            self.reader.read(&mut buffer)
+            self.reader
+                .read(&mut buffer)
                 .expect("io_policy::next - couldn't read from self.reader");
 
-            let query: String = buffer.iter()
+            let query: String = buffer
+                .iter()
                 .filter(|x| x.is_ascii_alphabetic())
-                .map(|x| *x as char).collect();
+                .map(|x| *x as char)
+                .collect();
 
             if query.len() == 2 {
                 // parse position
@@ -90,7 +93,8 @@ impl<'a, 'b> Policy for IoPolicy<'a, 'b> {
                     }
                 }
             }
-            self.writer.write(b"invalid input, retry\n")
+            self.writer
+                .write(b"invalid input, retry\n")
                 .expect("agent_io::play - write invalid query msg fail");
         }
         pos

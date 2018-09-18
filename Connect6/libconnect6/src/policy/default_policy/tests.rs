@@ -100,9 +100,10 @@ fn test_update() {
     assert_eq!(child.visit, 1);
     assert_eq!(child.black_win, parent.black_win);
 
-    let num = child.board.iter()
-        .flat_map(|x| x.iter()
-            .filter(|y| **y != Player::None))
+    let num = child
+        .board
+        .iter()
+        .flat_map(|x| x.iter().filter(|y| **y != Player::None))
         .count();
     assert_eq!(num, 1);
 }

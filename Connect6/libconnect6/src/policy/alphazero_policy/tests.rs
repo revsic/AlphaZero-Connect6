@@ -15,7 +15,8 @@ fn test_select() {
 
     let mut path = Vec::new();
     while let Some((row, col)) = policy.select(&sim) {
-        { // borrow sim: Simulate
+        {
+            // borrow sim: Simulate
             let node = sim.node.borrow();
             let pos = node.possible.iter().position(|x| *x == (row, col));
             assert!(pos.is_some());
@@ -114,7 +115,8 @@ fn test_update() {
     assert_eq!(node.visit, 2);
     assert_eq!(node.next_node.len(), BOARD_CAPACITY);
 
-    let child_hashed = node.next_node.iter()
+    let child_hashed = node.next_node
+        .iter()
         .filter(|x| policy.map.get(x).unwrap().value != 0.)
         .collect::<Vec<_>>();
     assert_eq!(child_hashed.len(), 1);
@@ -160,14 +162,15 @@ fn test_policy() {
     let (row, col) = pos.unwrap();
     assert!(sim.validate(row, col));
 
-    let pos = sim.possible().iter()
-        .position(|x| *x == (row, col));
+    let pos = sim.possible().iter().position(|x| *x == (row, col));
     assert!(pos.is_some());
 
     let node = policy.map.get(&hash(&sim.board()));
     assert!(node.is_some());
 
-    let child = node.unwrap().next_node.iter()
+    let child = node.unwrap()
+        .next_node
+        .iter()
         .filter(|x| policy.map.get(x).unwrap().value != 0.)
         .collect::<Vec<_>>();
     assert_eq!(child.len(), 1);

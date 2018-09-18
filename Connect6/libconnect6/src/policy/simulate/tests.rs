@@ -38,7 +38,8 @@ mod simulate_tests {
         let simulate = Simulate::new();
         let cloned = simulate.deep_clone();
 
-        { // borrow_mut simulate.node: Rc<RefCell<Node>>
+        {
+            // borrow_mut simulate.node: Rc<RefCell<Node>>
             let mut node = simulate.node.borrow_mut();
             node.board[0][0] = Player::Black;
         }
@@ -52,7 +53,8 @@ mod simulate_tests {
         let simulate = Simulate::from_game(&game);
         assert!(simulate.validate(0, 0));
 
-        { // borrow_mut simulate.node: Rc<RefCell<Node>>
+        {
+            // borrow_mut simulate.node: Rc<RefCell<Node>>
             let mut node = simulate.node.borrow_mut();
             node.board[0][0] = Player::Black;
         }
@@ -60,7 +62,10 @@ mod simulate_tests {
 
         let row = rand::random::<usize>() % 40 + 1;
         let col = rand::random::<usize>() % 40 + 1;
-        assert_eq!(simulate.validate(row, col), row < BOARD_SIZE && col < BOARD_SIZE);
+        assert_eq!(
+            simulate.validate(row, col),
+            row < BOARD_SIZE && col < BOARD_SIZE
+        );
     }
 
     #[test]

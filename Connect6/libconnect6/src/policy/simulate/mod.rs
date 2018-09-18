@@ -18,8 +18,8 @@
 //! let board = sim.board();
 //! assert_eq!(board[0][0][, Player::None);
 //! ```
-use game::{Game, Player, search};
-use {BOARD_SIZE, Board};
+use game::{search, Game, Player};
+use {Board, BOARD_SIZE};
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -37,7 +37,9 @@ impl Node {
     /// Make all possible selections within the board.
     #[inline]
     fn possible() -> Vec<(usize, usize)> {
-        (0..BOARD_SIZE).flat_map(|x| (0..BOARD_SIZE).map(move |y| (x, y))).collect()
+        (0..BOARD_SIZE)
+            .flat_map(|x| (0..BOARD_SIZE).map(move |y| (x, y)))
+            .collect()
     }
 
     /// Construct a new `Node`
@@ -217,18 +219,16 @@ impl Simulate {
     pub fn simulate(&self, row: usize, col: usize) -> Simulate {
         let mut node = self.node.borrow_mut();
         // remove given position from possible selections
-        let item = node.possible.iter()
-            .position(|x| *x == (row, col));
+        let item = node.possible.iter().position(|x| *x == (row, col));
         node.possible.remove(item.unwrap());
 
         node.board[row][col] = self.turn;
         // switching turn
-        let (turn, num_remain) =
-            if self.num_remain <= 1 {
-                (self.turn.switch(), 2)
-            } else {
-                (self.turn, 1)
-            };
+        let (turn, num_remain) = if self.num_remain <= 1 {
+            (self.turn.switch(), 2)
+        } else {
+            (self.turn, 1)
+        };
 
         Simulate {
             turn,
@@ -253,8 +253,7 @@ impl Simulate {
     /// ```
     pub fn simulate_in(&mut self, row: usize, col: usize) {
         let mut node = self.node.borrow_mut();
-        let item = node.possible.iter()
-            .position(|x| *x == (row, col));
+        let item = node.possible.iter().position(|x| *x == (row, col));
         node.possible.remove(item.unwrap());
 
         node.board[row][col] = self.turn;

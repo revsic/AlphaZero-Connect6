@@ -13,24 +13,24 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use policy::{Policy, Simulate, diff_board};
-use pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
 use game::{Game, Player};
-use {BOARD_SIZE, BOARD_CAPACITY, Board};
+use policy::{diff_board, Policy, Simulate};
+use pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
+use {Board, BOARD_CAPACITY, BOARD_SIZE};
 
-use cpython::{Python, PyObject, PySequence, PyTuple, ObjectProtocol, ToPyObject};
-use rand::distributions::{Distribution, Dirichlet};
-use rand::prelude::{IteratorRandom, thread_rng};
-use std::collections::HashMap;
+use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, ToPyObject};
+use rand::distributions::{Dirichlet, Distribution};
+use rand::prelude::{thread_rng, IteratorRandom};
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
 mod augment;
 
 #[cfg(test)]
-mod tests;
-#[cfg(test)]
 mod augment_tests;
+#[cfg(test)]
+mod tests;
 
 /// Tree node, get next node as hash value of board
 #[derive(Clone, Debug)]
@@ -58,7 +58,8 @@ impl Node {
     /// let node = Node::new(game.get_board());
     /// ```
     fn new(board: &Board) -> Node {
-        let num_player = board.iter()
+        let num_player = board
+            .iter()
             .map(|x| x.iter().filter(|x| **x != Player::None).count())
             .sum();
         Node {
@@ -131,7 +132,11 @@ impl HyperParameter {
 
 /// Evaluator for applying value, policy approximator to `AlphaZero`.
 pub trait Evaluator {
-    fn eval(&self, turn: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)>;
+    fn eval(
+        &self,
+        turn: Player,
+        board: &Vec<Board>,
+    ) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)>;
 }
 
 /// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
@@ -194,8 +199,11 @@ impl AlphaZero {
     ///
     /// # Errors
     /// - if `self.evaluator` returns `None` object
-    fn get_from(&self, turn: Player, board: &Board)
-                -> Option<(f32, [[f32; BOARD_SIZE]; BOARD_SIZE])> {
+    fn get_from(
+        &self,
+        turn: Player,
+        board: &Board,
+    ) -> Option<(f32, [[f32; BOARD_SIZE]; BOARD_SIZE])> {
         let (value_vec, policy_vec) = self.evaluator.eval(turn, &augment::augment_way8(board))?;
         let value = value_vec.iter().sum::<f32>() / 8.;
 
@@ -219,7 +227,9 @@ impl AlphaZero {
     fn maximum_from(&self, sim: &Simulate) -> Option<u64> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
-        let child_nodes = tree_node.next_node.iter()
+        let child_nodes = tree_node
+            .next_node
+            .iter()
             .map(|x| self.map.get(x).unwrap())
             .collect::<Vec<_>>();
         if child_nodes.is_empty() {
@@ -246,19 +256,24 @@ impl AlphaZero {
         let unary: fn(f32) -> f32 = match sim.turn {
             Player::Black => |x| -x,
             Player::White => |x| x,
-            Player::None => panic!("alpha_zero::maximum_from couldn't get unary function from player none")
+            Player::None => {
+                panic!("alpha_zero::maximum_from couldn't get unary function from player none")
+            }
         };
         // formula
         let prob = |(node, noise): (&Node, f64)| unary(node.q_value) + c_puct * puct(node, noise);
-        let probs = child_nodes.into_iter()
+        let probs = child_nodes
+            .into_iter()
             .zip(dirichlet.sample(&mut thread_rng()))
             .map(|n| (n.0, prob(n)))
             .collect::<Vec<_>>();
 
-        let max = probs.iter()
+        let max = probs
+            .iter()
             .max_by(|(_, p1), (_, p2)| p1.partial_cmp(p2).unwrap())?;
 
-        probs.iter()
+        probs
+            .iter()
             .filter(|(_, p)| *p == max.1)
             .choose(&mut thread_rng())
             .map(|(n, _)| hash(&n.board))
@@ -300,21 +315,25 @@ impl AlphaZero {
     fn expand(&mut self, sim: &Simulate) {
         let board = sim.board();
         let parent_hashed = hash(&board);
-        { // borrow self.map: HashMap
+        {
+            // borrow self.map: HashMap
             let cost = sim.turn as i32 as f32;
             let node = self.map.get_mut(&parent_hashed).unwrap();
             if node.num_player == BOARD_CAPACITY {
                 let winner = sim.search_winner();
-                if winner == sim.turn { // current player win
+                if winner == sim.turn {
+                    // current player win
                     node.value = cost;
-                } else if winner != Player::None { // current player is lose
+                } else if winner != Player::None {
+                    // current player is lose
                     node.value = -cost;
                 }
                 return;
             }
         }
         if let Some((value, prob)) = self.get_from(sim.turn, &board) {
-            let child_num = { // borrow mut self.map: HasMap
+            let child_num = {
+                // borrow mut self.map: HasMap
                 let parent_node = self.map.get_mut(&parent_hashed).unwrap();
                 parent_node.value = value;
                 parent_node.prob = prob;
@@ -329,7 +348,9 @@ impl AlphaZero {
                 let hashed = hash(&board);
                 hashed_vec.push(hashed);
 
-                let tree_node = self.map.entry(hashed).or_insert(Node::new_with_num(&board, child_num));
+                let tree_node = self.map
+                    .entry(hashed)
+                    .or_insert(Node::new_with_num(&board, child_num));
                 tree_node.n_prob = prob[row][col];
             }
 
@@ -351,7 +372,8 @@ impl AlphaZero {
                 let node = self.map.get(&hash(&sim.board())).unwrap();
                 node.value
             };
-            { // borrow mut self.map: HashMap
+            {
+                // borrow mut self.map: HashMap
                 let mut sim = sim.deep_clone();
                 sim.rollback_in(*row, *col);
 
@@ -394,7 +416,9 @@ impl AlphaZero {
     fn policy(&self, sim: &Simulate) -> Option<(usize, usize)> {
         let node = sim.node.borrow();
         let tree_node = self.map.get(&hash(&node.board)).unwrap();
-        let child_node = tree_node.next_node.iter()
+        let child_node = tree_node
+            .next_node
+            .iter()
             .map(|x| self.map.get(x).unwrap())
             .collect::<Vec<_>>();
 
@@ -404,7 +428,8 @@ impl AlphaZero {
             let visit = node.visit as f32;
             visit / (visit_sum - visit + 1.)
         };
-        child_node.into_iter()
+        child_node
+            .into_iter()
             .max_by(|n1, n2| prob(n1).partial_cmp(&prob(n2)).unwrap())
             .map(|max_node| diff_board(&node.board, &max_node.board).unwrap())
     }
@@ -431,7 +456,8 @@ impl Policy for AlphaZero {
         // remove siblings
         let node = self.map.get(&hash(&simulate.board())).unwrap().clone();
         let num_player = node.num_player;
-        let sibling = self.map.iter()
+        let sibling = self.map
+            .iter()
             .filter(|(_, node)| node.num_player == num_player)
             .map(|(hash, _)| *hash)
             .collect::<Vec<u64>>();
