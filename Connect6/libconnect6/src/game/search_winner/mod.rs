@@ -11,8 +11,8 @@
 //! let winner = search(game.get_board());
 //! assert_eq!(winner, Player::None);
 //! ```
-use super::Player;
-use super::super::{BOARD_SIZE, Board};
+use game::Player;
+use {BOARD_SIZE, Board};
 
 #[cfg(test)]
 mod tests;

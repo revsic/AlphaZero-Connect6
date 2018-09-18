@@ -15,8 +15,8 @@
 //!     println!("playing result: {:?}", result);
 //! }
 //! ```
-use super::Player;
-use super::super::{BOARD_SIZE, Board};
+use game::Player;
+use {BOARD_SIZE, Board};
 
 use std::io;
 
