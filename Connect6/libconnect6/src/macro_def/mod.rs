@@ -1,6 +1,6 @@
 pub use self::support::{create_pypolicy, PyPolicy};
 
-use super::BOARD_CAPACITY;
+use BOARD_CAPACITY;
 
 use cpython::*; // avoid unused import warning of `PythonObject`, `ToPyObject`
 use rand;
