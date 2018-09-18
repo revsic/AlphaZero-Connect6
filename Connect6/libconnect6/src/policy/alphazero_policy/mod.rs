@@ -348,7 +348,8 @@ impl AlphaZero {
                 let hashed = hash(&board);
                 hashed_vec.push(hashed);
 
-                let tree_node = self.map
+                let tree_node = self
+                    .map
                     .entry(hashed)
                     .or_insert(Node::new_with_num(&board, child_num));
                 tree_node.n_prob = prob[row][col];
@@ -456,7 +457,8 @@ impl Policy for AlphaZero {
         // remove siblings
         let node = self.map.get(&hash(&simulate.board())).unwrap().clone();
         let num_player = node.num_player;
-        let sibling = self.map
+        let sibling = self
+            .map
             .iter()
             .filter(|(_, node)| node.num_player == num_player)
             .map(|(hash, _)| *hash)

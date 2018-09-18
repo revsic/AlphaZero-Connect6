@@ -115,7 +115,8 @@ fn test_update() {
     assert_eq!(node.visit, 2);
     assert_eq!(node.next_node.len(), BOARD_CAPACITY);
 
-    let child_hashed = node.next_node
+    let child_hashed = node
+        .next_node
         .iter()
         .filter(|x| policy.map.get(x).unwrap().value != 0.)
         .collect::<Vec<_>>();
@@ -168,7 +169,8 @@ fn test_policy() {
     let node = policy.map.get(&hash(&sim.board()));
     assert!(node.is_some());
 
-    let child = node.unwrap()
+    let child = node
+        .unwrap()
         .next_node
         .iter()
         .filter(|x| policy.map.get(x).unwrap().value != 0.)
