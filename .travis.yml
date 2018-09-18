@@ -34,6 +34,7 @@ script:
   - cargo test --verbose
 
 after_success: |-
+  # codecov
   if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
     wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
     tar xzf master.tar.gz &&
@@ -52,6 +53,7 @@ after_success: |-
     bash <(curl -s https://codecov.io/bash) &&
     echo "Uploaded code coverage"
   fi &&
+  # doc github-pages
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo doc &&
