@@ -1,6 +1,0 @@
-[package]
-name = "cppbind"
-version = "0.1.0"
-authors = ["revsic <revsic99@gmail.com>"]
-
-[dependencies]

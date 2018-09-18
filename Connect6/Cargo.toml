@@ -2,6 +2,5 @@
 
 members = [
     "libconnect6",
-    "cppbind",
     "sample",
 ]
