@@ -1,12 +1,13 @@
 use super::*;
-use {BOARD_CAPACITY, game::*};
+use {game::*, BOARD_CAPACITY};
 
 #[test]
 fn test_pyseq_to_vec() {
     let gil = Python::acquire_gil();
     let py = gil.python();
 
-    let data = [1, 2, 3, 4, 5].iter()
+    let data = [1, 2, 3, 4, 5]
+        .iter()
         .map(|x: &i32| x.to_py_object(py).into_object())
         .collect::<Vec<PyObject>>();
 
@@ -42,7 +43,10 @@ fn test_pylist_from_board() {
                 -1 => Player::Black,
                 0 => Player::None,
                 1 => Player::White,
-                _ => { assert!(false); Player::None },
+                _ => {
+                    assert!(false);
+                    Player::None
+                }
             };
             recovered[i][j] = player;
         }
@@ -55,7 +59,10 @@ fn test_pylist_from_multiple() {
     let gil = Python::acquire_gil();
     let py = gil.python();
 
-    let board = vec![[[Player::None; BOARD_SIZE]; BOARD_SIZE], [[Player::Black; BOARD_SIZE]; BOARD_SIZE]];
+    let board = vec![
+        [[Player::None; BOARD_SIZE]; BOARD_SIZE],
+        [[Player::Black; BOARD_SIZE]; BOARD_SIZE],
+    ];
     let list = pylist_from_multiple(py, &board);
 
     let res = list.cast_into::<PySequence>(py).ok();

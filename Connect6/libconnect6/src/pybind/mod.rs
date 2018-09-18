@@ -5,5 +5,5 @@
 pub use self::pybind_impl::*;
 pub use self::pyeval::*;
 
-mod pyeval;
 mod pybind_impl;
+mod pyeval;

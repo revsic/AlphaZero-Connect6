@@ -2,8 +2,8 @@
 //!
 //! `rust-cpython` based rust bindings.
 //! It provides some utilities related to implement AlphaZero.
-use {BOARD_SIZE, Board};
 use cpython::*;
+use {Board, BOARD_SIZE};
 
 #[cfg(test)]
 mod tests;
@@ -20,7 +20,10 @@ mod tests;
 /// - If given `obj` couldn't cast into `PySequence`.
 /// - If casted `obj` couldn't generate `PyIterator`.
 pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
-    let pyseq = must!(obj.cast_into::<PySequence>(py), "pyseq_to_vec couldn't cast obj into pyseq");
+    let pyseq = must!(
+        obj.cast_into::<PySequence>(py),
+        "pyseq_to_vec couldn't cast obj into pyseq"
+    );
     let pyiter = must!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
     let vec = pyiter
         .filter_map(|x| x.ok())
@@ -61,7 +64,8 @@ pub fn pylist_from_board(py: Python, board: &Board) -> PyObject {
 /// // assert result == [[-1, 0, ...], [-1, 1, 0, ...], [-1, 1, 1, 0, ...], ...]
 /// ```
 pub fn pylist_from_multiple(py: Python, boards: &Vec<Board>) -> PyObject {
-    let lists = boards.iter()
+    let lists = boards
+        .iter()
         .map(|x| pylist_from_board(py, x))
         .collect::<Vec<_>>();
     PyList::new(py, lists.as_slice()).into_object()

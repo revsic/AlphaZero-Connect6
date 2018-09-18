@@ -3,7 +3,7 @@ use policy::Evaluator;
 use pybind::{pylist_from_multiple, pyseq_to_vec};
 use {Board, BOARD_SIZE};
 
-use cpython::{Python, PyObject, PythonObject, PySequence, PyTuple, ToPyObject, ObjectProtocol};
+use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, PythonObject, ToPyObject};
 
 #[cfg(test)]
 mod tests;
@@ -40,7 +40,11 @@ impl Evaluator for PyEval {
     /// - if `value` is not a sequence type object consists of floats.
     /// - if `policy` is not a 2D sequence type object consists of floats.
     /// - if `policy` is not shaped `[boards.len(), BOARD_SIZE ** 2]`
-    fn eval(&self, turn: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
+    fn eval(
+        &self,
+        turn: Player,
+        board: &Vec<Board>,
+    ) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         // acquire python gil
         let gil = Python::acquire_gil();
         let py = gil.python();
@@ -48,8 +52,14 @@ impl Evaluator for PyEval {
         // convert parameter to python object
         let py_turn = (turn as i32).to_py_object(py);
         let py_board = pylist_from_multiple(py, board);
-        let res = must!(self.pyobj.call(py, (py_turn, py_board), None), "alpha_zero::get_from couldn't call pyobject");
-        let pytuple = must!(res.cast_into::<PyTuple>(py), "alpha_zero::get_from couldn't cast into pytuple");
+        let res = must!(
+            self.pyobj.call(py, (py_turn, py_board), None),
+            "alpha_zero::get_from couldn't call pyobject"
+        );
+        let pytuple = must!(
+            res.cast_into::<PyTuple>(py),
+            "alpha_zero::get_from couldn't cast into pytuple"
+        );
 
         let value = pytuple.get_item(py, 0);
         let policy = pytuple.get_item(py, 1);
