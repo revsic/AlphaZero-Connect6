@@ -1,7 +1,7 @@
 use super::*;
-use super::super::{DefaultPolicy, RandomPolicy};
-use super::super::super::agent::Agent;
-use super::super::super::game::Player;
+use policy::{DefaultPolicy, RandomPolicy};
+use agent::Agent;
+use game::Player;
 
 use std::time::Instant;
 

@@ -13,10 +13,10 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use super::{Policy, Simulate, diff_board};
-use super::super::pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
-use super::super::game::{Game, Player};
-use super::super::{BOARD_SIZE, BOARD_CAPACITY, Board};
+use policy::{Policy, Simulate, diff_board};
+use pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
+use game::{Game, Player};
+use {BOARD_SIZE, BOARD_CAPACITY, Board};
 
 use cpython::{Python, PyObject, PySequence, PyTuple, ObjectProtocol, ToPyObject};
 use rand::distributions::{Distribution, Dirichlet};

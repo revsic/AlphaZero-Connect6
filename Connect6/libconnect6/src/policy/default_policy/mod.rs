@@ -6,10 +6,10 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use super::Policy;
-use super::simulate::Simulate;
-use super::super::game::{Game, Player};
-use super::super::{BOARD_SIZE, Board};
+use policy::Policy;
+use policy::simulate::Simulate;
+use game::{Game, Player};
+use {BOARD_SIZE, Board};
 
 use rand;
 use rand::prelude::{SliceRandom, thread_rng};

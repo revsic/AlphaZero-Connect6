@@ -1,5 +1,5 @@
 use super::*;
-use super::super::super::agent::Agent;
+use agent::Agent;
 
 use cpython::PythonObject;
 use std::time::Instant;

@@ -1,5 +1,5 @@
 use super::*;
-use super::super::super::BOARD_CAPACITY;
+use BOARD_CAPACITY;
 
 use rand;
 

@@ -15,9 +15,9 @@
 //! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
 //! Agent::debug(&mut io_policy).play().unwrap();
 //! ```
-use super::Policy;
-use super::Game;
-use super::super::BOARD_SIZE;
+use policy::Policy;
+use game::Game;
+use BOARD_SIZE;
 
 use std::io;
 

@@ -11,8 +11,8 @@
 //! let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
 //! Agent::debug(&mut multi_policy).play().unwrap();
 //! ```
-use super::Policy;
-use super::super::game::{Game, Player};
+use policy::Policy;
+use game::{Game, Player};
 
 #[cfg(test)]
 mod tests;

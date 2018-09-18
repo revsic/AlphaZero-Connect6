@@ -6,8 +6,8 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
-use super::{Policy, Simulate};
-use super::super::game::Game;
+use policy::{Policy, Simulate};
+use game::Game;
 
 use rand;
 use rand::prelude::SliceRandom;

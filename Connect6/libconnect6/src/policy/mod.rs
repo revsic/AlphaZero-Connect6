@@ -37,7 +37,7 @@ mod multi_policy;
 mod random_policy;
 mod simulate;
 
-use super::game::Game;
+use game::Game;
 
 /// trait for playing game with Agent.
 pub trait Policy {

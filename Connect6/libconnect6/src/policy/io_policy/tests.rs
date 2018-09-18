@@ -1,5 +1,5 @@
-use super::super::super::agent::Agent;
-use super::super::super::game::Player;
+use agent::Agent;
+use game::Player;
 
 use std::time::Instant;
 
