@@ -71,7 +71,8 @@ fn test_pylist_from_multiple() {
     let res = res.unwrap().iter(py).ok();
     assert!(res.is_some());
 
-    let vec = res.unwrap()
+    let vec = res
+        .unwrap()
         .filter_map(|x| x.ok())
         .filter_map(|x| pyseq_to_vec(py, x))
         .collect::<Vec<_>>();
