@@ -23,8 +23,12 @@ addons:
       - gcc
       - binutils-dev
 
+before_script:
+  - rustup component add rustfmt-preview
+
 script:
   - cd Connect6
+  - cargo fmt --all -- --check
   - cargo build --verbose
   - cargo test --verbose
 
