@@ -12,7 +12,7 @@
 //! assert_eq!(winner, Player::None);
 //! ```
 use game::Player;
-use {BOARD_SIZE, Board};
+use {Board, BOARD_SIZE};
 
 #[cfg(test)]
 mod tests;
@@ -90,7 +90,7 @@ impl Cumulative {
 /// Method swap can be implemented as just flip the flag bit.
 struct Block {
     flag: usize,
-    mem: [[Cumulative; BOARD_SIZE+2]; 2],
+    mem: [[Cumulative; BOARD_SIZE + 2]; 2],
 }
 
 impl Block {
@@ -98,12 +98,12 @@ impl Block {
     fn new() -> Block {
         Block {
             flag: 0,
-            mem: [[Cumulative::new(); BOARD_SIZE+2]; 2],
+            mem: [[Cumulative::new(); BOARD_SIZE + 2]; 2],
         }
     }
 
     /// Get a tuple representation of block, (prev, current).
-    fn as_tuple(&self) -> (&[Cumulative; BOARD_SIZE+2], &[Cumulative; BOARD_SIZE+2]) {
+    fn as_tuple(&self) -> (&[Cumulative; BOARD_SIZE + 2], &[Cumulative; BOARD_SIZE + 2]) {
         let f = self.flag;
         (&self.mem[f], &self.mem[1 - f])
     }
@@ -140,7 +140,8 @@ impl Block {
     /// block.update_now(|row| row.iter_mut(|c| *c.get_mut(&Path::Right) = 1));
     /// ```
     fn update_now<F>(&mut self, update: F)
-        where F: Fn(&mut [Cumulative; BOARD_SIZE+2])
+    where
+        F: Fn(&mut [Cumulative; BOARD_SIZE + 2]),
     {
         let f = self.flag;
         let now = &mut self.mem[1 - f];
@@ -165,7 +166,7 @@ impl Block {
         self.flag = 1 - self.flag;
         let now = &mut self.mem[1 - self.flag];
 
-        for i in 0..BOARD_SIZE+2 {
+        for i in 0..BOARD_SIZE + 2 {
             now[i] = Cumulative::new();
         }
     }
@@ -198,10 +199,11 @@ pub fn search(table: &Board) -> Player {
             // update with previous cell
             let updated = block.get_prev(col, path).get(path) + 1;
             // find continuous six stones
-            if updated >= 6 { return true; }
+            if updated >= 6 {
+                return true;
+            }
 
-            block.update_now(
-                |now| *now[col].get_mut(path) = updated);
+            block.update_now(|now| *now[col].get_mut(path) = updated);
         }
         false
     }
@@ -213,10 +215,12 @@ pub fn search(table: &Board) -> Player {
         for col in 0..BOARD_SIZE {
             match table[row][col] {
                 Player::None => continue,
-                Player::Black =>
-                    if path_iter(&mut black, col) { return Player::Black; },
-                Player::White =>
-                    if path_iter(&mut white, col) { return Player::White; },
+                Player::Black => if path_iter(&mut black, col) {
+                    return Player::Black;
+                },
+                Player::White => if path_iter(&mut white, col) {
+                    return Player::White;
+                },
             };
         }
     }

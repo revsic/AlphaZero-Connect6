@@ -17,11 +17,11 @@ mod block_tests {
     fn rand_block() -> Block {
         Block {
             flag: 0,
-            mem: [[rand_cumulative(); BOARD_SIZE+2]; 2],
+            mem: [[rand_cumulative(); BOARD_SIZE + 2]; 2],
         }
     }
 
-    fn get_tuple(block: &Block) -> ([Cumulative; BOARD_SIZE+2], [Cumulative; BOARD_SIZE+2]) {
+    fn get_tuple(block: &Block) -> ([Cumulative; BOARD_SIZE + 2], [Cumulative; BOARD_SIZE + 2]) {
         let (prev, now) = block.as_tuple();
         (*prev, *now)
     }
@@ -30,7 +30,7 @@ mod block_tests {
     fn test_block_new() {
         let block = Block::new();
         assert_eq!(block.flag, 0);
-        assert_eq!(block.mem, [[Cumulative::new(); BOARD_SIZE+2]; 2]);
+        assert_eq!(block.mem, [[Cumulative::new(); BOARD_SIZE + 2]; 2]);
     }
 
     #[test]
@@ -79,14 +79,14 @@ mod block_tests {
     #[test]
     fn test_update_row() {
         let mut block = Block::new();
-        let crand = [rand_cumulative(); BOARD_SIZE+2];
+        let crand = [rand_cumulative(); BOARD_SIZE + 2];
 
         block.mem[1] = crand.clone();
         block.update_row();
 
         let (prev, now) = block.as_tuple();
         assert_eq!(*prev, crand);
-        assert_eq!(*now, [Cumulative::new(); BOARD_SIZE+2]);
+        assert_eq!(*now, [Cumulative::new(); BOARD_SIZE + 2]);
     }
 }
 
@@ -112,7 +112,7 @@ mod search_tests {
 
         // Down
         for i in 0..5 {
-            table[5-i][0] = Player::White;
+            table[5 - i][0] = Player::White;
         }
         assert_eq!(search(&table), Player::Black);
 
@@ -121,7 +121,7 @@ mod search_tests {
 
         // RightDown
         for i in 0..5 {
-            table[5-i][5-i] = Player::Black;
+            table[5 - i][5 - i] = Player::Black;
         }
         assert_eq!(search(&table), Player::White);
 
@@ -130,7 +130,7 @@ mod search_tests {
 
         // LeftDown
         for i in 0..5 {
-            table[5-i][i] = Player::White;
+            table[5 - i][i] = Player::White;
         }
         assert_eq!(search(&table), Player::Black);
 

@@ -23,7 +23,7 @@ impl Player {
         match self {
             &Player::Black => Player::White,
             &Player::White => Player::Black,
-            &Player::None => Player::None
+            &Player::None => Player::None,
         }
     }
 
@@ -41,7 +41,9 @@ impl Player {
 }
 
 impl Default for Player {
-    fn default() -> Player { Player::None }
+    fn default() -> Player {
+        Player::None
+    }
 }
 
 impl From<i32> for Player {

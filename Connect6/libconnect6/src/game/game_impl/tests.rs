@@ -14,9 +14,7 @@ fn test_new() {
 #[test]
 fn test_play() {
     let mut game = Game::new();
-    let result = game.play((0, 0))
-        .map_err(|_| assert!(false))
-        .unwrap();
+    let result = game.play((0, 0)).map_err(|_| assert!(false)).unwrap();
 
     let expected = PlayResult {
         player: Player::Black,
@@ -42,8 +40,8 @@ fn test_play() {
 
 #[test]
 fn test_print() {
-//        let game = Game::new();
-//        game.print();
+    //        let game = Game::new();
+    //        game.print();
     assert!(true);
 }
 

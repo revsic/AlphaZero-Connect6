@@ -16,7 +16,7 @@
 //! }
 //! ```
 use game::Player;
-use {BOARD_SIZE, Board};
+use {Board, BOARD_SIZE};
 
 use std::io;
 
@@ -111,7 +111,7 @@ impl Game {
         let (row, col) = pos;
         // position param validation
         if row >= BOARD_SIZE || col >= BOARD_SIZE {
-            return Err("game::play invalid position")
+            return Err("game::play invalid position");
         }
         // in-board validation
         if self.board[row][col] != Player::None {
