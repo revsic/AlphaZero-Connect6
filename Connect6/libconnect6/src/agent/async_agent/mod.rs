@@ -11,8 +11,8 @@
 //! let result = async_agent.run(4)
 //! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>() as f32 / 4.);
 //! ```
-use super::{Agent, RunResult};
-use super::super::policy::Policy;
+use agent::{Agent, RunResult};
+use policy::Policy;
 
 use std::sync::mpsc;
 use std::time::Instant;

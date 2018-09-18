@@ -13,10 +13,10 @@
 /// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
 /// let result = Agent::debug(&mut multi_policy).play();
 /// ```
-use super::super::game::{Game, Player};
-use super::super::policy::Policy;
-use super::super::pybind::pylist_from_board;
-use super::super::Board;
+use game::{Game, Player};
+use policy::Policy;
+use pybind::pylist_from_board;
+use Board;
 
 use std::io;
 use std::time::Instant;

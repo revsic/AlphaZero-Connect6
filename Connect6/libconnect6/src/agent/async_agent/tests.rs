@@ -1,6 +1,6 @@
 use super::*;
-use super::super::super::game::Player;
-use super::super::super::policy::{AlphaZero, HyperParameter, RandomPolicy};
+use game::Player;
+use policy::{AlphaZero, HyperParameter, RandomPolicy};
 
 use cpython::{Python, PythonObject, PyClone};
 use std::time::Instant;
