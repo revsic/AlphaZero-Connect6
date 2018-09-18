@@ -2,7 +2,7 @@
 //!
 //! `rust-cpython` based rust bindings.
 //! It provides some utilities related to implement AlphaZero.
-use super::super::{BOARD_SIZE, Board};
+use {BOARD_SIZE, Board};
 use cpython::*;
 
 #[cfg(test)]

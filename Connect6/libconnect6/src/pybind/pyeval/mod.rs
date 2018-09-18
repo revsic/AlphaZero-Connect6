@@ -1,7 +1,7 @@
-use super::super::game::Player;
-use super::super::policy::Evaluator;
-use super::super::{Board, BOARD_SIZE};
-use super::{pylist_from_multiple, pyseq_to_vec};
+use game::Player;
+use policy::Evaluator;
+use pybind::{pylist_from_multiple, pyseq_to_vec};
+use {Board, BOARD_SIZE};
 
 use cpython::{Python, PyObject, PythonObject, PySequence, PyTuple, ToPyObject, ObjectProtocol};
 

@@ -1,5 +1,5 @@
 use super::*;
-use super::super::super::{BOARD_CAPACITY, game::*};
+use {BOARD_CAPACITY, game::*};
 
 #[test]
 fn test_pyseq_to_vec() {
