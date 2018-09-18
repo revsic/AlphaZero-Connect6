@@ -25,6 +25,7 @@ addons:
 
 before_script:
   - rustup component add rustfmt-preview
+  - cargo fmt --version
 
 script:
   - cd Connect6
