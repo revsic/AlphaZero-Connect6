@@ -20,7 +20,7 @@ macro_rules! must {
             Ok(obj) => obj,
             Err(e) => panic!("{} : {:?}", $err, e),
         }
-    }
+    };
 }
 
 /// Create random python policy for testing policy AlphaZero
@@ -35,8 +35,10 @@ macro_rules! py_policy {
     () => {{
         let gil = Python::acquire_gil();
         let py = gil.python();
-        $crate::macro_def::create_pypolicy(py).unwrap().into_object()
-    }}
+        $crate::macro_def::create_pypolicy(py)
+            .unwrap()
+            .into_object()
+    }};
 }
 
 /// Create IoPolicy with stdio
@@ -54,5 +56,5 @@ macro_rules! io_policy_stdio {
         let mut stdin = std::io::stdin();
         let mut stdout = std::io::stdout();
         let mut $policy = $crate::policy::IoPolicy::new(&mut stdin, &mut stdout);
-    }
+    };
 }
