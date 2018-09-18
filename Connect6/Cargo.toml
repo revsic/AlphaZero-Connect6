@@ -1,25 +1,6 @@
-[package]
-name = "connect6"
-version = "0.1.0"
-authors = ["revsic <revsic99@gmail.com>"]
+[workspace]
 
-[lib]
-name = "connect6"
-crate-type = ["cdylib"]
-
-[dependencies]
-rand = { git = "https://github.com/revsic/rand" }
-futures = "0.1.23"
-tokio = "0.1.7"
-
-[dependencies.cpython]
-version = "0.2.0"
-# for python3
-# features = ["extension-module"]
-# for python2
-# default-features = false
-# features = ["python27-sys", "extension-module-2-7"]
-
-[badges]
-travis-ci = { repository = "revsic/AlphaZero-Connect6", branch = "master" }
-codecov = { repository = "revsic/AlphaZero-Connect6", branch = "master", service = "github" }
+members = [
+    "libconnect6",
+    "cppbind",
+]

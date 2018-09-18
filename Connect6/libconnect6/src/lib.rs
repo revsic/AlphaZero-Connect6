@@ -36,6 +36,7 @@ extern crate tokio;
 mod macro_def;
 
 pub mod agent;
+pub mod cppbind;
 pub mod game;
 pub mod policy;
 pub mod pybind;
