@@ -2,7 +2,7 @@ use super::*;
 use game::Player;
 use policy::{AlphaZero, HyperParameter, RandomPolicy};
 
-use cpython::{Python, PythonObject, PyClone};
+use cpython::{PyClone, Python, PythonObject};
 use std::time::Instant;
 
 #[test]

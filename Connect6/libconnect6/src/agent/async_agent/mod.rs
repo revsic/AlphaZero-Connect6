@@ -14,9 +14,9 @@
 use agent::{Agent, RunResult};
 use policy::Policy;
 
+use futures::future;
 use std::sync::mpsc;
 use std::time::Instant;
-use futures::future;
 use tokio::executor::thread_pool::ThreadPool;
 
 #[cfg(test)]
@@ -102,7 +102,12 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
                     sender.send(result).unwrap();
                 }
                 if debug {
-                    println!("run: {}, elapsed {}.{}s", id, elapsed.as_secs(), elapsed.subsec_millis());
+                    println!(
+                        "run: {}, elapsed {}.{}s",
+                        id,
+                        elapsed.as_secs(),
+                        elapsed.subsec_millis()
+                    );
                 }
                 Ok(())
             }));

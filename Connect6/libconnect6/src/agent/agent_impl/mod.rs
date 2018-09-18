@@ -18,9 +18,9 @@ use policy::Policy;
 use pybind::pylist_from_board;
 use Board;
 
+use cpython::{PyList, PyTuple, Python, PythonObject, ToPyObject};
 use std::io;
 use std::time::Instant;
-use cpython::{Python, PythonObject, PyList, PyTuple, ToPyObject};
 
 #[cfg(test)]
 mod tests;
@@ -122,7 +122,11 @@ impl<'a> Agent<'a> {
                 break;
             }
             let pos = pos.unwrap();
-            path.push(Path { turn: game.get_turn(), board: *game.get_board(), pos });
+            path.push(Path {
+                turn: game.get_turn(),
+                board: *game.get_board(),
+                pos,
+            });
 
             match game.play(pos) {
                 Ok(result) => if self.debug {
@@ -130,8 +134,15 @@ impl<'a> Agent<'a> {
                     let (row, col) = result.position;
                     let row = (row as u8 + 0x61) as char;
                     let col = (col as u8 + 0x41) as char;
-                    println!("{:?} ({}, {}), remain {}, {}.{} elapsed",
-                             result.player, row, col, result.num_remain, duration.as_secs(), duration.subsec_millis());
+                    println!(
+                        "{:?} ({}, {}), remain {}, {}.{} elapsed",
+                        result.player,
+                        row,
+                        col,
+                        result.num_remain,
+                        duration.as_secs(),
+                        duration.subsec_millis()
+                    );
                 },
                 Err(err) => return Err(format!("agent::play : {}", err)),
             };
@@ -144,7 +155,9 @@ impl<'a> Agent<'a> {
             }
         }
 
-        if self.debug { game.print(&mut io::stdout()).unwrap(); }
+        if self.debug {
+            game.print(&mut io::stdout()).unwrap();
+        }
         Ok(RunResult { winner, path })
     }
 }
@@ -173,7 +186,8 @@ impl ToPyObject for RunResult {
     /// Return `PyTuple, (winner: int, path: list(Path as PyTuple))`
     fn to_py_object(&self, py: Python) -> PyTuple {
         let win = (self.winner as i32).to_py_object(py).into_object();
-        let path = self.path.iter()
+        let path = self.path
+            .iter()
             .map(|x| x.to_py_object(py).into_object())
             .collect::<Vec<_>>();
         let list = PyList::new(py, path.as_slice()).into_object();

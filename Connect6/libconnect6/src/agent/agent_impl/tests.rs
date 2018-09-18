@@ -1,6 +1,6 @@
 use super::*;
-use BOARD_SIZE;
 use policy::DefaultPolicy;
+use BOARD_SIZE;
 
 use std::sync::mpsc;
 use std::thread;
@@ -18,12 +18,12 @@ impl Policy for TestPolicy {
 
 macro_rules! create_test_agent {
     ($sender:ident, $id:ident) => {
-        let ($sender,receiver) = mpsc::channel();
+        let ($sender, receiver) = mpsc::channel();
         let $id = thread::spawn(move || {
             let mut policy = TestPolicy { receiver };
             Agent::new(&mut policy).play()
         });
-    }
+    };
 }
 
 #[test]
@@ -43,7 +43,10 @@ fn test_play_invalid_position() {
 
     match result.unwrap() {
         Ok(_) => assert!(false),
-        Err(err) => assert_eq!(err, String::from("agent::play : game::play invalid position")),
+        Err(err) => assert_eq!(
+            err,
+            String::from("agent::play : game::play invalid position")
+        ),
     }
 }
 
@@ -58,7 +61,10 @@ fn test_play_already_set_position() {
 
     match result.unwrap() {
         Ok(_) => assert!(false),
-        Err(err) => assert_eq!(err, String::from("agent::play : game::play already set position")),
+        Err(err) => assert_eq!(
+            err,
+            String::from("agent::play : game::play already set position")
+        ),
     }
 }
 
@@ -84,9 +90,7 @@ fn test_play() {
     let result = created.join();
     assert!(result.is_ok());
 
-    let run_result = result.unwrap()
-        .map_err(|_| assert!(false))
-        .unwrap();
+    let run_result = result.unwrap().map_err(|_| assert!(false)).unwrap();
     assert_eq!(run_result.winner, Player::White);
     assert_eq!(run_result.path.len(), 11);
 
@@ -97,7 +101,14 @@ fn test_play() {
     let mut paths = run_result.path.iter();
     let path = paths.next();
     assert!(path.is_some());
-    assert_eq!(*path.unwrap(), Path { turn, board, pos: (0, 0) });
+    assert_eq!(
+        *path.unwrap(),
+        Path {
+            turn,
+            board,
+            pos: (0, 0)
+        }
+    );
 
     let mut prev = (0, 0);
     let mut test = |pos: (usize, usize)| {
