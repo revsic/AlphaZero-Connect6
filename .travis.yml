@@ -29,7 +29,7 @@ before_script:
 
 script:
   - cd Connect6
-  - if [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then cargo fmt --all -- --check; fi;
+  - if [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then echo "start fmt"; cargo fmt --all -- --check; fi;
   - cargo build --verbose
   - cargo test --verbose
 
