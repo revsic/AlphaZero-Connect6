@@ -186,7 +186,8 @@ impl ToPyObject for RunResult {
     /// Return `PyTuple, (winner: int, path: list(Path as PyTuple))`
     fn to_py_object(&self, py: Python) -> PyTuple {
         let win = (self.winner as i32).to_py_object(py).into_object();
-        let path = self.path
+        let path = self
+            .path
             .iter()
             .map(|x| x.to_py_object(py).into_object())
             .collect::<Vec<_>>();
