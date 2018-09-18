@@ -97,7 +97,7 @@ fn test_play() {
     let mut paths = run_result.path.iter();
     let path = paths.next();
     assert!(path.is_some());
-    assert_eq!(*path.unwrap(), Path { turn, board, pos: (0, 0)});
+    assert_eq!(*path.unwrap(), Path { turn, board, pos: (0, 0) });
 
     let mut prev = (0, 0);
     let mut test = |pos: (usize, usize)| {
