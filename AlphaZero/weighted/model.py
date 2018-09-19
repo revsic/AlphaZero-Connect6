@@ -72,6 +72,25 @@ class WeightedPolicy(object):
                                         self.plc_value: value,
                                         self.plc_policy: policy})
 
+    def write_graph(self, path):
+        init = tf.global_variables_initializer()
+        saver = self.ckpt.as_saver_def()
+
+        print('Initializer : ', init.name)
+        print('Train : ', self.optimize.name)
+        print('Tensor ckpt filename : ', saver.filename_tensor_name)
+        print('Save ckpt : ', saver.save_tensor_name)
+        print('Restore ckpt : ', saver.restore_op_name)
+
+        # Initializer :  init
+        # Train :  Momentum
+        # Tensor ckpt filename :  save/Const:0
+        # Save ckpt :  save/control_dependency:0
+        # Restore ckpt :  save/restore_all
+
+        with open(path + '.pb', 'wb') as f:
+            f.write(tf.get_default_graph().as_graph_def().SerializeToString())
+
     def dump(self, path):
         self.ckpt.save(self.sess, path + '.ckpt')
         with open(path + '.json', 'w') as f:
