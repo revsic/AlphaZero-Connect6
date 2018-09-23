@@ -194,3 +194,6 @@ fn play_with(
     let result = agent::Agent::debug(&mut multi_policy).play();
     Ok(result.unwrap().to_py_object(py))
 }
+
+#[no_mangle]
+pub extern "C" fn cpp_self_play(_callback: cppbind::Callback) {}
