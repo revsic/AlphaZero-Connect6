@@ -3,7 +3,7 @@ use policy::Evaluator;
 use pybind::{pylist_from_multiple, pyseq_to_vec};
 use {Board, BOARD_SIZE};
 
-use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, PythonObject, ToPyObject};
+use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, ToPyObject};
 
 #[cfg(test)]
 mod tests;
