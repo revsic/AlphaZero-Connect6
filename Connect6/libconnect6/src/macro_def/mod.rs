@@ -33,6 +33,8 @@ macro_rules! must {
 #[macro_export]
 macro_rules! py_policy {
     () => {{
+        use cpython::{Python, PythonObject};
+
         let gil = Python::acquire_gil();
         let py = gil.python();
         $crate::macro_def::create_pypolicy(py)

@@ -21,6 +21,8 @@ py_class!(pub class PyPolicy |py| {
     }
 });
 
+// used in macro py_policy
+#[allow(dead_code)]
 pub fn create_pypolicy(py: Python) -> PyResult<PyPolicy> {
     PyPolicy::create_instance(py)
 }
