@@ -15,10 +15,10 @@
 //! ```
 use game::{Game, Player};
 use policy::{diff_board, Policy, Simulate};
-use pybind::{pylist_from_multiple, pyseq_to_vec, PyEval};
+use pybind::PyEval;
 use {Board, BOARD_CAPACITY, BOARD_SIZE};
 
-use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, ToPyObject};
+use cpython::PyObject;
 use rand::distributions::{Dirichlet, Distribution};
 use rand::prelude::{thread_rng, IteratorRandom};
 use std::collections::hash_map::DefaultHasher;

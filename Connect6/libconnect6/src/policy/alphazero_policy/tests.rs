@@ -1,7 +1,6 @@
 use super::*;
 use agent::Agent;
 
-use cpython::PythonObject;
 use std::time::Instant;
 
 #[test]
