@@ -1,15 +1,19 @@
 use game::Player;
 use policy::Evaluator;
-use {Board, BOARD_CAPACITY, BOARD_SIZE};
+use {Board, BOARD_SIZE};
 
-type CINT = ::std::os::raw::c_int;
-type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> Result;
+#[cfg(test)]
+mod tests;
 
 #[repr(C)]
-struct Result {
+pub struct Result {
     value: *mut f32,
     policy: *mut f32,
 }
+
+pub type CINT = ::std::os::raw::c_int;
+
+pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> Result;
 
 struct CppEval {
     callback: Callback,
