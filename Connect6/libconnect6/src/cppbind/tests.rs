@@ -7,7 +7,7 @@ extern "C" fn test_callback(
     player: CINT,
     board: *const [[CINT; BOARD_SIZE]; BOARD_SIZE],
     len: CINT,
-) -> Result {
+) -> RawResult {
     let len = len as usize;
     let mut value = (0..len).map(|x| x as f32).collect::<Vec<_>>();
     let mut policy = Vec::with_capacity(len * BOARD_CAPACITY);
@@ -31,7 +31,7 @@ extern "C" fn test_callback(
     mem::forget(value);
     mem::forget(policy);
 
-    Result {
+    RawResult {
         value: value_ptr,
         policy: policy_ptr,
     }

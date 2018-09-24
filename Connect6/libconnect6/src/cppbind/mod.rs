@@ -6,14 +6,14 @@ use {Board, BOARD_CAPACITY, BOARD_SIZE};
 mod tests;
 
 #[repr(C)]
-pub struct Result {
+pub struct RawResult {
     value: *mut f32,
     policy: *mut f32,
 }
 
 pub type CINT = ::std::os::raw::c_int;
 
-pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> Result;
+pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> RawResult;
 
 pub struct CppEval {
     callback: Callback,
