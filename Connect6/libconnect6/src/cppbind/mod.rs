@@ -15,7 +15,7 @@ pub type CINT = ::std::os::raw::c_int;
 
 pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> Result;
 
-struct CppEval {
+pub struct CppEval {
     callback: Callback,
 }
 
@@ -30,7 +30,7 @@ fn convert_to_cint(board: &Board) -> [[CINT; BOARD_SIZE]; BOARD_SIZE] {
 }
 
 impl CppEval {
-    fn new(callback: Callback) -> CppEval {
+    pub fn new(callback: Callback) -> CppEval {
         CppEval { callback }
     }
 
