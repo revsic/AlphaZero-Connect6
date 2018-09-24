@@ -1,6 +1,6 @@
 use game::Player;
 use policy::Evaluator;
-use {Board, BOARD_SIZE};
+use {Board, BOARD_CAPACITY, BOARD_SIZE};
 
 #[cfg(test)]
 mod tests;
@@ -46,7 +46,9 @@ impl CppEval {
         let result = (self.callback)(player, converted.as_ptr(), len as CINT);
 
         let value = unsafe { Vec::from_raw_parts(result.value, len, len) };
-        let policy_raw = unsafe { ::std::slice::from_raw_parts(result.policy, len * 4) };
+        let policy_raw = unsafe {
+            Vec::from_raw_parts(result.policy, len * BOARD_CAPACITY, len * BOARD_CAPACITY)
+        };
 
         let mut iter = 0;
         let mut policy = Vec::with_capacity(len);
