@@ -13,6 +13,7 @@
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
+use cppbind::{Callback, CppEval};
 use game::{Game, Player};
 use policy::{diff_board, Policy, Simulate};
 use pybind::PyEval;
@@ -189,6 +190,24 @@ impl AlphaZero {
             map: HashMap::new(),
             param,
             evaluator: Box::new(PyEval::new(obj)),
+        }
+    }
+
+    /// Construct a `AlphaZero` with cpp callback bind
+    pub fn with_cpp(callback: Callback) -> AlphaZero {
+        AlphaZero {
+            map: HashMap::new(),
+            param: HyperParameter::default(),
+            evaluator: Box::new(CppEval::new(callback)),
+        }
+    }
+
+    /// Construct a 'AlphaZero' with given cpp callback and hyperparameters
+    pub fn with_cpp_param(callback: Callback, param: HyperParameter) -> AlphaZero {
+        AlphaZero {
+            map: HashMap::new(),
+            param,
+            evaluator: Box::new(CppEval::new(callback)),
         }
     }
 
