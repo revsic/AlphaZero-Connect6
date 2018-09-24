@@ -195,5 +195,30 @@ fn play_with(
     Ok(result.unwrap().to_py_object(py))
 }
 
+/// Returns Connect6 self-playing results with given cpp callback and hyper parameters
 #[no_mangle]
-pub extern "C" fn cpp_self_play(_callback: cppbind::Callback) {}
+pub extern "C" fn cpp_self_play(
+    callback: cppbind::Callback,
+    num_simulation: i32,
+    epsilon: f32,
+    dirichlet_alpha: f64,
+    c_puct: f32,
+    debug: bool,
+    num_game_thread: i32,
+) {
+    let param = policy::HyperParameter {
+        num_simulation,
+        epsilon,
+        dirichlet_alpha,
+        c_puct,
+    };
+
+    let policy_gen = || policy::AlphaZero::with_cpp_param(callback, param);
+    let async_agent = if debug {
+        agent::AsyncAgent::debug(policy_gen)
+    } else {
+        agent::AsyncAgent::new(policy_gen)
+    };
+
+    let result = async_agent.run(num_game_thread);
+}
