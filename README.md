@@ -21,9 +21,9 @@ Rust compiler is required to install lib pyconnect6. [rustup](https://rustup.rs)
 ```
 curl https://sh.rustup.rs -sSf | sh  #for linux user
 ```
-Install connect6 with [setup.py](Connect6/setup.py).
+Install connect6 with [setup.py](Connect6/pybind/setup.py).
 ```
-cd Connect6; python setup.py build; pyton setup.py install;
+cd Connect6/pybind; python setup.py build; pyton setup.py install;
 ```
 Example program playing connect6 with random policy.
 
