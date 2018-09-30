@@ -4,3 +4,4 @@ __pycache__
 ckpt
 summary
 *.pb
+*cmake-build-debug*
