@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["revsic <revsic99@gmail.com>"]
 
 [dependencies]
-connect6 = { path = "../libconnect6" }
+connect6 = { path = "../../libconnect6" }

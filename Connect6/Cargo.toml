@@ -2,5 +2,5 @@
 
 members = [
     "libconnect6",
-    "sample",
+    "sample/rust",
 ]
