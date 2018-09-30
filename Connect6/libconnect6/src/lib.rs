@@ -205,7 +205,7 @@ pub extern "C" fn cpp_self_play(
     c_puct: f32,
     debug: bool,
     num_game_thread: i32,
-) {
+) -> cppbind::RawVec<cppbind::RawRunResult> {
     let param = policy::HyperParameter {
         num_simulation,
         epsilon,
@@ -221,4 +221,10 @@ pub extern "C" fn cpp_self_play(
     };
 
     let result = async_agent.run(num_game_thread);
+    let raw_result = result
+        .iter()
+        .map(|x| cppbind::RawRunResult::with_result(x))
+        .collect::<Vec<_>>();
+
+    cppbind::RawVec::from(raw_result)
 }
