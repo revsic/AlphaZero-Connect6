@@ -46,7 +46,7 @@ after_success: |-
     sudo make install &&
     cd ../.. &&
     rm -rf kcov-master &&
-    ls &&
+    ls target/debug/ &&
     for file in target/debug/connect6-*[^\.d]; do
       echo $file;
       mkdir -p "target/cov/$(basename $file)";
