@@ -5,7 +5,7 @@ authors = ["revsic <revsic99@gmail.com>"]
 
 [lib]
 name = "connect6"
-crate-type = ["dylib", "staticlib"]
+crate-type = ["cdylib"] # ["dylib", "staticlib"]
 
 [dependencies]
 rand = { git = "https://github.com/revsic/rand" }
