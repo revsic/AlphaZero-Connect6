@@ -18,7 +18,7 @@ before_script:
 
 script:
   - cd Connect6
-  - cargo fmt --all -- --check; fi;
+  - cargo fmt --all -- --check;
   - cargo make workspace-ci-flow --no-workspace
 
 after_success: |-
