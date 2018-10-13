@@ -30,8 +30,8 @@ before_script:
 script:
   - cd Connect6
   - if [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then echo "start fmt"; cargo fmt --all -- --check; fi;
-  - cargo build --verbose
-  - cargo test --verbose
+  - cargo build -p connect6 --verbose
+  - cargo test -p connect6 --verbose
 
 after_success: |-
   # codecov
