@@ -36,6 +36,6 @@ jobs:
     displayName: Query rust and cargo versions
   - script: cargo install -f cargo-make
     displayName: Install cargo-make
-  - script: cargo make workspace-ci-flow --no-workspace
+  - script: cd Connect6 && cargo make workspace-ci-flow --no-workspace
     env: { CARGO_MAKE_RUN_CODECOV: true }
     displayName: Build and run tests
