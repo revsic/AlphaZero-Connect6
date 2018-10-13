@@ -1,6 +1,7 @@
 # AlphaZero-Connect6
 [![License](https://img.shields.io/badge/Licence-MIT-blue.svg)](https://github.com/revsic/AlphaZero-Connect6/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/revsic/AlphaZero-Connect6.svg?branch=master)](https://travis-ci.org/revsic/AlphaZero-Connect6)
+[![Build Status](https://dev.azure.com/revsic99/AlphaZero-Connect6/_apis/build/status/revsic.AlphaZero-Connect6)](https://dev.azure.com/revsic99/AlphaZero-Connect6/_build/latest?definitionId=1)
 [![codecov](https://codecov.io/gh/revsic/AlphaZero-Connect6/branch/master/graph/badge.svg)](https://codecov.io/gh/revsic/AlphaZero-Connect6)
 
 Tensorflow implementation of AlphaZero for Connect6 written in Rust, Python
