@@ -8,7 +8,7 @@ use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, ToPyObject}
 #[cfg(test)]
 mod tests;
 
-/// `AlphaZero` value, policy approximator with python callable object
+/// AlphaZero value, policy approximator with python callable object
 ///
 /// it implement trait `Evaluator` for evaluating given boards with `PyObject`
 ///
