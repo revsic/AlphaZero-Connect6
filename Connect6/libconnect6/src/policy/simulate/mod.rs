@@ -16,7 +16,7 @@
 //!     assert_eq!(board[0][0], Player::Black);
 //! }
 //! let board = sim.board();
-//! assert_eq!(board[0][0][, Player::None);
+//! assert_eq!(board[0][0], Player::None);
 //! ```
 use game::{search, Game, Player};
 use {Board, BOARD_SIZE};
