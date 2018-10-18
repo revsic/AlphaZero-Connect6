@@ -47,7 +47,7 @@ macro_rules! py_policy {
 ///
 /// # Examples
 /// ```rust
-/// stdio_policy(policy);
+/// io_policy_stdio(policy);
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
 /// ```
