@@ -5,16 +5,20 @@ use {Board, BOARD_CAPACITY, BOARD_SIZE};
 #[cfg(test)]
 mod tests;
 
+/// value, policy evaluation from c ffi
 #[repr(C)]
 pub struct RawResult {
     value: *mut f32,
     policy: *mut f32,
 }
 
+/// std::os::raw::c_int
 pub type CINT = ::std::os::raw::c_int;
 
+/// RawResult(int player, int* board[SIZE][SIZE], int length)
 pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> RawResult;
 
+/// AlphaZero value, policy approximator with c ffi callback
 pub struct CppEval {
     callback: Callback,
 }
@@ -30,6 +34,7 @@ fn convert_to_cint(board: &Board) -> [[CINT; BOARD_SIZE]; BOARD_SIZE] {
 }
 
 impl CppEval {
+    /// Create new CppEval object
     pub fn new(callback: Callback) -> CppEval {
         CppEval { callback }
     }

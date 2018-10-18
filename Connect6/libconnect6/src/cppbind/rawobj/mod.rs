@@ -7,6 +7,7 @@ use std::mem;
 #[cfg(test)]
 mod tests;
 
+/// Path object for c ffi
 #[repr(C)]
 pub struct RawPath {
     turn: CINT,
@@ -15,6 +16,7 @@ pub struct RawPath {
     col: CINT,
 }
 
+/// RunResult object for c ffi
 #[repr(C)]
 pub struct RawRunResult {
     winner: CINT,
@@ -22,6 +24,7 @@ pub struct RawRunResult {
     len: CINT,
 }
 
+/// Vector object for c ffi
 #[repr(C)]
 pub struct RawVec<T> {
     vec: *const T,
@@ -29,6 +32,7 @@ pub struct RawVec<T> {
 }
 
 impl RawPath {
+    /// Create RawPath from Path
     pub fn with_path(path: &Path) -> RawPath {
         let mut board = [[0; BOARD_SIZE]; BOARD_SIZE];
         for i in 0..BOARD_SIZE {
@@ -48,6 +52,7 @@ impl RawPath {
 }
 
 impl RawRunResult {
+    /// Create RawRunResult from RunResult
     pub fn with_result(result: &RunResult) -> RawRunResult {
         let vec = result
             .path
