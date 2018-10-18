@@ -1,5 +1,4 @@
 #![doc(html_root_url = "https://revsic.github.io/AlphaZero-Connect6/")]
-// #![doc(html_logo_url = "https://raw.githubusercontent.com/revsic/AlphaZero-Connect6/master/logo.png")]
 //! [Rust](https://www.rust-lang.org) implementation of connect6 and policies
 //! for learning [AlphaZero](https://arxiv.org/abs/1712.01815) with [Python](https://www.python.org/) interface.
 //!
@@ -94,7 +93,6 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
 /// * `py` - Python GIL, provided by rust-cpython.
 /// * `object` - PyObject, callable object for AlphaZero python policy.
 /// * `num_simulation` - i32, number of simulations for each turn.
-/// * `num_expansion` - usize, number of child node expansion per simulation.
 /// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
 /// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
 /// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS
@@ -103,7 +101,7 @@ py_module_initializer!(libconnect6, initlibconnect6, PyInit_connect6, |py, m| {
 ///
 /// # Panics
 ///
-/// If PyObject isn't callable object, pybind::py_policy::AlphaZero::get_from will panic
+/// If PyObject isn't callable object
 ///
 fn self_play(
     py: Python,
@@ -161,14 +159,13 @@ fn self_play(
 /// * `py` - Python GIL, provided by rust-cpython.
 /// * `object` - PyObject, callable object for AlphaZero python policy.
 /// * `num_simulation` - i32, number of simulations for each turn.
-/// * `num_expansion` - usize, number of child node expansion per simulation.
 /// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
 /// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
 /// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS
 ///
 /// # Panics
 ///
-/// If PyObject isn't callable object, pybind::py_policy::AlphaZero::get_from will panic
+/// If PyObject isn't callable object
 ///
 fn play_with(
     py: Python,
@@ -195,7 +192,18 @@ fn play_with(
     Ok(result.unwrap().to_py_object(py))
 }
 
-/// Returns Connect6 self-playing results with given cpp callback and hyper parameters
+/// Return Connect6 self-playing results with given cpp callback and hyperparameters
+///
+/// # Arguments
+///
+/// * `callback` - callback for cppbind, RawResult(int player, int* boards[SIZE][SIZE], int length).
+/// * `num_simulation` - i32, number of simulations for each turn.
+/// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
+/// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
+/// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS
+/// * `debug` - bool, enable debug mode. if enable, selection and board status will be printed
+/// * `num_game_thread` - i32, number of threads asynchronously self-playing connect6
+///
 #[no_mangle]
 pub extern "C" fn cpp_self_play(
     callback: cppbind::Callback,

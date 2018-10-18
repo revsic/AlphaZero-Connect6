@@ -21,7 +21,7 @@
 //! let policy_gen = || RandomPolicy::new();
 //! let async_agent = AsyncAgent::debug(policy_gen);
 //!
-//! let result = async_agent.run(4)
+//! let result = async_agent.run(4);
 //! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
 //! ```
 //!
