@@ -5,7 +5,7 @@
 //! *Note* if given position raise Err from `Game` like `already set position`, game will be terminated by `Agent`.
 //!
 //! *Note* We suggest that if you use IoPolicy, construct `Agent` with `Agent::debug`.
-//! IoPolicy don't displaying the board when you make the choice,
+//! IoPolicy doesn't displaying the board when you make the choice,
 //! so that if you want to confirm the board, you have to construct `Agent` in debug mode.
 //!
 //! # Examples
@@ -32,7 +32,7 @@ mod tests;
 /// *Note* if given position raise Err from Game, game will be terminated by `Agent`.
 ///
 /// *Note* We suggest that if you use IoPolicy, construct `Agent` with `Agent::debug`.
-/// IoPolicy don't displaying the board when you make the choice,
+/// IoPolicy doesn't displaying the board when you make the choice,
 /// so that if you want to confirm the board, you have to construct `Agent` in debug mode.
 ///
 /// # Examples
