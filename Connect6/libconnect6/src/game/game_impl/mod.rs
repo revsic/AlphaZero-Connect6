@@ -1,19 +1,13 @@
 //! Implementation of Game Connect6
 //!
-//! It defines the game connect6 with some visualization utilities.
+//! It defines the game connect6 and provides the algorithm to find the winner.
 //!
 //! # Examples
 //! ```rust
 //! let mut game = Game::new();
 //! let result = game.play((0, 0));
-//! game.print(&mut std::io::stdout()).unwrap();
-//!
 //! let winner = game.is_game_end();
-//! if winner != Player::None {
-//!     println!("game end, winner: {:?}", winner);
-//! } else {
-//!     println!("playing result: {:?}", result);
-//! }
+//! assert_eq!(winner, Player::None);
 //! ```
 use game::Player;
 use {Board, BOARD_SIZE};
@@ -49,7 +43,8 @@ impl PlayResult {
     /// let position = (0, 0);
     ///
     /// let play_result = PlayResult::with_game(&game, position);
-    /// assert_eq!(play_result, PlayResult{ player: Player::Black, num_remain: 1, position: (0, 0) });
+    /// let expected = PlayResult{ player: Player::Black, num_remain: 1, position: (0, 0) };
+    /// assert_eq!(play_result, expected);
     /// ```
     fn with_game(game: &Game, position: (usize, usize)) -> PlayResult {
         PlayResult {
@@ -73,11 +68,7 @@ type Msg = &'static str;
 /// game.print(&mut std::io::stdout()).unwrap();
 ///
 /// let winner = game.is_game_end();
-/// if winner != Player::None {
-///     println!("game end, winner: {:?}", winner);
-/// } else {
-///     println!("playing result: {:?}", result);
-/// }
+/// assert_eq!(winner, Player::None);
 /// ```
 pub struct Game {
     turn: Player,
@@ -101,7 +92,8 @@ impl Game {
     /// ```rust
     /// let mut game = Game::new();
     /// let result = game.play((3, 4));
-    /// assert_eq!(result.unwrap(), PlayResult{ player: Player::Black, num_remain: 0, position: (3, 4) });
+    /// let expected = PlayResult{ player: Player::Black, num_remain: 0, position: (3, 4) };
+    /// assert_eq!(result.unwrap(), expected);
     /// ```
     ///
     /// # Errors
