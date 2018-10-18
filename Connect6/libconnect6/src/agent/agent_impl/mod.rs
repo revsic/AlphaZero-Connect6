@@ -1,18 +1,20 @@
 //! Implementation of agent.
 //!
-/// Agent is structure for playing game with given policy.
-/// As we pass the policy, agent play the game with given based on loop.
-/// Method `play` return the `PlayResult` and it can be converted as `PyObject`.
-///
-/// # Examples
-/// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
-/// ```rust
-/// io_policy_stdio!(io_policy);
-/// let mut rand_policy = RandomPolicy::new();
-///
-/// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
-/// let result = Agent::debug(&mut multi_policy).play();
-/// ```
+//! Loop based single policy agent.
+//!
+//! Agent is structure for playing game with given policy.
+//! As we pass the policy, agent play the game with given based on loop.
+//! Method `play` return the `PlayResult` and it can be converted as `PyObject`.
+//!
+//! # Examples
+//! For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
+//! ```rust
+//! io_policy_stdio!(io_policy);
+//! let mut rand_policy = RandomPolicy::new();
+//!
+//! let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut io_policy);
+//! let result = Agent::debug(&mut multi_policy).play();
+//! ```
 use game::{Game, Player};
 use policy::Policy;
 use pybind::pylist_from_board;
