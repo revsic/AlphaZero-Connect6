@@ -221,18 +221,30 @@ pub extern "C" fn cpp_self_play(
         c_puct,
     };
 
-    let policy_gen = || policy::AlphaZero::with_cpp_param(callback, param);
-    let async_agent = if debug {
-        agent::AsyncAgent::debug(policy_gen)
-    } else {
-        agent::AsyncAgent::new(policy_gen)
-    };
+    let raw_result = if num_game_thread == 1 {
+        let mut alphazero = policy::AlphaZero::with_cpp_param(callback, param);
+        let mut agent = if debug {
+            agent::Agent::debug(&mut alphazero)
+        } else {
+            agent::Agent::new(&mut alphazero)
+        };
 
-    let result = async_agent.run(num_game_thread);
-    let raw_result = result
-        .iter()
-        .map(|x| cppbind::RawRunResult::with_result(x))
-        .collect::<Vec<_>>();
+        let result = agent.play().unwrap();
+        vec![cppbind::RawRunResult::with_result(&result)]
+    } else {
+        let policy_gen = || policy::AlphaZero::with_cpp_param(callback, param);
+        let async_agent = if debug {
+            agent::AsyncAgent::debug(policy_gen)
+        } else {
+            agent::AsyncAgent::new(policy_gen)
+        };
+
+        async_agent
+            .run(num_game_thread)
+            .iter()
+            .map(|x| cppbind::RawRunResult::with_result(x))
+            .collect::<Vec<_>>()
+    };
 
     cppbind::RawVec::from(raw_result)
 }
