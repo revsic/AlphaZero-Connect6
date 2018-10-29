@@ -7,3 +7,11 @@ set(LIBCONNECT6 ${CMAKE_SOURCE_DIR}/../../target/release/libconnect6.a)
 add_executable(sample_cpp main.cpp)
 
 target_link_libraries(sample_cpp ${LIBCONNECT6})
+
+if(APPLE)
+    target_link_libraries(sample_cpp "-framework Security")
+elseif(UNIX)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    target_link_libraries(my_app Threads::Threads)
+endif()
