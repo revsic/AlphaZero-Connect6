@@ -66,8 +66,11 @@ impl Evaluator for PyEval {
 
         // convert python object to proper vector
         let value_vec = pyseq_to_vec(py, value)?;
-        let policy_iter = policy.cast_into::<PySequence>(py).ok()?
-            .iter(py).ok()?
+        let policy_iter = policy
+            .cast_into::<PySequence>(py)
+            .ok()?
+            .iter(py)
+            .ok()?
             .filter_map(|x| x.ok()) // pyiter returns iterator of Result
             .filter_map(|x| pyseq_to_vec(py, x));
 
