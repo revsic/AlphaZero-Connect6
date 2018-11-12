@@ -1,44 +1,33 @@
 use super::*;
 
 use rand;
-use std::mem;
+use std::slice;
 
 extern "C" fn test_callback(
-    player: CINT,
-    board: *const [[CINT; BOARD_SIZE]; BOARD_SIZE],
-    len: CINT,
-) -> RawResult {
+    player: CInt,
+    values: *mut CFloat,
+    policies: *mut [[CFloat; BOARD_SIZE]; BOARD_SIZE],
+    len: CInt,
+) {
     let len = len as usize;
-    let mut value = (0..len).map(|x| x as f32).collect::<Vec<_>>();
-    let mut policy = Vec::with_capacity(len * BOARD_CAPACITY);
+    let value_ref = unsafe { slice::from_raw_parts_mut(values, len) };
+    let policy_ref = unsafe { slice::from_raw_parts_mut(policies, len) };
 
-    value[0] = player as f32;
-    let board = unsafe { ::std::slice::from_raw_parts(board, len) };
+    for i in 0..len {
+        value_ref[i] = i as f32;
 
-    for l in 0..len {
-        let ind = board[l];
-
+        let ind = &mut policy_ref[i];
         for i in 0..BOARD_SIZE {
             for j in 0..BOARD_SIZE {
-                policy.push((ind[i][j] * 2) as f32);
+                ind[i][j] *= 2.;
             }
         }
     }
-
-    let value_ptr = value.as_mut_ptr();
-    let policy_ptr = policy.as_mut_ptr();
-
-    mem::forget(value);
-    mem::forget(policy);
-
-    RawResult {
-        value: value_ptr,
-        policy: policy_ptr,
-    }
+    value_ref[0] = player as f32;
 }
 
 #[test]
-fn test_convert_to_cint() {
+fn test_convert_to_c_float() {
     let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
 
     board[0][0] = Player::Black;
@@ -46,12 +35,12 @@ fn test_convert_to_cint() {
     board[BOARD_SIZE - 1][BOARD_SIZE - 1] = Player::Black;
     board[BOARD_SIZE - 1][0] = Player::White;
 
-    let result = convert_to_cint(&board);
+    let result = convert_to_c_float(&board);
 
-    assert_eq!(result[0][0], -1);
-    assert_eq!(result[0][BOARD_SIZE - 1], 1);
-    assert_eq!(result[BOARD_SIZE - 1][BOARD_SIZE - 1], -1);
-    assert_eq!(result[BOARD_SIZE - 1][0], 1);
+    assert_eq!(result[0][0], -1.);
+    assert_eq!(result[0][BOARD_SIZE - 1], 1.);
+    assert_eq!(result[BOARD_SIZE - 1][BOARD_SIZE - 1], -1.);
+    assert_eq!(result[BOARD_SIZE - 1][0], 1.);
 }
 
 #[test]

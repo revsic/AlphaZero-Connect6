@@ -5,29 +5,28 @@ use {Board, BOARD_CAPACITY, BOARD_SIZE};
 #[cfg(test)]
 mod tests;
 
-/// value, policy evaluation from c ffi
-#[repr(C)]
-pub struct RawResult {
-    value: *mut f32,
-    policy: *mut f32,
-}
-
 /// std::os::raw::c_int
-pub type CINT = ::std::os::raw::c_int;
+pub type CInt = ::std::os::raw::c_int;
 
-/// RawResult(int player, int* board[SIZE][SIZE], int length)
-pub type Callback = extern "C" fn(CINT, *const [[CINT; BOARD_SIZE]; BOARD_SIZE], CINT) -> RawResult;
+/// std::os::raw::c_float
+pub type CFloat = ::std::os::raw::c_float;
+
+/// void(int player, float* values, float* board[SIZE][SIZE], int length)
+pub type Callback = extern "C" fn(CInt, // player
+                                  *mut CFloat, // out: value
+                                  *mut [[CFloat; BOARD_SIZE]; BOARD_SIZE], // in: board, out: policy
+                                  CInt); // num boards
 
 /// AlphaZero value, policy approximator with c ffi callback
 pub struct CppEval {
     callback: Callback,
 }
 
-fn convert_to_cint(board: &Board) -> [[CINT; BOARD_SIZE]; BOARD_SIZE] {
-    let mut converted = [[0; BOARD_SIZE]; BOARD_SIZE];
+fn convert_to_c_float(board: &Board) -> [[CFloat; BOARD_SIZE]; BOARD_SIZE] {
+    let mut converted = [[0.; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
-            converted[i][j] = board[i][j] as CINT;
+            converted[i][j] = board[i][j] as i32 as CFloat;
         }
     }
     converted
@@ -45,31 +44,12 @@ impl CppEval {
         board: &Vec<Board>,
     ) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let len = board.len();
-        let player = turn as CINT;
-        let converted = board.iter().map(convert_to_cint).collect::<Vec<_>>();
+        let player = turn as CInt;
+        let mut values = vec![0.; len];
+        let mut policies = board.iter().map(convert_to_c_float).collect::<Vec<_>>();
 
-        let result = (self.callback)(player, converted.as_ptr(), len as CINT);
-
-        let value = unsafe { Vec::from_raw_parts(result.value, len, len) };
-        let policy_raw = unsafe {
-            Vec::from_raw_parts(result.policy, len * BOARD_CAPACITY, len * BOARD_CAPACITY)
-        };
-
-        let mut iter = 0;
-        let mut policy = Vec::with_capacity(len);
-
-        for _ in 0..len {
-            let mut board = [[0.; BOARD_SIZE]; BOARD_SIZE];
-            for i in 0..BOARD_SIZE {
-                for j in 0..BOARD_SIZE {
-                    board[i][j] = policy_raw[iter];
-                    iter += 1;
-                }
-            }
-            policy.push(board);
-        }
-
-        Some((value, policy))
+        (self.callback)(player, values.as_mut_ptr(), policies.as_mut_ptr(), len as CInt);
+        Some((values, policies))
     }
 }
 
