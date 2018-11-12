@@ -6,7 +6,7 @@ use policy::RandomPolicy;
 use rand;
 use Board;
 
-fn convert_board_from(board: &[[CINT; BOARD_SIZE]; BOARD_SIZE]) -> Board {
+fn convert_board_from(board: &[[CInt; BOARD_SIZE]; BOARD_SIZE]) -> Board {
     let mut player_board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
@@ -34,10 +34,10 @@ fn test_raw_path() {
     let path = Path { turn, board, pos };
     let raw_path = RawPath::with_path(&path);
 
-    assert_eq!(raw_path.turn, turn as CINT);
+    assert_eq!(raw_path.turn, turn as CInt);
     assert_eq!(convert_board_from(&raw_path.board), board);
-    assert_eq!(raw_path.row, pos.0 as CINT);
-    assert_eq!(raw_path.col, pos.1 as CINT);
+    assert_eq!(raw_path.row, pos.0 as CInt);
+    assert_eq!(raw_path.col, pos.1 as CInt);
 }
 
 #[test]
@@ -49,8 +49,8 @@ fn test_raw_run_result() {
     let result = result.unwrap();
     let raw_result = RawRunResult::with_result(&result);
 
-    assert_eq!(raw_result.winner, result.winner as CINT);
-    assert_eq!(raw_result.len, result.path.len() as CINT);
+    assert_eq!(raw_result.winner, result.winner as CInt);
+    assert_eq!(raw_result.len, result.path.len() as CInt);
 
     let len = raw_result.len as usize;
     let path_ptr = raw_result.path as *mut RawPath;
@@ -60,9 +60,9 @@ fn test_raw_run_result() {
         let path = &result.path[i];
         let raw_path = &raw_paths[i];
 
-        assert_eq!(raw_path.turn, path.turn as CINT);
-        assert_eq!(raw_path.row, path.pos.0 as CINT);
-        assert_eq!(raw_path.col, path.pos.1 as CINT);
+        assert_eq!(raw_path.turn, path.turn as CInt);
+        assert_eq!(raw_path.row, path.pos.0 as CInt);
+        assert_eq!(raw_path.col, path.pos.1 as CInt);
         assert_eq!(convert_board_from(&raw_path.board), path.board);
     }
 }

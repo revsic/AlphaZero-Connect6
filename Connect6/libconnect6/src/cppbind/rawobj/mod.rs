@@ -1,5 +1,5 @@
 use agent::{Path, RunResult};
-use cppbind::CINT;
+use cppbind::CInt;
 use BOARD_SIZE;
 
 use std::mem;
@@ -10,25 +10,25 @@ mod tests;
 /// Path object for c ffi
 #[repr(C)]
 pub struct RawPath {
-    turn: CINT,
-    board: [[CINT; BOARD_SIZE]; BOARD_SIZE],
-    row: CINT,
-    col: CINT,
+    turn: CInt,
+    board: [[CInt; BOARD_SIZE]; BOARD_SIZE],
+    row: CInt,
+    col: CInt,
 }
 
 /// RunResult object for c ffi
 #[repr(C)]
 pub struct RawRunResult {
-    winner: CINT,
+    winner: CInt,
     path: *const RawPath,
-    len: CINT,
+    len: CInt,
 }
 
 /// Vector object for c ffi
 #[repr(C)]
 pub struct RawVec<T> {
     vec: *const T,
-    len: CINT,
+    len: CInt,
 }
 
 impl RawPath {
@@ -37,16 +37,16 @@ impl RawPath {
         let mut board = [[0; BOARD_SIZE]; BOARD_SIZE];
         for i in 0..BOARD_SIZE {
             for j in 0..BOARD_SIZE {
-                board[i][j] = path.board[i][j] as CINT;
+                board[i][j] = path.board[i][j] as CInt;
             }
         }
 
         let (row, col) = path.pos;
         RawPath {
-            turn: path.turn as CINT,
+            turn: path.turn as CInt,
             board,
-            row: row as CINT,
-            col: col as CINT,
+            row: row as CInt,
+            col: col as CInt,
         }
     }
 }
@@ -60,12 +60,12 @@ impl RawRunResult {
             .map(|x| RawPath::with_path(x))
             .collect::<Vec<_>>();
 
-        let len = vec.len() as CINT;
+        let len = vec.len() as CInt;
         let path = vec.as_ptr();
         mem::forget(vec);
 
         RawRunResult {
-            winner: result.winner as CINT,
+            winner: result.winner as CInt,
             path,
             len,
         }
@@ -74,7 +74,7 @@ impl RawRunResult {
 
 impl<T> From<Vec<T>> for RawVec<T> {
     fn from(vec: Vec<T>) -> RawVec<T> {
-        let len = vec.len() as CINT;
+        let len = vec.len() as CInt;
         let ptr = vec.as_ptr();
 
         mem::forget(vec);
