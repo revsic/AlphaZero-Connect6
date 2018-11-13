@@ -12,10 +12,12 @@ pub type CInt = ::std::os::raw::c_int;
 pub type CFloat = ::std::os::raw::c_float;
 
 /// void(int player, float* values, float* board[SIZE][SIZE], int length)
-pub type Callback = extern "C" fn(CInt, // player
-                                  *mut CFloat, // out: value
-                                  *mut [[CFloat; BOARD_SIZE]; BOARD_SIZE], // in: board, out: policy
-                                  CInt); // num boards
+pub type Callback = extern "C" fn(
+    CInt,                                    // player
+    *mut CFloat,                             // out: value
+    *mut [[CFloat; BOARD_SIZE]; BOARD_SIZE], // in: board, out: policy
+    CInt,
+); // num boards
 
 /// AlphaZero value, policy approximator with c ffi callback
 pub struct CppEval {
@@ -48,7 +50,12 @@ impl CppEval {
         let mut values = vec![0.; len];
         let mut policies = board.iter().map(convert_to_c_float).collect::<Vec<_>>();
 
-        (self.callback)(player, values.as_mut_ptr(), policies.as_mut_ptr(), len as CInt);
+        (self.callback)(
+            player,
+            values.as_mut_ptr(),
+            policies.as_mut_ptr(),
+            len as CInt,
+        );
         Some((values, policies))
     }
 }
