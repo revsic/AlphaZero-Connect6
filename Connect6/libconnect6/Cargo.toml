@@ -13,7 +13,7 @@ futures = "0.1.23"
 tokio = "0.1.7"
 
 [dependencies.cpython]
-version = "0.2.0"
+version = "0.2.1"
 # for python3
 # features = ["extension-module"]
 # for python2
