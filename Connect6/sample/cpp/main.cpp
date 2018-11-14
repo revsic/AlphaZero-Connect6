@@ -4,14 +4,17 @@
 constexpr size_t BOARD_SIZE = 15;
 constexpr size_t BOARD_CAPACITY = BOARD_SIZE * BOARD_SIZE;
 
+using Callback = void(*)(int player, float* values, float* policies, int len);
+
+template <typename T>
+T* allocator(int size) {
+    return new T[size];
+}
+
+template <typename T>
+using AllocatorType = T*(*)(int size);
+
 extern "C" {
-    struct Result {
-        float* value;
-        float* policy;
-    };
-
-    using Callback = Result(*)(int player, int* boards[BOARD_SIZE][BOARD_SIZE], int len);
-
     struct Path {
         int turn;
         int board[BOARD_SIZE][BOARD_SIZE];
@@ -26,11 +29,13 @@ extern "C" {
     };
 
     struct Vec {
-        Result* vec;
+        RunResult* vec;
         int len;
     };
 
     Vec cpp_self_play(Callback callback,
+                      AllocatorType<Path> alloc_path,
+                      AllocatorType<RunResult> alloc_result,
                       int num_simulation,
                       float epsilon,
                       double dirichlet_alpha,
@@ -39,27 +44,35 @@ extern "C" {
                       int num_game_thread);
 }
 
-Result callback(int player, int* boards[BOARD_SIZE][BOARD_SIZE], int len) {
+void callback(int player, float* values, float* policies, int len) {
     std::random_device rd;
     std::default_random_engine gen(rd());
 
     std::uniform_real_distribution<float> dist(-1.0, 1.0);
 
-    float* value = new float[len];
     for (size_t i = 0; i < len; ++i) {
-        value[i] = dist(gen);
+        values[i] = dist(gen);
     }
 
-    float* policy = new float[len * BOARD_CAPACITY];
-    for (size_t i = 0; i < len * BOARD_CAPACITY; ++i) {
-        policy[i] = dist(gen);
+    for (size_t i = 0; i < len; ++i) {
+        for (size_t j = 0; j < BOARD_SIZE; ++j) {
+            for (size_t k = 0; k < BOARD_SIZE; ++k) {
+                policies[i * BOARD_CAPACITY + j * BOARD_SIZE + k] = dist(gen);
+            }
+        }
     }
-
-    return Result { value, policy };
 }
 
 int main() {
-    Vec result = cpp_self_play(callback, 2, 0.25, 0.03, 1, true, 1);
-    assert(result.len == 1);
+    Vec result_vec = cpp_self_play(
+            callback,
+            &allocator<Path>,
+            &allocator<RunResult>,
+            2, 0.25, 0.03, 1, true, 1);
+
+    RunResult result = result_vec.vec[0];
+    std::cout << "Winner : " << (result.winner < 0 ? "Black" : "White") << std::endl;
+
+    delete[] result_vec.vec;
     return 0;
 }
