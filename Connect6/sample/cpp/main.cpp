@@ -3,7 +3,9 @@
 #include <iostream>
 #include <random>
 
-void callback(int player, float* values, float* policies, int len) {
+void callback(int player, float* values, float* policies, int len_) {
+    size_t len = len_;
+    
     std::random_device rd;
     std::default_random_engine gen(rd());
 
