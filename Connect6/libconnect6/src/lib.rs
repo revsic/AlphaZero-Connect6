@@ -207,6 +207,8 @@ fn play_with(
 #[no_mangle]
 pub extern "C" fn cpp_self_play(
     callback: cppbind::Callback,
+    cpp_rawpath: cppbind::AllocatorType<cppbind::RawPath>,
+    cpp_rawrunresult: cppbind::AllocatorType<cppbind::RawRunResult>,
     num_simulation: i32,
     epsilon: f32,
     dirichlet_alpha: f64,
@@ -221,6 +223,9 @@ pub extern "C" fn cpp_self_play(
         c_puct,
     };
 
+    let alloc_rawpath = cppbind::Allocator::new(cpp_rawpath);
+    let alloc_rawrunresult = cppbind::Allocator::new(cpp_rawrunresult);
+
     let raw_result = if num_game_thread == 1 {
         let mut alphazero = policy::AlphaZero::with_cpp_param(callback, param);
         let mut agent = if debug {
@@ -230,7 +235,7 @@ pub extern "C" fn cpp_self_play(
         };
 
         let result = agent.play().unwrap();
-        vec![cppbind::RawRunResult::with_result(&result)]
+        vec![cppbind::RawRunResult::with_result(&result, &alloc_rawpath)]
     } else {
         let policy_gen = || policy::AlphaZero::with_cpp_param(callback, param);
         let async_agent = if debug {
@@ -242,9 +247,9 @@ pub extern "C" fn cpp_self_play(
         async_agent
             .run(num_game_thread)
             .iter()
-            .map(|x| cppbind::RawRunResult::with_result(x))
+            .map(|x| cppbind::RawRunResult::with_result(x, &alloc_rawpath))
             .collect::<Vec<_>>()
     };
 
-    cppbind::RawVec::from(raw_result)
+    cppbind::RawVec::with_vec(raw_result, &alloc_rawrunresult)
 }
