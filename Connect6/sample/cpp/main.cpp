@@ -14,9 +14,6 @@ T* allocator(int size) {
 template <typename T>
 using AllocatorType = T*(*)(int size);
 
-int add(int a, int b);
-int add(char a, char b);
-
 extern "C" {
     struct Path {
         int turn;
