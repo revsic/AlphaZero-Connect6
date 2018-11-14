@@ -1,6 +1,7 @@
 #ifndef CONNECT6_H
 #define CONNECT6_H
 
+#include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
