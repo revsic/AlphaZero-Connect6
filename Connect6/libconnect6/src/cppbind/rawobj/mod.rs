@@ -73,7 +73,7 @@ impl Default for RawPath {
             turn: 0,
             board: [[0; BOARD_SIZE]; BOARD_SIZE],
             row: 0,
-            col: 0
+            col: 0,
         }
     }
 }
@@ -106,6 +106,9 @@ impl<T> RawVec<T> {
         for (p, i) in ptr.iter_mut().zip(vec.into_iter()) {
             *p = i;
         }
-        RawVec { vec: ptr.as_mut_ptr(), len: len as CInt }
+        RawVec {
+            vec: ptr.as_mut_ptr(),
+            len: len as CInt,
+        }
     }
 }
