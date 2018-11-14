@@ -1,6 +1,6 @@
 use game::Player;
 use policy::Evaluator;
-use {Board, BOARD_CAPACITY, BOARD_SIZE};
+use {Board, BOARD_SIZE};
 
 #[cfg(test)]
 mod tests;
@@ -16,8 +16,8 @@ pub type Callback = extern "C" fn(
     CInt,                                    // player
     *mut CFloat,                             // out: value
     *mut [[CFloat; BOARD_SIZE]; BOARD_SIZE], // in: board, out: policy
-    CInt,
-); // num boards
+    CInt,                                    // num boards
+);
 
 /// AlphaZero value, policy approximator with c ffi callback
 pub struct CppEval {

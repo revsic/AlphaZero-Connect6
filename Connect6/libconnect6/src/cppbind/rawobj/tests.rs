@@ -6,6 +6,15 @@ use policy::RandomPolicy;
 use rand;
 use Board;
 
+use std::mem;
+
+extern "C" fn test_allocator<T: Default + Clone>(size: CInt) -> *mut T {
+    let mut vec = vec![T::default(); size as usize];
+    let ptr = vec.as_mut_ptr();
+    mem::forget(vec);
+    return ptr;
+}
+
 fn convert_board_from(board: &[[CInt; BOARD_SIZE]; BOARD_SIZE]) -> Board {
     let mut player_board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
@@ -47,7 +56,8 @@ fn test_raw_run_result() {
     assert!(result.is_ok());
 
     let result = result.unwrap();
-    let raw_result = RawRunResult::with_result(&result);
+    let alloc = Allocator::new(test_allocator);
+    let raw_result = RawRunResult::with_result(&result, &alloc);
 
     assert_eq!(raw_result.winner, result.winner as CInt);
     assert_eq!(raw_result.len, result.path.len() as CInt);
@@ -70,7 +80,8 @@ fn test_raw_run_result() {
 #[test]
 fn test_raw_vec() {
     let vec = vec![1, 2, 3, 4, 5];
-    let raw_vec = RawVec::from(vec.clone());
+    let alloc = Allocator::new(test_allocator);
+    let raw_vec = RawVec::with_vec(vec.clone(), &alloc);
 
     let ptr = raw_vec.vec as *mut i32;
     let len = raw_vec.len as usize;
