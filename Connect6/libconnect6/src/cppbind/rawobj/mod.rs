@@ -5,19 +5,23 @@ use BOARD_SIZE;
 #[cfg(test)]
 mod tests;
 
+/// Allocator Type for FFI, (ex. C++ new operator)
 pub type AllocatorType<T> = extern "C" fn(CInt) -> *mut T;
 
+/// Allocator for FFI, (ex. C++ new operator)
 pub struct Allocator<T> {
-    cpp_allocator: AllocatorType<T>,
+    allocator: AllocatorType<T>,
 }
 
 impl<T> Allocator<T> {
-    pub fn new(cpp_allocator: AllocatorType<T>) -> Allocator<T> {
-        Allocator { cpp_allocator }
+    /// Create new Allocator with given allocator
+    pub fn new(allocator: AllocatorType<T>) -> Allocator<T> {
+        Allocator { allocator }
     }
 
+    /// Obtain new dynamic memory from self.allocator
     pub fn get(&self, size: usize) -> &mut [T] {
-        let res = (self.cpp_allocator)(size as CInt);
+        let res = (self.allocator)(size as CInt);
         unsafe { ::std::slice::from_raw_parts_mut(res, size) }
     }
 }
@@ -48,6 +52,16 @@ pub struct RawVec<T> {
 }
 
 impl RawPath {
+    /// Create zero initialized RawPath
+    pub fn new() -> RawPath {
+        RawPath {
+            turn: 0,
+            board: [[0; BOARD_SIZE]; BOARD_SIZE],
+            row: 0,
+            col: 0,
+        }
+    }
+
     /// Create RawPath from Path
     pub fn with_path(path: &Path) -> RawPath {
         let mut board = [[0; BOARD_SIZE]; BOARD_SIZE];
@@ -68,18 +82,14 @@ impl RawPath {
 }
 
 impl Default for RawPath {
+    /// Alias of RawPath::new
     fn default() -> RawPath {
-        RawPath {
-            turn: 0,
-            board: [[0; BOARD_SIZE]; BOARD_SIZE],
-            row: 0,
-            col: 0,
-        }
+        RawPath::new()
     }
 }
 
 impl RawRunResult {
-    /// Create RawRunResult from RunResult
+    /// Create RawRunResult from RunResult with given allocator (for C++ new operation)
     pub fn with_result(result: &RunResult, alloc: &Allocator<RawPath>) -> RawRunResult {
         let path = &result.path;
         let len = path.len();
@@ -99,6 +109,7 @@ impl RawRunResult {
 }
 
 impl<T> RawVec<T> {
+    /// Create RawVec from Vec with given allocator (for C++ new operation)
     pub fn with_vec(vec: Vec<T>, alloc: &Allocator<T>) -> RawVec<T> {
         let len = vec.len();
 

@@ -24,6 +24,7 @@ pub struct CppEval {
     callback: Callback,
 }
 
+/// Convert Player:Board to CFloat:Board
 fn convert_to_c_float(board: &Board) -> [[CFloat; BOARD_SIZE]; BOARD_SIZE] {
     let mut converted = [[0.; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
@@ -40,6 +41,7 @@ impl CppEval {
         CppEval { callback }
     }
 
+    /// Call policy method from C++ FFI
     fn callback(
         &self,
         turn: Player,
