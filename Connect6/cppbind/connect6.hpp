@@ -71,6 +71,7 @@ namespace Connect6 {
         case Player::None:
             return { "None" };
         }
+        return { "" };
     }
 
     class Path {
@@ -89,6 +90,13 @@ namespace Connect6 {
             turn(static_cast<Player>(path.turn)), position({ path.row, path.col })
         {
             std::memcpy(board, path.board, BOARD_CAPACITY);
+        }
+
+        Path& operator=(const Path& other) {
+            turn = other.turn;
+            position = other.position;
+            std::memcpy(board, other.board, BOARD_CAPACITY);
+            return *this;
         }
 
         Player GetTurn() const {
@@ -190,10 +198,12 @@ namespace Connect6 {
                 debug,
                 num_game_thread);
 
-        std::vector<GameResult> game_result;
-        game_result.reserve(result.len);
+        size_t len = result.len;
 
-        for (size_t i = 0; i < result.len; ++i) {
+        std::vector<GameResult> game_result;
+        game_result.reserve(len);
+
+        for (size_t i = 0; i < len; ++i) {
             game_result.emplace_back(result.vec[i]);
         }
 
