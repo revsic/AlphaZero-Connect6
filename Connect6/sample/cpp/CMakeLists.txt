@@ -6,9 +6,11 @@ set(CPPBIND ${CMAKE_SOURCE_DIR}/../../cppbind)
 set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../target/release)
 
 if(WIN32)
-    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/connect6.lib)
-else()
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/connect6.dll.lib)
+elseif(APPLE)
     set(LIBCONNECT6 ${LIBCONNECT6_PATH}/libconnect6.a)
+else()
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH/libconnect6.so})
 endif()
 
 add_executable(sample_cpp main.cpp)
