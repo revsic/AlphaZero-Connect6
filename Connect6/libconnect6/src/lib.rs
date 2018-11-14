@@ -197,6 +197,8 @@ fn play_with(
 /// # Arguments
 ///
 /// * `callback` - callback for cppbind, RawResult(int player, int* boards[SIZE][SIZE], int length).
+/// * `cpp_alloc_path` - cppbind::RawPath allocator for obtaining memory from cpp ffi.
+/// * `cpp_alloc_result` - cppbind::RawRunResult allocator for obtaining memory from cpp ffi.
 /// * `num_simulation` - i32, number of simulations for each turn.
 /// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
 /// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
@@ -207,8 +209,8 @@ fn play_with(
 #[no_mangle]
 pub extern "C" fn cpp_self_play(
     callback: cppbind::Callback,
-    cpp_rawpath: cppbind::AllocatorType<cppbind::RawPath>,
-    cpp_rawrunresult: cppbind::AllocatorType<cppbind::RawRunResult>,
+    cpp_alloc_path: cppbind::AllocatorType<cppbind::RawPath>,
+    cpp_alloc_result: cppbind::AllocatorType<cppbind::RawRunResult>,
     num_simulation: i32,
     epsilon: f32,
     dirichlet_alpha: f64,
@@ -223,8 +225,8 @@ pub extern "C" fn cpp_self_play(
         c_puct,
     };
 
-    let alloc_rawpath = cppbind::Allocator::new(cpp_rawpath);
-    let alloc_rawrunresult = cppbind::Allocator::new(cpp_rawrunresult);
+    let alloc_path = cppbind::Allocator::new(cpp_alloc_path);
+    let alloc_result = cppbind::Allocator::new(cpp_alloc_result);
 
     let raw_result = if num_game_thread == 1 {
         let mut alphazero = policy::AlphaZero::with_cpp_param(callback, param);
@@ -235,7 +237,7 @@ pub extern "C" fn cpp_self_play(
         };
 
         let result = agent.play().unwrap();
-        vec![cppbind::RawRunResult::with_result(&result, &alloc_rawpath)]
+        vec![cppbind::RawRunResult::with_result(&result, &alloc_path)]
     } else {
         let policy_gen = || policy::AlphaZero::with_cpp_param(callback, param);
         let async_agent = if debug {
@@ -247,9 +249,9 @@ pub extern "C" fn cpp_self_play(
         async_agent
             .run(num_game_thread)
             .iter()
-            .map(|x| cppbind::RawRunResult::with_result(x, &alloc_rawpath))
+            .map(|x| cppbind::RawRunResult::with_result(x, &alloc_path))
             .collect::<Vec<_>>()
     };
 
-    cppbind::RawVec::with_vec(raw_result, &alloc_rawrunresult)
+    cppbind::RawVec::with_vec(raw_result, &alloc_result)
 }
