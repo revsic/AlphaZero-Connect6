@@ -3,7 +3,13 @@ project(sample_cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CPPBIND ${CMAKE_SOURCE_DIR}/../../cppbind)
-set(LIBCONNECT6 ${CMAKE_SOURCE_DIR}/../../target/release/libconnect6.a)
+set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../target/release)
+
+if(WIN32)
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/connect6.lib)
+else()
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/libconnect6.a)
+endif()
 
 add_executable(sample_cpp main.cpp)
 
