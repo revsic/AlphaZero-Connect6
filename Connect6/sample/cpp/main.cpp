@@ -14,6 +14,9 @@ T* allocator(int size) {
 template <typename T>
 using AllocatorType = T*(*)(int size);
 
+int add(int a, int b);
+int add(char a, char b);
+
 extern "C" {
     struct Path {
         int turn;
@@ -72,6 +75,10 @@ int main() {
 
     RunResult result = result_vec.vec[0];
     std::cout << "Winner : " << (result.winner < 0 ? "Black" : "White") << std::endl;
+
+    for (size_t i = 0; i < result_vec.len; ++i) {
+        delete[] result_vec.vec[i].paths;
+    }
 
     delete[] result_vec.vec;
     return 0;
