@@ -11,6 +11,7 @@ jobs:
       nightly:
         rustup_toolchain: nightly
   steps:
+  # Test Libconnect6
   - script: |
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
@@ -29,6 +30,7 @@ jobs:
   #     popd
   #   env: { CARGO_MAKE_RUN_CODECOV: true }
   #   displayName: Build and run tests
+  # Test CppBind
   - script: |
       pushd Connect6
       cargo build --release
@@ -46,3 +48,19 @@ jobs:
     displayName: MSBuild test_cppbind
   - script: .\build\Debug\test_cppbind.exe
     displayName: Start test_cppbind
+  # Test PyBind
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: 3.5
+      architecture: 'x64'
+  - script: python -m pip install --upgrade pip setuptools wheel
+    displayName: Update pip
+  - script: |
+      cd Connect6/pybind
+      python setup.py build && python setup.py install
+    displayName: Install Pyconnect6
+  - script: |
+      cd Connect6/pybind/test_pybind
+      pip install -r requirement.txt
+      pytest
+    displayName: Start test_pybind
