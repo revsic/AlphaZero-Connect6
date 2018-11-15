@@ -20,29 +20,23 @@ jobs:
       rustc -Vv
       cargo -V
     displayName: Query rust and cargo versions
-  # - script: cargo install -f cargo-make
-  #   displayName: Install cargo-make
-  # - script: |
-  #     pushd Connect6
-  #     cargo make workspace-ci-flow --no-workspace
-  #     popd
-  #   env: { CARGO_MAKE_RUN_CODECOV: true }
-  #   displayName: Build and run tests
+  - script: cargo install -f cargo-make
+    displayName: Install cargo-make
+  - script: cd Connect6 && cargo make workspace-ci-flow --no-workspace
+    env: { CARGO_MAKE_RUN_CODECOV: true }
+    displayName: Build and run tests
   # Test CppBind
-  - script: |
-      pushd Connect6
-      cargo build --release
-      popd
+  - script: cd Connect6 && cargo build --release
     displayName: Build Release Mode
-  # - task: CMake@1
-  #   inputs:
-  #     workingDirectory: build
-  #     cmakeArgs: ../Connect6/cppbind/test_cppbind
-  #   displayName: CMake test_cppbind
-  # - script: cd ./build && make;
-  #   displayName: GNU Make test_cppbind
-  # - script: ./build/test_cppbind
-  #   displayName: Start test_cppbind
+  - task: CMake@1
+    inputs:
+      workingDirectory: build
+      cmakeArgs: ../Connect6/cppbind/test_cppbind
+    displayName: CMake test_cppbind
+  - script: cd ./build && make;
+    displayName: GNU Make test_cppbind
+  - script: ./build/test_cppbind
+    displayName: Start test_cppbind
   # Test PyBind
   - task: UsePythonVersion@0
     inputs:
