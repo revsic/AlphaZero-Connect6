@@ -34,15 +34,15 @@ jobs:
       cargo build --release
       popd
     displayName: Build Release Mode
-  - task: CMake@1
-    inputs:
-      workingDirectory: build
-      cmakeArgs: ../Connect6/cppbind/test_cppbind
-    displayName: CMake test_cppbind
-  - script: cd ./build && make;
-    displayName: GNU Make test_cppbind
-  - script: ./build/test_cppbind
-    displayName: Start test_cppbind
+  # - task: CMake@1
+  #   inputs:
+  #     workingDirectory: build
+  #     cmakeArgs: ../Connect6/cppbind/test_cppbind
+  #   displayName: CMake test_cppbind
+  # - script: cd ./build && make;
+  #   displayName: GNU Make test_cppbind
+  # - script: ./build/test_cppbind
+  #   displayName: Start test_cppbind
   # Test PyBind
   - task: UsePythonVersion@0
     inputs:
