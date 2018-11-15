@@ -51,7 +51,7 @@ jobs:
   # Test PyBind
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: 3.4
+      versionSpec: 3.6
       architecture: 'x64'
   - script: python -m pip install --upgrade pip setuptools wheel
     displayName: Update pip
