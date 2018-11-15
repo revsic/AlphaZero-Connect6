@@ -52,6 +52,7 @@ jobs:
     displayName: Update pip
   - script: |
       cd Connect6/pybind
+      pip install setuptools-rust
       python setup.py build && python setup.py install
     displayName: Install Pyconnect6
   - script: |
