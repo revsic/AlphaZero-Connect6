@@ -38,5 +38,5 @@ jobs:
     displayName: CMake test_cppbind
   - script: cd ./build && make;
     displayName: GNU Make test_cppbind
-  - script: ./test_cppbind
+  - script: ./build/test_cppbind
     displayName: Start test_cppbind
