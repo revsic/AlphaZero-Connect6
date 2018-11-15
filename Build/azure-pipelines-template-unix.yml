@@ -26,8 +26,8 @@ jobs:
     displayName: Build and run tests
   - task: CMake@1
     inputs:
-      workingDirectory: 'build'
-      cmakeArgs: cppbind/test_cppbind
+      workingDirectory: build
+      cmakeArgs: ${Build.SourceDirectory}/Connect6/cppbind/test_cppbind
     displayName: CMake test_cppbind
   - script: cd ${Build.SourceDirectory}/build && make;
     displayName: GNU Make test_cppbind

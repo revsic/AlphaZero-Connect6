@@ -28,12 +28,12 @@ jobs:
     displayName: Build and run tests
   - task: CMake@1
     inputs:
-      workingDirectory: 'build'
-      cmakeArgs: cppbind/test_cppbind
+      workingDirectory: build
+      cmakeArgs: ${Build.SouceDirectory}\Connect6\cppbind\test_cppbind
     displayName: CMake test_cppbind
   - task: MSBuild@1
     inputs: 
-      solution: '${Build.SourceDirectory}\build\test_cppbind.sln'
+      solution: ${Build.SourceDirectory}\build\test_cppbind.sln
     displayName: MSBuild test_cppbind
-  - script: .\${Build.SourceDirectory}\build\Debug\test_cppbind.exe
+  - script: ${Build.SourceDirectory}\build\Debug\test_cppbind.exe
     displayName: Start test_cppbind
