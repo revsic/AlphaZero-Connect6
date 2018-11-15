@@ -5,11 +5,14 @@
 //!
 //! # Examples
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
 //! let policy_gen = || RandomPolicy::new();
 //! let async_agent = AsyncAgent::debug(policy_gen);
 //!
-//! let result = async_agent.run(4)
-//! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>() as f32 / 4.);
+//! let result = async_agent.run(4);
+//! println!("ratio: {}", result.iter().map(|x| x.winner as i32).sum::<i32>() as f32 / 4.);
+//! # assert_eq!(result.len(), 4);
 //! ```
 use agent::{Agent, RunResult};
 use policy::Policy;
@@ -29,11 +32,14 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
 /// let policy_gen = || RandomPolicy::new();
 /// let async_agent = AsyncAgent::debug(policy_gen);
 ///
-/// let result = async_agent.run(4)
-/// println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
+/// let result = async_agent.run(4);
+/// println!("ratio: {}", result.iter().map(|x| x.winner as i32).sum::<i32>());
+/// # assert_eq!(result.len(), 4);
 /// ```
 pub struct AsyncAgent<P: 'static + Policy + Send, F: Fn() -> P> {
     policy_gen: F,
@@ -47,6 +53,8 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
     /// let gen = || RandomPolicy::new();
     /// let async_agent = AsyncAgent::new(gen);
     /// ```
@@ -61,6 +69,8 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
     /// let gen = || RandomPolicy::new();
     /// let async_agent = AsyncAgent::debug(gen);
     /// ```
@@ -75,11 +85,14 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
     /// let gen = || RandomPolicy::new();
     /// let async_agent = AsyncAgent::new(gen);
     ///
     /// let result = async_agent.run(4);
-    /// println!("result: {}", result.map(|x| x.winner as i32).sum::<i32>());
+    /// println!("result: {}", result.iter().map(|x| x.winner as i32).sum::<i32>());
+    /// # assert_eq!(result.len(), 4);
     /// ```
     ///
     /// # Panics

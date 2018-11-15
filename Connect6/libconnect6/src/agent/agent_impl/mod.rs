@@ -8,19 +8,20 @@
 //!
 //! # Examples
 //! For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
-//! ```rust
+//! ```ignore
+//! # #[macro_use] extern crate connect6;
+//! # use connect6::{agent::Agent, policy::{RandomPolicy, MultiPolicy}};
 //! io_policy_stdio!(io_policy);
 //! let mut rand_policy = RandomPolicy::new();
 //!
 //! let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut io_policy);
 //! let result = Agent::debug(&mut multi_policy).play();
+//! # assert!(result.is_ok());
 //! ```
 use game::{Game, Player};
 use policy::Policy;
-use pybind::pylist_from_board;
 use Board;
 
-use cpython::{PyList, PyTuple, Python, PythonObject, ToPyObject};
 use std::io;
 use std::time::Instant;
 
@@ -49,12 +50,15 @@ pub struct RunResult {
 ///
 /// # Examples
 /// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
-/// ```rust
+/// ```ignore
+/// # #[macro_use] extern crate connect6;
+/// # use connect6::{agent::Agent, policy::{RandomPolicy, MultiPolicy}};
 /// io_policy_stdio!(io_policy);
 /// let mut rand_policy = RandomPolicy::new();
 ///
 /// let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut io_policy);
 /// let result = Agent::debug(&mut multi_policy).play();
+/// # assert!(result.is_ok());
 /// ```
 pub struct Agent<'a> {
     game: Game,
@@ -67,6 +71,8 @@ impl<'a> Agent<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::Agent, policy::RandomPolicy};
     /// let mut policy = RandomPolicy::new();
     /// let mut agent = Agent::new(&mut policy);
     /// ```
@@ -82,6 +88,8 @@ impl<'a> Agent<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::Agent, policy::RandomPolicy};
     /// let mut policy = RandomPolicy::new();
     /// let mut agent = Agent::debug(&mut policy);
     /// ```
@@ -97,11 +105,14 @@ impl<'a> Agent<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{agent::Agent, policy::RandomPolicy};
     /// let mut policy = RandomPolicy::new();
     /// let mut agent = Agent::new(&mut policy);
     ///
-    /// let result = agent.play().unwrap();
-    /// println!("winner: {:?}", result.winner);
+    /// let result = agent.play();
+    /// assert!(result.is_ok());
+    /// println!("winner: {:?}", result.unwrap().winner);
     /// ```
     ///
     /// # Errors
@@ -161,40 +172,5 @@ impl<'a> Agent<'a> {
             game.print(&mut io::stdout()).unwrap();
         }
         Ok(RunResult { winner, path })
-    }
-}
-
-impl ToPyObject for Path {
-    type ObjectType = PyTuple;
-
-    /// Return `PyTuple, (turn: int, board: list(int, board_size ** 2), pos: (int, int))`
-    fn to_py_object(&self, py: Python) -> PyTuple {
-        let turn = (self.turn as i32).to_py_object(py).into_object();
-        let board = pylist_from_board(py, &self.board);
-        let (row, col) = self.pos;
-
-        let row = (row as i32).to_py_object(py).into_object();
-        let col = (col as i32).to_py_object(py).into_object();
-        let pos_tuple = PyTuple::new(py, &[row, col]).into_object();
-
-        let tuple = PyTuple::new(py, &[turn, board, pos_tuple]);
-        tuple
-    }
-}
-
-impl ToPyObject for RunResult {
-    type ObjectType = PyTuple;
-
-    /// Return `PyTuple, (winner: int, path: list(Path as PyTuple))`
-    fn to_py_object(&self, py: Python) -> PyTuple {
-        let win = (self.winner as i32).to_py_object(py).into_object();
-        let path = self
-            .path
-            .iter()
-            .map(|x| x.to_py_object(py).into_object())
-            .collect::<Vec<_>>();
-        let list = PyList::new(py, path.as_slice()).into_object();
-        let tuple = PyTuple::new(py, &[win, list]);
-        tuple
     }
 }

@@ -10,19 +10,25 @@
 //! # Examples
 //! Play single game with single policy.
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::{agent::Agent, policy::RandomPolicy};
 //! let mut policy = RandomPolicy::new();
 //! let mut agent = Agent::new(&mut policy);
 //!
 //! let result = agent.play();
-//! println!("winner: {:?}", result.winner);
+//! assert!(result.is_ok());
+//! println!("winner: {:?}", result.unwrap().winner);
 //! ```
 //! Play multiple game asynchronously.
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::{agent::AsyncAgent, policy::RandomPolicy};
 //! let policy_gen = || RandomPolicy::new();
 //! let async_agent = AsyncAgent::debug(policy_gen);
 //!
 //! let result = async_agent.run(4);
-//! println!("ratio: {}", result.map(|x| x.winner as i32).sum::<i32>());
+//! println!("ratio: {}", result.iter().map(|x| x.winner as i32).sum::<i32>());
+//! assert_eq!(result.len(), 4);
 //! ```
 //!
 pub use self::agent_impl::*;
