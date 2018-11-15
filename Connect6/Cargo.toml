@@ -2,5 +2,7 @@
 
 members = [
     "libconnect6",
+    "cppbind/libcppconnect6",
+    "pybind/libpyconnect6",
     "sample/rust",
 ]
