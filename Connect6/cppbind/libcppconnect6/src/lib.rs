@@ -55,7 +55,8 @@ pub extern "C" fn cpp_self_play(
         let result = agent.play().unwrap();
         vec![cppbind::RawRunResult::with_result(&result, &alloc_path)]
     } else {
-        let policy_gen = || policy::AlphaZero::with_param(Box::new(cppbind::CppEval::new(callback)), param);
+        let policy_gen =
+            || policy::AlphaZero::with_param(Box::new(cppbind::CppEval::new(callback)), param);
         let async_agent = if debug {
             agent::AsyncAgent::debug(policy_gen)
         } else {
