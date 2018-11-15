@@ -8,8 +8,8 @@ fn test_select() {
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
 
-    let py_policy = py_policy!();
-    let mut policy = AlphaZero::new(py_policy);
+    let rand_eval = Box::new(RandomEvaluator {});
+    let mut policy = AlphaZero::new(rand_eval);
     policy.init(&sim);
 
     let mut path = Vec::new();
@@ -44,8 +44,8 @@ fn test_expand() {
     let game = Game::new();
     let mut sim = Simulate::from_game(&game);
 
-    let py_policy = py_policy!();
-    let mut policy = AlphaZero::new(py_policy);
+    let rand_eval = Box::new(RandomEvaluator {});
+    let mut policy = AlphaZero::new(rand_eval);
     policy.init(&sim);
 
     while let Some((row, col)) = policy.select(&sim) {
@@ -92,8 +92,8 @@ fn test_update() {
     let game = Game::new();
     let sim = Simulate::from_game(&game);
 
-    let py_policy = py_policy!();
-    let mut policy = AlphaZero::new(py_policy);
+    let rand_eval = Box::new(RandomEvaluator {});
+    let mut policy = AlphaZero::new(rand_eval);
     policy.init(&sim);
 
     for _ in 0..2 {
@@ -140,8 +140,8 @@ fn test_policy() {
     let game = Game::new();
     let sim = Simulate::from_game(&game);
 
-    let py_policy = py_policy!();
-    let mut policy = AlphaZero::new(py_policy);
+    let rand_eval = Box::new(RandomEvaluator {});
+    let mut policy = AlphaZero::new(rand_eval);
     policy.init(&sim);
 
     for _ in 0..2 {
@@ -184,11 +184,9 @@ fn test_policy() {
 
 #[test]
 fn test_self_play() {
-    let mut param = HyperParameter::default();
-    param.num_simulation = 2;
-
-    let py_policy = py_policy!();
-    let mut policy = AlphaZero::with_param(py_policy, param);
+    let param = HyperParameter::light_weight();
+    let rand_eval = Box::new(RandomEvaluator {});
+    let mut policy = AlphaZero::with_param(rand_eval, param);
     let mut mcts = Agent::new(&mut policy);
 
     let now = Instant::now();

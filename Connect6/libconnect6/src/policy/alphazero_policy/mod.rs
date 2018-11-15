@@ -3,23 +3,11 @@
 //! `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
 //! and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
 //!
-//! It pass callable python object with method `__call__(self, turn, board): (value, prob)`
-//! and make decision with combined MCTS and value, probability approximator as given.
-//!
-//! # Examples
-//! ```rust
-//! // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
-//! let mut policy = AlphaZero::new(pyobj);
-//! let result = Agent::new(&mut policy).play();
-//! assert!(result.is_ok());
-//! ```
-use cppbind::{Callback, CppEval};
 use game::{Game, Player};
 use policy::{diff_board, Policy, Simulate};
-use pybind::PyEval;
 use {Board, BOARD_CAPACITY, BOARD_SIZE};
 
-use cpython::PyObject;
+use rand::Rng;
 use rand::distributions::{Dirichlet, Distribution};
 use rand::prelude::{thread_rng, IteratorRandom};
 use std::collections::hash_map::DefaultHasher;
@@ -52,12 +40,6 @@ impl Node {
     ///
     /// It generate the number of stones in board.
     /// To avoid the overhead, use method `new_with_num`
-    ///
-    /// # Exmaples
-    /// ```rust
-    /// let game = Game::new();
-    /// let node = Node::new(game.get_board());
-    /// ```
     fn new(board: &Board) -> Node {
         let num_player = board
             .iter()
@@ -77,12 +59,6 @@ impl Node {
     }
 
     /// Construct a Node with given number of stones(player) in board
-    ///
-    /// # Examples
-    /// ```rust
-    /// let game = Game::new();
-    /// let node = Node::new_with_num(game.get_board(), 0);
-    /// ```
     fn new_with_num(board: &Board, num_player: usize) -> Node {
         Node {
             visit: 0,
@@ -119,11 +95,28 @@ pub struct HyperParameter {
     pub c_puct: f32,
 }
 
-impl HyperParameter {
+impl Default for HyperParameter {
     /// Generate default HyperParameter
-    pub fn default() -> HyperParameter {
+    fn default() -> HyperParameter {
         HyperParameter {
             num_simulation: 800,
+            epsilon: 0.25,
+            dirichlet_alpha: 0.03,
+            c_puct: 1.,
+        }
+    }
+}
+
+impl HyperParameter {
+    /// Alias of HyperParameter::default
+    pub fn new() -> HyperParameter {
+        HyperParameter::default()
+    }
+
+    /// Light weight AlphaZero parameters, num simulation: 2
+    pub fn light_weight() -> HyperParameter {
+        HyperParameter {
+            num_simulation: 2,
             epsilon: 0.25,
             dirichlet_alpha: 0.03,
             c_puct: 1.,
@@ -140,21 +133,52 @@ pub trait Evaluator {
     ) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)>;
 }
 
+/// Evaluator for test, Random Value Evaluator
+pub struct RandomEvaluator { }
+
+impl RandomEvaluator {
+    /// Generate random board: f32 with range (-1, 1)
+    pub fn rand_board() -> [[f32; BOARD_SIZE]; BOARD_SIZE] {
+        let mut board = [[0.; BOARD_SIZE]; BOARD_SIZE];
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                board[i][j] = thread_rng().gen_range(-1., 1.);
+            }
+        }
+        board
+    }
+}
+
+impl Evaluator for RandomEvaluator {
+    fn eval(&self, _: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
+        let len = board.len();
+        let mut values = Vec::with_capacity(len);
+        let mut policies = Vec::with_capacity(len);
+
+        for _ in 0..len {
+            values.push(thread_rng().gen_range(-1., 1.));
+            policies.push(RandomEvaluator::rand_board());
+        }
+
+        Some((values, policies))
+    }
+}
+
 /// Implementation of policy `AlphaZero` based on combined MCTS with non-linear value approximator.
 ///
 /// `AlphaZero` policy is implemented based on [Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961)
 /// and [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs/1712.01815).
 ///
-/// It pass callable python object with method `__call__(self, turn, board): (value, prob)`
-/// and make decision with combined MCTS and value, probability approximator as given.
-///
 /// # Examples
-/// ```rust
-/// // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
-/// let mut policy = AlphaZero::new(pyobj);
+/// ```
+/// # extern crate connect6;
+/// # use connect6::{agent::Agent, policy::{AlphaZero, HyperParameter, RandomEvaluator}};
+/// let param = HyperParameter::light_weight();
+/// let mut policy = AlphaZero::with_param(Box::new(RandomEvaluator {}), param);
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
 /// ```
+///
 pub struct AlphaZero {
     map: HashMap<u64, Node>,
     param: HyperParameter,
@@ -162,52 +186,21 @@ pub struct AlphaZero {
 }
 
 impl AlphaZero {
-    /// Construct a new `AlphaZero` policy with python evaluator
-    ///
-    /// # Examples
-    /// ```rust
-    /// // pyobj = lambda t, b: (np.random.rand(len(b)), np.random.rand(len(b), board_size ** 2))
-    /// let mut policy = AlphaZero::new(pyobj);
-    /// ```
-    pub fn new(obj: PyObject) -> AlphaZero {
-        let param = HyperParameter::default();
-        AlphaZero {
-            map: HashMap::new(),
-            param,
-            evaluator: Box::new(PyEval::new(obj)),
-        }
-    }
-
-    /// Construct a `AlphaZero` with given hyperparameters.
-    ///
-    /// # Examples
-    /// ```rust
-    /// let param = HyperParameter::new();
-    /// let mut policy = AlphaZero::new(pyobj, param);
-    /// ```
-    pub fn with_param(obj: PyObject, param: HyperParameter) -> AlphaZero {
-        AlphaZero {
-            map: HashMap::new(),
-            param,
-            evaluator: Box::new(PyEval::new(obj)),
-        }
-    }
-
-    /// Construct a `AlphaZero` with cpp callback bind
-    pub fn with_cpp(callback: Callback) -> AlphaZero {
+    /// Construct a new `AlphaZero` policy with given evalueator
+    pub fn new(evaluator: Box<Evaluator + Send>) -> AlphaZero {
         AlphaZero {
             map: HashMap::new(),
             param: HyperParameter::default(),
-            evaluator: Box::new(CppEval::new(callback)),
+            evaluator
         }
     }
 
-    /// Construct a 'AlphaZero' with given cpp callback and hyperparameters
-    pub fn with_cpp_param(callback: Callback, param: HyperParameter) -> AlphaZero {
+    /// Construct a `AlphaZero` with given hyperparam
+    pub fn with_param(evaluator: Box<Evaluator + Send>, param: HyperParameter) -> AlphaZero {
         AlphaZero {
             map: HashMap::new(),
             param,
-            evaluator: Box::new(CppEval::new(callback)),
+            evaluator,
         }
     }
 
