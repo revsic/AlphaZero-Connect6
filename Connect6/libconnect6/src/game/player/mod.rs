@@ -16,6 +16,8 @@ impl Player {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Player;
     /// let player = Player::Black;
     /// assert_eq!(player.switch(), Player::White);
     /// ```
@@ -31,6 +33,8 @@ impl Player {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Player;
     /// let mut player = Player::Black;
     /// player.mut_switch();
     /// assert_eq!(player, Player::White);

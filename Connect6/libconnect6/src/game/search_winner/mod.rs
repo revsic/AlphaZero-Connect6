@@ -5,6 +5,8 @@
 //!
 //! # Examples
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::game::{Game, Player, search};
 //! let mut game = Game::new();
 //! game.play((3, 4)).unwrap();
 //!
@@ -22,7 +24,7 @@ mod tests;
 /// For top-left to bottom-right search, only four direction is required to find the continuous 6 stones.
 /// Right-Horizontal, Down-Vertial, RightDown-Diagonal, LeftDown-Diagonal.
 #[derive(Copy, Clone, Debug)]
-enum Path {
+pub enum Path {
     Right,
     Down,
     RightDown,
@@ -31,7 +33,7 @@ enum Path {
 
 /// Number of the continuous stones for each directions.
 #[derive(Copy, Clone, Debug, PartialEq)]
-struct Cumulative {
+pub struct Cumulative {
     right: i32,
     down: i32,
     right_down: i32,
@@ -40,7 +42,7 @@ struct Cumulative {
 
 impl Cumulative {
     /// Construct a new Cumulative
-    fn new() -> Cumulative {
+    pub fn new() -> Cumulative {
         Cumulative {
             right: 0,
             down: 0,
@@ -52,12 +54,13 @@ impl Cumulative {
     /// Get a sum of specific path
     ///
     /// # Examples
-    /// ```rust
-    /// let mut cum = Cumulative::new();
-    /// cum.right = 10;
-    /// assert_eq!(cum.get(&Path::Right), 10);
     /// ```
-    fn get(&self, path: &Path) -> i32 {
+    /// # extern crate connect6;
+    /// # use connect6::game::{Cumulative, Path};
+    /// let mut cum = Cumulative::new();
+    /// assert_eq!(cum.get(&Path::Right), 0);
+    /// ```
+    pub fn get(&self, path: &Path) -> i32 {
         match path {
             &Path::Right => self.right,
             &Path::Down => self.down,
@@ -70,11 +73,13 @@ impl Cumulative {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Cumulative, Path};
     /// let mut cum = Cumulative::new();
     /// *cum.get_mut(&Path::Right) = 10;
-    /// assert_eq!(cum.right, 10);
+    /// assert_eq!(cum.get(&Path::Right), 10);
     /// ```
-    fn get_mut(&mut self, path: &Path) -> &mut i32 {
+    pub fn get_mut(&mut self, path: &Path) -> &mut i32 {
         match path {
             &Path::Right => &mut self.right,
             &Path::Down => &mut self.down,
@@ -88,14 +93,14 @@ impl Cumulative {
 ///
 /// `flag` represent index of previous arrays.
 /// Method swap can be implemented as just flip the flag bit.
-struct Block {
+pub struct Block {
     flag: usize,
     mem: [[Cumulative; BOARD_SIZE + 2]; 2],
 }
 
 impl Block {
     /// Construct a new Block.
-    fn new() -> Block {
+    pub fn new() -> Block {
         Block {
             flag: 0,
             mem: [[Cumulative::new(); BOARD_SIZE + 2]; 2],
@@ -103,7 +108,7 @@ impl Block {
     }
 
     /// Get a tuple representation of block, (prev, current).
-    fn as_tuple(&self) -> (&[Cumulative; BOARD_SIZE + 2], &[Cumulative; BOARD_SIZE + 2]) {
+    pub fn as_tuple(&self) -> (&[Cumulative; BOARD_SIZE + 2], &[Cumulative; BOARD_SIZE + 2]) {
         let f = self.flag;
         (&self.mem[f], &self.mem[1 - f])
     }
@@ -117,12 +122,14 @@ impl Block {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Block, Path};
     /// let block = Block::new();
     /// let (prev, current) = block.as_tuple();
     /// let result = block.get_prev(1, &Path::Right);
-    /// assert_eq!(result, current[0]);
+    /// assert_eq!(*result, current[0]);
     /// ```
-    fn get_prev(&self, col: usize, path: &Path) -> &Cumulative {
+    pub fn get_prev(&self, col: usize, path: &Path) -> &Cumulative {
         let (prev, now) = self.as_tuple();
         match path {
             &Path::Right => &now[col - 1],
@@ -136,10 +143,12 @@ impl Block {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Block, Path};
     /// let mut block = Block::new();
-    /// block.update_now(|row| row.iter_mut(|c| *c.get_mut(&Path::Right) = 1));
+    /// block.update_now(|row| row.iter_mut().for_each(|c| *c.get_mut(&Path::Right) = 1));
     /// ```
-    fn update_now<F>(&mut self, update: F)
+    pub fn update_now<F>(&mut self, update: F)
     where
         F: Fn(&mut [Cumulative; BOARD_SIZE + 2]),
     {
@@ -152,6 +161,8 @@ impl Block {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::{Cumulative, Block}, BOARD_SIZE};
     /// let mut block = Block::new();
     /// let current_backup = {
     ///     let (_, current) = block.as_tuple();
@@ -162,7 +173,7 @@ impl Block {
     /// assert_eq!(*prev, current_backup);
     /// assert_eq!(*current, [Cumulative::new(); BOARD_SIZE+2]);
     /// ```
-    fn update_row(&mut self) {
+    pub fn update_row(&mut self) {
         self.flag = 1 - self.flag;
         let now = &mut self.mem[1 - self.flag];
 
@@ -179,6 +190,8 @@ impl Block {
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::game::{Game, Player, search};
 /// let mut game = Game::new();
 /// game.play((3, 4)).unwrap();
 ///

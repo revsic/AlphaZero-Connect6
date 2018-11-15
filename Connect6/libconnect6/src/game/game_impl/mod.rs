@@ -4,6 +4,8 @@
 //!
 //! # Examples
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::game::{Game, Player};
 //! let mut game = Game::new();
 //! let result = game.play((0, 0));
 //! let winner = game.is_game_end();
@@ -27,7 +29,7 @@ pub struct PlayResult {
 
 impl PlayResult {
     /// Construct a new `PlayResult`
-    fn new() -> PlayResult {
+    pub fn new() -> PlayResult {
         PlayResult {
             player: Player::None,
             num_remain: 0,
@@ -39,6 +41,8 @@ impl PlayResult {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Game, Player, PlayResult};
     /// let game = Game::new();
     /// let position = (0, 0);
     ///
@@ -46,7 +50,7 @@ impl PlayResult {
     /// let expected = PlayResult{ player: Player::Black, num_remain: 1, position: (0, 0) };
     /// assert_eq!(play_result, expected);
     /// ```
-    fn with_game(game: &Game, position: (usize, usize)) -> PlayResult {
+    pub fn with_game(game: &Game, position: (usize, usize)) -> PlayResult {
         PlayResult {
             player: game.turn,
             num_remain: game.num_remain,
@@ -63,6 +67,8 @@ type Msg = &'static str;
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::game::{Game, Player};
 /// let mut game = Game::new();
 /// let result = game.play((0, 0));
 /// game.print(&mut std::io::stdout()).unwrap();
@@ -90,6 +96,8 @@ impl Game {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Game, Player, PlayResult};
     /// let mut game = Game::new();
     /// let result = game.play((3, 4));
     /// let expected = PlayResult{ player: Player::Black, num_remain: 0, position: (3, 4) };
@@ -141,6 +149,8 @@ impl Game {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Game;
     /// let mut game = Game::new();
     /// let result = game.play((3, 4)).unwrap(); // black
     /// let result = game.play((3, 3)).unwrap(); // white
@@ -148,7 +158,7 @@ impl Game {
     /// game.print(&mut std::io::stdout());
     /// ```
     /// Expected results
-    /// ```
+    /// ```ignore
     /// 0 A B C D E F G H I J K L M N O
     /// a _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
     /// b _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
@@ -192,6 +202,8 @@ impl Game {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::{Game, Player};
     /// let mut game = Game::new();
     /// game.play((3, 4)).unwrap();
     /// assert_eq!(game.is_game_end(), Player::None);
@@ -206,6 +218,8 @@ impl Game {
 ///
 /// # Examples
 ///```rust
+/// # extern crate connect6;
+/// # use connect6::game::Paint;
 /// let mut stdout = std::io::stdout();
 /// let mut paint = Paint::new(&mut stdout);
 /// paint.push(b"ABC");
@@ -213,11 +227,10 @@ impl Game {
 /// paint.write();
 /// ```
 /// Expected results
-/// ```
+/// ```ignore
 /// ABC
-///
 /// ```
-struct Paint<'a> {
+pub struct Paint<'a> {
     vec: Vec<u8>,
     writer: &'a mut io::Write,
 }
@@ -227,10 +240,12 @@ impl<'a> Paint<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Paint;
     /// let mut stdout = std::io::stdout();
     /// let mut paint = Paint::new(&mut stdout);
     /// ```
-    fn new(writer: &'a mut io::Write) -> Paint<'a> {
+    pub fn new(writer: &'a mut io::Write) -> Paint<'a> {
         Paint {
             vec: Vec::new(),
             writer,
@@ -241,11 +256,13 @@ impl<'a> Paint<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Paint;
     /// let mut stdout = std::io::stdout();
     /// let mut paint = Paint::new(&mut stdout);
     /// paint.push(b"ABC");
     /// ```
-    fn push(&mut self, data: &[u8]) {
+    pub fn push(&mut self, data: &[u8]) {
         for elem in data {
             self.vec.push(*elem);
         }
@@ -255,11 +272,13 @@ impl<'a> Paint<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Paint;
     /// let mut stdout = std::io::stdout();
     /// let mut paint = Paint::new(&mut stdout);
     /// paint.push_one('\n' as u8);
     /// ```
-    fn push_one(&mut self, data: u8) {
+    pub fn push_one(&mut self, data: u8) {
         self.vec.push(data);
     }
 
@@ -267,6 +286,8 @@ impl<'a> Paint<'a> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::game::Paint;
     /// let mut stdout = std::io::stdout();
     /// let mut paint = Paint::new(&mut stdout);
     /// paint.push(b"ABC");
@@ -274,11 +295,10 @@ impl<'a> Paint<'a> {
     /// paint.write();
     /// ```
     /// Expected results
-    /// ```
+    /// ```ignore
     /// ABC
-    ///
     /// ```
-    fn write(&mut self) -> io::Result<usize> {
+    pub fn write(&mut self) -> io::Result<usize> {
         self.writer.write(&self.vec[..])
     }
 }
