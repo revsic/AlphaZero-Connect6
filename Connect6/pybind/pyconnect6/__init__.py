@@ -1,14 +1,14 @@
 import json
-from . import connect6
+from . import pyconnect6
 
 
 def self_play(policy, param=None):
-    """python wrapper for connect6::self_play
+    """python wrapper for pyconnect6::self_play
 
     Args:
-        policy: callable object, connect6::self_play will play game with given policy to make choice
+        policy: callable object, pyconnect6::self_play will play game with given policy to make choice
             IT MUST CONTAIN METHOD `__call__(self, turn, board): (value, prob)`,
-            because connect6::self_play call object with cpython and get proper values from policy.
+            because pyconnect6::self_play call object with cpython and get proper values from policy.
 
             turn: current turn, { -1: Black, 0: None, 1: White }
             board: param['num_simulation'] by board_capacity size 2D list, where board_capacity = board_size ** 2
@@ -26,28 +26,28 @@ def self_play(policy, param=None):
     """
     if param is None:
         param = default_param()
-    return connect6.self_play(policy, *param_to_tuple(param))
+    return pyconnect6.self_play(policy, *param_to_tuple(param))
 
 
 def play_with(policy, param=None):
-    """python wrapper for connect6::play_with
+    """python wrapper for pyconnect6::play_with
 
-    Play connect6 with given policy.
+    Play pyconnect6 with given policy.
     User can input at white turn, format like "aA", "bS".
     """
     if param is None:
         param = default_param()
-    return connect6.play_with(policy, *param_to_tuple(param)[:-2])
+    return pyconnect6.play_with(policy, *param_to_tuple(param)[:-2])
 
 
 def default_param():
-    """create default parameter base on connect6::pybind::HyperParameter"""
+    """create default parameter base on pyconnect6::pybind::HyperParameter"""
     return {
         'num_simulation': 800,      # number of mcts simulaton for each turn
         'epsilon': 0.25,            # ratio for adding random probability from dirichlet distribution
         'dirichlet_alpha': 0.03,    # parameter of dirichlet distribution
         'c_puct': 1,                # parameter for puct (metamorphism of upper confidence tree algorithm)
-        'debug': False,             # if debug, debug info from connect6 will be printed
+        'debug': False,             # if debug, debug info from pyconnect6 will be printed
         'num_game_thread': 1,       # number of thread run game asynchronously
     }
 

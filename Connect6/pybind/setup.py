@@ -18,8 +18,8 @@ setup(
     name='connect6',
     version='0.1.0',
     packages=['pyconnect6'],
-    rust_extensions=[RustExtension('pyconnect6.connect6',
-                                   '../libconnect6/Cargo.toml',
+    rust_extensions=[RustExtension('pyconnect6.pyconnect6',
+                                   './libpyconnect6/Cargo.toml',
                                    binding=Binding.RustCPython)],
     zip_safe=False,
 )
