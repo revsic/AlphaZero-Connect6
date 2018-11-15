@@ -33,14 +33,16 @@ jobs:
       pushd Connect6
       cargo build --release
       popd
+    displayName: Build Release Mode
   - task: CMake@1
     inputs:
       workingDirectory: build
-      cmakeArgs: ..\Connect6\cppbind\test_cppbind
+      cmakeArgs: ..\Connect6\cppbind\test_cppbind -DCMAKE_GENERATOR_PLATFORM=x64
     displayName: CMake test_cppbind
   - task: MSBuild@1
     inputs: 
       solution: .\build\test_cppbind.sln
+      platform: x64
     displayName: MSBuild test_cppbind
   - script: .\build\Debug\test_cppbind.exe
     displayName: Start test_cppbind

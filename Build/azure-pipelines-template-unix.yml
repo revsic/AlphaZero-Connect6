@@ -31,6 +31,7 @@ jobs:
       pushd Connect6
       cargo build --release
       popd
+    displayName: Build Release Mode
   - task: CMake@1
     inputs:
       workingDirectory: build
