@@ -92,7 +92,8 @@ impl<'a> ToPyObject for RunResultWrapper<'a> {
     /// Return `PyTuple, (winner: int, path: list(Path as PyTuple))`
     fn to_py_object(&self, py: Python) -> PyTuple {
         let win = (self.0.winner as i32).to_py_object(py).into_object();
-        let path = self.0
+        let path = self
+            .0
             .path
             .iter()
             .map(|x| PathWrapper(x).to_py_object(py).into_object())

@@ -32,44 +32,49 @@ pub mod pybind;
 use connect6::{agent, policy};
 use cpython::*;
 
-py_module_initializer!(libpyconnect6, initlibpyconnect6, PyInit_pyconnect6, |py, m| {
-    try!(m.add(
-        py,
-        "__doc__",
-        "This module is implemented in Rust, for Simulating Connect6"
-    ));
-    try!(m.add(
-        py,
-        "self_play",
-        py_fn!(
+py_module_initializer!(
+    libpyconnect6,
+    initlibpyconnect6,
+    PyInit_pyconnect6,
+    |py, m| {
+        try!(m.add(
             py,
-            self_play(
-                object: PyObject,
-                num_simulation: i32,
-                epsilon: f32,
-                dirichlet_alpha: f64,
-                c_puct: f32,
-                debug: bool,
-                num_game_thread: i32
-            )
-        )
-    ));
-    try!(m.add(
-        py,
-        "play_with",
-        py_fn!(
+            "__doc__",
+            "This module is implemented in Rust, for Simulating Connect6"
+        ));
+        try!(m.add(
             py,
-            play_with(
-                object: PyObject,
-                num_simulation: i32,
-                epsilon: f32,
-                dirichlet_alpha: f64,
-                c_puct: f32
+            "self_play",
+            py_fn!(
+                py,
+                self_play(
+                    object: PyObject,
+                    num_simulation: i32,
+                    epsilon: f32,
+                    dirichlet_alpha: f64,
+                    c_puct: f32,
+                    debug: bool,
+                    num_game_thread: i32
+                )
             )
-        )
-    ));
-    Ok(())
-});
+        ));
+        try!(m.add(
+            py,
+            "play_with",
+            py_fn!(
+                py,
+                play_with(
+                    object: PyObject,
+                    num_simulation: i32,
+                    epsilon: f32,
+                    dirichlet_alpha: f64,
+                    c_puct: f32
+                )
+            )
+        ));
+        Ok(())
+    }
+);
 
 /// Returns Connect6 self-playing results with given python policy and hyper parameters
 ///
