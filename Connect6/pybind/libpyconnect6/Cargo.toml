@@ -13,4 +13,5 @@ rand = "0.6.0"
 
 [dependencies.cpython]
 version = "0.2"
-features = ["extension-module"]
+# add features explicitly when exception occured on test_pybind
+# features = ["extension-module"]
