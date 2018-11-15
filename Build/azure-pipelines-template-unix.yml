@@ -21,15 +21,18 @@ jobs:
     displayName: Query rust and cargo versions
   - script: cargo install -f cargo-make
     displayName: Install cargo-make
-  - script: cd Connect6 && cargo make workspace-ci-flow --no-workspace
+  - script: |
+      pushd Connect6
+      cargo make workspace-ci-flow --no-workspace
+      popd
     env: { CARGO_MAKE_RUN_CODECOV: true }
     displayName: Build and run tests
   - task: CMake@1
     inputs:
       workingDirectory: build
-      cmakeArgs: ${Build.SourceDirectory}/Connect6/cppbind/test_cppbind
+      cmakeArgs: ./Connect6/cppbind/test_cppbind
     displayName: CMake test_cppbind
-  - script: cd ${Build.SourceDirectory}/build && make;
+  - script: cd ./build && make;
     displayName: GNU Make test_cppbind
   - script: ./test_cppbind
     displayName: Start test_cppbind
