@@ -21,18 +21,22 @@ jobs:
       rustc -Vv
       cargo -V
     displayName: Query rust and cargo versions
-  - script: cargo install -f cargo-make
-    displayName: Install cargo-make
+  # - script: cargo install -f cargo-make
+  #   displayName: Install cargo-make
+  # - script: |
+  #     pushd Connect6
+  #     cargo make workspace-ci-flow --no-workspace
+  #     popd
+  #   env: { CARGO_MAKE_RUN_CODECOV: true }
+  #   displayName: Build and run tests
   - script: |
       pushd Connect6
-      cargo make workspace-ci-flow --no-workspace
+      cargo build --release
       popd
-    env: { CARGO_MAKE_RUN_CODECOV: true }
-    displayName: Build and run tests
   - task: CMake@1
     inputs:
       workingDirectory: build
-      cmakeArgs: .\Connect6\cppbind\test_cppbind
+      cmakeArgs: ..\Connect6\cppbind\test_cppbind
     displayName: CMake test_cppbind
   - task: MSBuild@1
     inputs: 
