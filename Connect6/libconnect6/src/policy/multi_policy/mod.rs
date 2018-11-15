@@ -4,11 +4,13 @@
 //! It get two different policies and playing game with given seperately, black and white.
 //!
 //! # Examples
-//! ```rust
+//! ```ignore
+//! # #[macro_use] extern crate connect6;
+//! # use connect6::{agent::Agent, policy::{RandomPolicy, MultiPolicy}};
 //! io_policy_stdio!(io_policy);
 //! let mut rand_policy = RandomPolicy::new();
 //!
-//! let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+//! let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut io_policy);
 //! Agent::debug(&mut multi_policy).play().unwrap();
 //! ```
 use game::{Game, Player};
@@ -23,11 +25,13 @@ mod tests;
 /// It get two different policies and playing game with given seperately, black and white.
 ///
 /// # Examples
-/// ```rust
+/// ```ignore
+/// # #[macro_use] extern crate connect6;
+/// # use connect6::{agent::Agent, policy::{RandomPolicy, MultiPolicy}};
 /// io_policy_stdio!(io_policy);
 /// let mut rand_policy = RandomPolicy::new();
 ///
-/// let mut multi_policy = policy::MultiPolicy::new(&mut rand_policy, &mut io_policy);
+/// let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut io_policy);
 /// Agent::debug(&mut multi_policy).play().unwrap();
 /// ```
 pub struct MultiPolicy<'a, 'b> {
@@ -40,6 +44,8 @@ impl<'a, 'b> MultiPolicy<'a, 'b> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::policy::{RandomPolicy, DefaultPolicy, MultiPolicy};
     /// let mut rand_policy = RandomPolicy::new();
     /// let mut default_policy = DefaultPolicy::new();
     /// let mut multi_policy = MultiPolicy::new(&mut rand_policy, &mut default_policy);

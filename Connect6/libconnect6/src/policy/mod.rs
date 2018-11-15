@@ -1,6 +1,6 @@
 //! Predefined policy for agent to play game.
 //!
-//! Policy represents alogirthm that make choice in given situation.
+//! Policy represents algorithm that make choice in given situation.
 //! This module provides 5 predefined policies, AlphaZero policy, random policy, io policy, multi-policy and pure MCTS policy.
 //!
 //! - Policy : trait for playing game with `Agent`.
@@ -12,14 +12,16 @@
 //!
 //! # Examples
 //! ```rust
-//! struct zero_policy {}
-//! impl Policy for zero_policy {
+//! # extern crate connect6;
+//! # use connect6::{agent::Agent, game::Game, policy::Policy};
+//! struct ZeroPolicy {}
+//! impl Policy for ZeroPolicy {
 //!     fn next(&mut self, game: &Game) -> Option<(usize, usize)> {
 //!         Some((0, 0))
 //!     }
 //! }
 //!
-//! let mut policy = zero_policy {};
+//! let mut policy = ZeroPolicy {};
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_err());
 //! ```

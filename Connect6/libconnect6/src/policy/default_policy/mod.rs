@@ -2,7 +2,9 @@
 //!
 //! # Examples
 //! ```rust
-//! let mut policy = DefaultPolicy::new();
+//! # extern crate connect6;
+//! # use connect6::{agent::Agent, policy::DefaultPolicy};
+//! let mut policy = DefaultPolicy::with_num_iter(2);
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
@@ -30,12 +32,6 @@ struct Node {
 
 impl Node {
     /// Construct a new `Node`
-    ///
-    /// # Examples
-    /// ```rust
-    /// let game = Game::new();
-    /// let node = Node::new(game.get_board());
-    /// ```
     fn new(board: &Board) -> Node {
         Node {
             visit: 0,
@@ -50,11 +46,13 @@ impl Node {
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::{game::{Game, Player}, policy::hash, BOARD_SIZE};
 /// let game = Game::new();
 /// let hashed = hash(game.get_board());
-/// assert_eq!(hashed, hash([[Player::None; BOARD_SIZE]; BOARD_SIZE]));
+/// assert_eq!(hashed, hash(&[[Player::None; BOARD_SIZE]; BOARD_SIZE]));
 /// ```
-fn hash(board: &Board) -> u64 {
+pub fn hash(board: &Board) -> u64 {
     let mut hasher = DefaultHasher::new();
     board.hash(&mut hasher);
     hasher.finish()
@@ -64,6 +62,8 @@ fn hash(board: &Board) -> u64 {
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::{game::Game, policy::{Simulate, diff_board}};
 /// let game = Game::new();
 /// let mut sim = Simulate::from_game(&game);
 /// sim.simulate_in(0, 0);
@@ -85,7 +85,9 @@ pub fn diff_board(board1: &Board, board2: &Board) -> Option<(usize, usize)> {
 ///
 /// # Examples
 /// ```rust
-/// let mut policy = DefaultPolicy::new();
+/// # extern crate connect6;
+/// # use connect6::{agent::Agent, policy::DefaultPolicy};
+/// let mut policy = DefaultPolicy::with_num_iter(2);
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
 /// ```
@@ -115,13 +117,6 @@ impl DefaultPolicy {
     ///
     /// For the first tree search, tree must be initialized with game status.
     /// `Init` initialize the tree with given `Simulate`
-    ///
-    /// # Examples
-    /// ```rust
-    /// let sim = Simulate::new();
-    /// let mut policy = DefaultPolicy();
-    /// policy.init(&sim);
-    /// ```
     fn init(&mut self, sim: &Simulate) {
         let board = sim.board();
         self.map.entry(hash(&board)).or_insert(Node::new(&board));

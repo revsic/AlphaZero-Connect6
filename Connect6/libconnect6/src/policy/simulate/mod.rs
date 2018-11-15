@@ -8,6 +8,8 @@
 //!
 //! # Examples
 //! ```rust
+//! # extern crate connect6;
+//! # use connect6::{game::{Game, Player}, policy::Simulate};
 //! let game = Game::new();
 //! let sim = Simulate::from_game(&game);
 //! {
@@ -53,12 +55,6 @@ impl Node {
     /// Construct a `Node` from the board
     ///
     /// It make possible selections depending on the board status.
-    ///
-    /// # Examples
-    /// ```rust
-    /// let game = Game::new();
-    /// let node = Node::from_board(game.get_board());
-    /// ```
     fn from_board(board: &Board) -> Node {
         let possible = Self::possible()
             .into_iter()
@@ -82,6 +78,8 @@ impl Node {
 ///
 /// # Examples
 /// ```rust
+/// # extern crate connect6;
+/// # use connect6::{game::{Game, Player}, policy::Simulate};
 /// let game = Game::new();
 /// let sim = Simulate::from_game(&game);
 /// {
@@ -90,7 +88,7 @@ impl Node {
 ///     assert_eq!(board[0][0], Player::Black);
 /// }
 /// let board = sim.board();
-/// assert_eq!(board[0][0][, Player::None);
+/// assert_eq!(board[0][0], Player::None);
 /// ```
 pub struct Simulate {
     pub turn: Player,
@@ -114,6 +112,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::Game, policy::Simulate};
     /// let game = Game::new();
     /// let sim = Simulate::from_game(&game);
     /// ```
@@ -158,6 +158,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::Game, policy::Simulate};
     /// let game = Game::new();
     /// let sim = Simulate::from_game(&game);
     /// assert_eq!(game.is_game_end(), sim.search_winner());
@@ -171,6 +173,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::Game, policy::Simulate};
     /// let game = Game::new();
     /// let sim = Simulate::from_game(&game);
     /// assert!(sim.validate(0, 0));
@@ -208,6 +212,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::{Game, Player}, policy::Simulate};
     /// let sim = Simulate::new();
     /// assert_eq!(sim.board()[0][0], Player::None);
     /// {
@@ -246,6 +252,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::Player, policy::Simulate};
     /// let mut sim = Simulate::new();
     /// assert_eq!(sim.board()[0][0], Player::None);
     /// sim.simulate_in(0, 0);
@@ -271,6 +279,8 @@ impl Simulate {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::{game::Player, policy::Simulate};
     /// let mut sim = Simulate::new();
     /// sim.simulate_in(0, 0);
     /// assert_eq!(sim.board()[0][0], Player::Black);

@@ -9,7 +9,9 @@
 //! so that if you want to confirm the board, you have to construct `Agent` in debug mode.
 //!
 //! # Examples
-//! ```rust
+//! ```ignore
+//! # extern crate connect6;
+//! # use connect6::{policy::IoPolicy, agent::Agent};
 //! let mut stdin = std::io::stdin();
 //! let mut stdout = std::io::stdout();
 //! let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);
@@ -36,7 +38,9 @@ mod tests;
 /// so that if you want to confirm the board, you have to construct `Agent` in debug mode.
 ///
 /// # Examples
-/// ```rust
+/// ```ignore
+/// # #[macro_use] extern crate connect6;
+/// # use connect6::agent::Agent;
 /// io_policy_stdio!(io_policy);
 /// Agent::debug(&mut io_policy).play().unwrap();
 /// ```
@@ -50,6 +54,8 @@ impl<'a, 'b> IoPolicy<'a, 'b> {
     ///
     /// # Examples
     /// ```rust
+    /// # extern crate connect6;
+    /// # use connect6::policy::IoPolicy;
     /// let mut stdin = std::io::stdin();
     /// let mut stdout = std::io::stdout();
     /// let mut io_policy = IoPolicy::new(&mut stdin, &mut stdout);

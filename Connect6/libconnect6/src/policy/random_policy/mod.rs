@@ -2,7 +2,9 @@
 //!
 //! # Examples
 //! ```rust
-//! let mut policy = RandomPolicy();
+//! # extern crate connect6;
+//! # use connect6::{agent::Agent, policy::RandomPolicy};
+//! let mut policy = RandomPolicy::new();
 //! let result = Agent::new(&mut policy).play();
 //! assert!(result.is_ok());
 //! ```
@@ -19,7 +21,9 @@ mod tests;
 ///
 /// # Examples
 /// ```rust
-/// let mut policy = RandomPolicy();
+/// # extern crate connect6;
+/// # use connect6::{agent::Agent, policy::RandomPolicy};
+/// let mut policy = RandomPolicy::new();
 /// let result = Agent::new(&mut policy).play();
 /// assert!(result.is_ok());
 /// ```
