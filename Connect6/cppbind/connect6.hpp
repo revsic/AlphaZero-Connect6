@@ -4,6 +4,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace Connect6_RustFFI {
@@ -77,7 +78,7 @@ namespace Connect6 {
 
     class Path {
     public:
-        Path() : turn(Player::None), position({ 0, 0 }) {
+        Path() : turn(Player::None), position(std::make_tuple(0, 0)) {
             // Do Nothing
         }
 
@@ -88,7 +89,7 @@ namespace Connect6 {
         }
 
         Path(const Connect6_RustFFI::Path& path) :
-            turn(static_cast<Player>(path.turn)), position({ path.row, path.col })
+            turn(static_cast<Player>(path.turn)), position(std::make_tuple(path.row, path.col))
         {
             std::memcpy(board, path.board, BOARD_CAPACITY);
         }
@@ -119,7 +120,7 @@ namespace Connect6 {
     private:
         Player turn;
         std::tuple<size_t, size_t> position;
-        int board[BOARD_SIZE][BOARD_SIZE] = { 0, };
+        int board[BOARD_SIZE][BOARD_SIZE];
     };
 
     class GameResult {
