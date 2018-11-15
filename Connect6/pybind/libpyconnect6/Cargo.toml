@@ -5,9 +5,12 @@ authors = ["revsic <revsic99@gmail.com>"]
 
 [lib]
 name = "pyconnect6"
-crate-type = ["rlib", "dylib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-cpython = "0.2"
 connect6 = { path = "../../libconnect6" }
 rand = "0.6.0"
+
+[dependencies.cpython]
+version = "0.2"
+features = ["extension-module"]
