@@ -5,7 +5,7 @@ authors = ["revsic <revsic99@gmail.com>"]
 
 [lib]
 name = "pyconnect6"
-crate-type = ["rlib", "dylib"]
+crate-type = ["dylib"] # ["rlib", "dylib"]
 
 [dependencies]
 cpython = "0.2"
