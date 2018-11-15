@@ -1,0 +1,35 @@
+jobs:
+- job: ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  strategy:
+    matrix:
+      stable:
+        rustup_toolchain: stable
+      beta:
+        rustup_toolchain: beta
+      nightly:
+        rustup_toolchain: nightly
+  steps:
+  - script: |
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+      echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+    displayName: Install rust
+  - script: |
+      rustc -Vv
+      cargo -V
+    displayName: Query rust and cargo versions
+  - script: cargo install -f cargo-make
+    displayName: Install cargo-make
+  - script: cd Connect6 && cargo make workspace-ci-flow --no-workspace
+    env: { CARGO_MAKE_RUN_CODECOV: true }
+    displayName: Build and run tests
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build'
+      cmakeArgs: cppbind/test_cppbind
+    displayName: CMake test_cppbind
+  - script: cd ${Build.SourceDirectory}/build && make;
+    displayName: GNU Make test_cppbind
+  - script: ./test_cppbind
+    displayName: Start test_cppbind
