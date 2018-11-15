@@ -4,7 +4,7 @@
 //! just passing the callable python object with method `__call__(self, turn, board): (value, prob)`.
 //!
 //! # Examples
-//! ```ignore
+//! ```python
 //! import pyconnect6
 //! import numpy as np
 //!
