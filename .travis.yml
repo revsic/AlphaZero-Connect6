@@ -25,7 +25,7 @@ after_success: |-
   # doc github-pages
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
-  cargo doc &&
+  cargo doc --no-deps &&
   echo "<meta http-equiv=refresh content=0;url=connect6/index.html>" > target/doc/index.html &&
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&
