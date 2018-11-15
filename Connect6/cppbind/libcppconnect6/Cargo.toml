@@ -1,0 +1,12 @@
+[package]
+name = "cppconnect6"
+version = "0.1.0"
+authors = ["revsic <revsic99@gmail.com>"]
+
+[lib]
+name = "cppconnect6"
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+rand = "0.6.0"
+connect6 = { path = "../../libconnect6" }
