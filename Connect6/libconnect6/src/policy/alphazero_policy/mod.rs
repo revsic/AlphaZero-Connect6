@@ -7,9 +7,9 @@ use game::{Game, Player};
 use policy::{diff_board, Policy, Simulate};
 use {Board, BOARD_CAPACITY, BOARD_SIZE};
 
-use rand::Rng;
 use rand::distributions::{Dirichlet, Distribution};
 use rand::prelude::{thread_rng, IteratorRandom};
+use rand::Rng;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -134,7 +134,7 @@ pub trait Evaluator {
 }
 
 /// Evaluator for test, Random Value Evaluator
-pub struct RandomEvaluator { }
+pub struct RandomEvaluator {}
 
 impl RandomEvaluator {
     /// Generate random board: f32 with range (-1, 1)
@@ -150,7 +150,11 @@ impl RandomEvaluator {
 }
 
 impl Evaluator for RandomEvaluator {
-    fn eval(&self, _: Player, board: &Vec<Board>) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
+    fn eval(
+        &self,
+        _: Player,
+        board: &Vec<Board>,
+    ) -> Option<(Vec<f32>, Vec<[[f32; BOARD_SIZE]; BOARD_SIZE]>)> {
         let len = board.len();
         let mut values = Vec::with_capacity(len);
         let mut policies = Vec::with_capacity(len);
@@ -191,7 +195,7 @@ impl AlphaZero {
         AlphaZero {
             map: HashMap::new(),
             param: HyperParameter::default(),
-            evaluator
+            evaluator,
         }
     }
 

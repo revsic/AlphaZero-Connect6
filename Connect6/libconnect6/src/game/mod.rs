@@ -13,7 +13,7 @@
 //! ```
 pub use self::game_impl::{Game, Paint, PlayResult};
 pub use self::player::Player;
-pub use self::search_winner::{Cumulative, Block, Path, search};
+pub use self::search_winner::{search, Block, Cumulative, Path};
 
 mod game_impl;
 mod player;
