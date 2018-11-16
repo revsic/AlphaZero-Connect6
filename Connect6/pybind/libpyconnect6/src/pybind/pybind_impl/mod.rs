@@ -84,7 +84,7 @@ impl<'a> ToPyObject for PathWrapper<'a> {
     }
 }
 
-pub struct RunResultWrapper<'a>(pub &'a agent::RunResult);
+pub struct RunResultWrapper<'a>(pub &'a agent::PlayResult);
 
 impl<'a> ToPyObject for RunResultWrapper<'a> {
     type ObjectType = PyTuple;
