@@ -3,7 +3,7 @@ import numpy as np
 
 class RandomPolicy:
     def __init__(self):
-        self.board_size = 15
+        self.board_size = pyconnect6.board_size()
 
     def __call__(self, turn, board):
         size = len(board)
