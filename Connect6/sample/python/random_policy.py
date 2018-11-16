@@ -2,10 +2,11 @@
 import pyconnect6
 import numpy as np
 
-board_size = 15
-
 
 class RandomPolicy:
+    def __init__(self):
+        self.board_size = pyconnect6.board_size()
+
     """ Random Policy for introducing pyconnect6 usage.
 
     Policy must have method `__call__(self, turn, board): (value, prob)`,
@@ -20,7 +21,7 @@ class RandomPolicy:
     def __call__(self, turn, board):
         size = len(board)
         value = np.random.rand(size)
-        rand_policy = np.random.rand(size, board_size * board_size)
+        rand_policy = np.random.rand(size, self.board_size * self.board_size)
         return value, rand_policy
 
 
