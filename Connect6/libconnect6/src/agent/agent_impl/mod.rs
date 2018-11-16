@@ -4,7 +4,7 @@
 //!
 //! `Agent` is structure for playing game with given policy.
 //! As we pass the policy, agent play the game with given based on loop.
-//! Method `play` return the `RunResult` which consisted of winner and playing history (called path).
+//! Method `play` return the `PlayResult` which consisted of winner and playing history (called path).
 //!
 //! # Examples
 //! For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
@@ -37,7 +37,7 @@ pub struct Path {
 }
 
 /// Result of playing game, consists of winner and path (history of game).
-pub struct RunResult {
+pub struct PlayResult {
     pub winner: Player,
     pub path: Vec<Path>,
 }
@@ -117,7 +117,7 @@ impl<'a> Agent<'a> {
     ///
     /// # Errors
     /// if selected position raise Err at [Game::play](../game/struct.Game.html#method.play).
-    pub fn play(&mut self) -> Result<RunResult, String> {
+    pub fn play(&mut self) -> Result<PlayResult, String> {
         let mut winner = Player::None;
         let mut path = Vec::new();
         let game = &mut self.game;
@@ -171,6 +171,6 @@ impl<'a> Agent<'a> {
         if self.debug {
             game.print(&mut io::stdout()).unwrap();
         }
-        Ok(RunResult { winner, path })
+        Ok(PlayResult { winner, path })
     }
 }

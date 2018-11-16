@@ -14,7 +14,7 @@
 //! println!("ratio: {}", result.iter().map(|x| x.winner as i32).sum::<i32>() as f32 / 4.);
 //! # assert_eq!(result.len(), 4);
 //! ```
-use agent::{Agent, RunResult};
+use agent::{Agent, PlayResult};
 use policy::Policy;
 
 use futures::future;
@@ -97,7 +97,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
     ///
     /// # Panics
     /// If some games return the Err from [Agent::play](./struct.Agent.html#method.play).
-    pub fn run(&self, num: i32) -> Vec<RunResult> {
+    pub fn run(&self, num: i32) -> Vec<PlayResult> {
         let thread_pool = ThreadPool::new();
         let (sender, receiver) = mpsc::channel();
         for id in 0..num {
@@ -128,7 +128,7 @@ impl<P: 'static + Policy + Send, F: Fn() -> P> AsyncAgent<P, F> {
 
         let mut results = Vec::new();
         for _ in 0..num {
-            // able to panic, when agent return Err instead RunResult
+            // able to panic, when agent return Err instead PlayResult
             let res = receiver.recv().unwrap();
             results.push(res);
         }
