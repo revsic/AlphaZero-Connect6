@@ -29,20 +29,20 @@ namespace Connect6_RustFFI {
             int col;
         };
 
-        struct RunResult {
+        struct PlayResult {
             int winner;
             Path* paths;
             int len;
         };
 
         struct Vec {
-            RunResult* vec;
+            PlayResult* vec;
             int len;
         };
 
         Vec cpp_self_play(Callback callback,
                           AllocatorType<Path> alloc_path,
-                          AllocatorType<RunResult> alloc_result,
+                          AllocatorType<PlayResult> alloc_result,
                           int num_simulation,
                           float epsilon,
                           double dirichlet_alpha,
@@ -135,7 +135,7 @@ namespace Connect6 {
             // Do Nothing
         }
 
-        GameResult(const Connect6_RustFFI::RunResult& run_result) :
+        GameResult(const Connect6_RustFFI::PlayResult& run_result) :
             winner(static_cast<Player>(run_result.winner)),
             size(run_result.len),
             paths(std::make_unique<Path[]>(size))
@@ -192,7 +192,7 @@ namespace Connect6 {
         FFI::Vec result = FFI::cpp_self_play(
                 callback,
                 &FFI::allocator<FFI::Path>,
-                &FFI::allocator<FFI::RunResult>,
+                &FFI::allocator<FFI::PlayResult>,
                 num_simulation,
                 epsilon,
                 dirichlet_alpha,
