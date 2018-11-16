@@ -3,7 +3,7 @@
 //! for training [AlphaZero](https://arxiv.org/abs/1712.01815) with several language interfaces.
 //!
 //! Connect6 provides game environment and policy based self-playing agent with some pre-defined policies.
-//! It also provides multi-threading async agent and combined MCTS 
+//! It also provides multi-threading async agent and combined MCTS
 //! [AlphaZero](https://arxiv.org/abs/1712.01815) with some hyperparameters control.
 //!
 extern crate futures;
