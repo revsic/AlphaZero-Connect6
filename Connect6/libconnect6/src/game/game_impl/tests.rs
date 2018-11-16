@@ -14,9 +14,9 @@ fn test_new() {
 #[test]
 fn test_play() {
     let mut game = Game::new();
-    let result = game.play((0, 0)).map_err(|_| assert!(false)).unwrap();
+    let result = game.set((0, 0)).map_err(|_| assert!(false)).unwrap();
 
-    let expected = PlayResult {
+    let expected = SetResult {
         player: Player::Black,
         num_remain: 0,
         position: (0, 0),
@@ -27,12 +27,12 @@ fn test_play() {
     assert_eq!(game.num_remain, 2);
     assert_eq!(game.board[0][0], Player::Black);
 
-    match game.play((0, 0)) {
+    match game.set((0, 0)) {
         Ok(_) => assert!(false),
         Err(e) => assert_eq!(e, "game::play already set position"),
     };
 
-    match game.play((BOARD_SIZE, BOARD_SIZE)) {
+    match game.set((BOARD_SIZE, BOARD_SIZE)) {
         Ok(_) => assert!(false),
         Err(e) => assert_eq!(e, "game::play invalid position"),
     };

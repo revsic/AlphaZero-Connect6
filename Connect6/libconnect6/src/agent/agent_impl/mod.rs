@@ -46,7 +46,7 @@ pub struct RunResult {
 ///
 /// Agent is structure for playing game with given policy.
 /// As we pass the policy, agent play the game with given based on loop.
-/// Method `play` return the `PlayResult` and it can be converted as `PyObject`.
+/// Method `play` return the `SetResult` and it can be converted as `PyObject`.
 ///
 /// # Examples
 /// For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
@@ -141,7 +141,7 @@ impl<'a> Agent<'a> {
                 pos,
             });
 
-            match game.play(pos) {
+            match game.set(pos) {
                 Ok(result) => if self.debug {
                     // log the selection info
                     let (row, col) = result.position;

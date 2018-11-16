@@ -21,37 +21,37 @@ mod tests;
 
 /// Result of setting stone
 #[derive(Debug, PartialEq)]
-pub struct PlayResult {
+pub struct SetResult {
     pub player: Player,
     pub num_remain: i32,
     pub position: (usize, usize),
 }
 
-impl PlayResult {
-    /// Construct a new `PlayResult`
-    pub fn new() -> PlayResult {
-        PlayResult {
+impl SetResult {
+    /// Construct a new `SetResult`
+    pub fn new() -> SetResult {
+        SetResult {
             player: Player::None,
             num_remain: 0,
             position: (0, 0),
         }
     }
 
-    /// Construct a `PlayResult` with given game state and position.
+    /// Construct a `SetResult` with given game state and position.
     ///
     /// # Examples
     /// ```rust
     /// # extern crate connect6;
-    /// # use connect6::game::{Game, Player, PlayResult};
+    /// # use connect6::game::{Game, Player, SetResult};
     /// let game = Game::new();
     /// let position = (0, 0);
     ///
-    /// let play_result = PlayResult::with_game(&game, position);
-    /// let expected = PlayResult{ player: Player::Black, num_remain: 1, position: (0, 0) };
+    /// let play_result = SetResult::with_game(&game, position);
+    /// let expected = SetResult{ player: Player::Black, num_remain: 1, position: (0, 0) };
     /// assert_eq!(play_result, expected);
     /// ```
-    pub fn with_game(game: &Game, position: (usize, usize)) -> PlayResult {
-        PlayResult {
+    pub fn with_game(game: &Game, position: (usize, usize)) -> SetResult {
+        SetResult {
             player: game.turn,
             num_remain: game.num_remain,
             position,
@@ -97,17 +97,17 @@ impl Game {
     /// # Examples
     /// ```rust
     /// # extern crate connect6;
-    /// # use connect6::game::{Game, Player, PlayResult};
+    /// # use connect6::game::{Game, Player, SetResult};
     /// let mut game = Game::new();
     /// let result = game.play((3, 4));
-    /// let expected = PlayResult{ player: Player::Black, num_remain: 0, position: (3, 4) };
+    /// let expected = SetResult{ player: Player::Black, num_remain: 0, position: (3, 4) };
     /// assert_eq!(result.unwrap(), expected);
     /// ```
     ///
     /// # Errors
     /// 1. If given position out of board.
     /// 2. If other stone place already in given position.
-    pub fn play(&mut self, pos: (usize, usize)) -> Result<PlayResult, Msg> {
+    pub fn set(&mut self, pos: (usize, usize)) -> Result<SetResult, Msg> {
         let (row, col) = pos;
         // position param validation
         if row >= BOARD_SIZE || col >= BOARD_SIZE {
@@ -120,7 +120,7 @@ impl Game {
         self.board[row][col] = self.turn;
 
         self.num_remain -= 1;
-        let result = PlayResult::with_game(self, pos);
+        let result = SetResult::with_game(self, pos);
 
         // if turn end, switch player
         if self.num_remain <= 0 {

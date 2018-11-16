@@ -11,7 +11,7 @@
 //! let winner = game.is_game_end();
 //! assert_eq!(winner, Player::None);
 //! ```
-pub use self::game_impl::{Game, Paint, PlayResult};
+pub use self::game_impl::{Game, Paint, SetResult};
 pub use self::player::Player;
 pub use self::search_winner::{search, Block, Cumulative, Path};
 
