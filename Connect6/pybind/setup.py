@@ -15,7 +15,7 @@ except ImportError:
         from setuptools_rust import Binding, RustExtension
 
 setup(
-    name='connect6',
+    name='pyconnect6',
     version='0.1.0',
     packages=['pyconnect6'],
     rust_extensions=[RustExtension('pyconnect6.pyconnect6',

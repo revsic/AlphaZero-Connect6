@@ -2,6 +2,10 @@ import json
 from . import pyconnect6
 
 
+def board_size():
+    return 15
+
+
 def self_play(policy, param=None):
     """python wrapper for pyconnect6::self_play
 
