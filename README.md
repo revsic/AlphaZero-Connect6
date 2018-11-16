@@ -21,20 +21,12 @@ AlphaZero-Connect6 is licensed under the [MIT license](http://opensource.org/lic
 Install Rust compiler. [rustup](https://rustup.rs)
 ```
 curl https://sh.rustup.rs -sSf | sh  #for linux user
-curl -sSf -o rustup-init.exe https://win.rustup.rs && rustup-init.exe #for windows user
+curl -sSf -o rustup-init.exe https://win.rustup.rs && rustup-init.exe  #for windows user
 ```
 
 Sample program play connect6 with AlphaZero policy and RandomEvaluator.
-```rust
-// cd Connect6 && cargo run -p sample
-let param = policy::HyperParameter::light_weight();
-let eval = Box::new(policy::RandomEvaluator {});
-let mut policy = policy::AlphaZero::with_param(eval, param);
-
-let result = agent::Agent::debug(&mut policy).play();
-
-assert!(result.is_ok());
-println!("{:?} is win", result.unwrap().winner);
+```
+cd Connect6 && cargo run -p sample
 ```
 
 ## Python Usage
@@ -52,29 +44,8 @@ cd Connect6/pybind/test_pybind; pytest;
 Sample program play connect6 with AlphaZero policy and random evaluator.
 
 For more complicated example, reference [weighted](AlphaZero/weighted)
-```python
-# cd Connect6/sample && python -m python.random_policy
-import pyconnect6
-import numpy as np
-
-class RandomPolicy:
-    def __init__(self):
-        self.board_size = pyconnect6.board_size()
-
-    def __call__(self, turn, board):
-        size = len(board)
-        value = np.random.rand(size)
-        rand_policy = np.random.rand(size, self.board_size * self.board_size)
-        return value, rand_policy
-
-policy = RandomPolicy()
-param = pyconnect6.default_param()
-param['num_simulation'] = 2
-param['num_game_thread'] = 1
-param['debug'] = True
-
-winner, path = pyconnect6.self_play(policy, param)
-print('winner {}, len {}'.format(winner, len(path)))
+```
+cd Connect6/sample && python -m python.random_policy
 ```
 
 ## C++ Usage
@@ -96,37 +67,7 @@ popd
 ```
 
 Sample program play connect6 with AlphaZero policy and random callback.
-```C++
-// cd Connect6/sample/cpp; ./build.sh && ./build/sample_exe # for linux
-// cd Connect6/sample/cpp; ./build.ps1 && ./build/Release/sample_exe.exe for win-x86-msbuild
-void callback(int player, float* values, float* policies, int len_) {
-    size_t len = len_;
-    
-    std::random_device rd;
-    std::default_random_engine gen(rd());
-
-    std::uniform_real_distribution<float> dist(-1.0, 1.0);
-
-    for (size_t i = 0; i < len; ++i) {
-        values[i] = dist(gen);
-    }
-
-    using Connect6::BOARD_SIZE;
-    using Connect6::BOARD_CAPACITY;
-
-    for (size_t i = 0; i < len; ++i) {
-        for (size_t j = 0; j < BOARD_SIZE; ++j) {
-            for (size_t k = 0; k < BOARD_SIZE; ++k) {
-                policies[i * BOARD_CAPACITY + j * BOARD_SIZE + k] = dist(gen);
-            }
-        }
-    }
-}
-
-int main() {
-    auto result = Connect6::self_play(callback, 2, 0.25, 0.03, 1, true, 1);
-    std::cout << "Winner : " << to_string(result[0].GetWinner()) << std::endl;
-
-    return 0;
-}
+```
+cd Connect6/sample/cpp; ./build.sh && ./build/sample_exe  #for linux
+cd Connect6/sample/cpp; ./build.ps1 && ./build/Release/sample_exe.exe  #for win-x86-msbuild
 ```
