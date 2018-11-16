@@ -4,7 +4,7 @@
 //! `Agent` is implementation of loop based single policy agent.
 //! As we pass the policy, method `play` return the `PlayResult` consisted of winner and playing history (called path).
 //!
-//! `AsyncAgent` is multi-thread based agent, playing multiple game asynchronously.
+//! `AsyncAgent` is multi-thread based agent, playing multiple games asynchronously.
 //! It pass the policy generator and return the vector of `PlayResult`.
 //!
 //! # Examples

@@ -2,9 +2,9 @@
 //!
 //! Loop based single policy agent.
 //!
-//! Agent is structure for playing game with given policy.
+//! `Agent` is structure for playing game with given policy.
 //! As we pass the policy, agent play the game with given based on loop.
-//! Method `play` return the `PlayResult` and it can be converted as `PyObject`.
+//! Method `play` return the `RunResult` which consisted of winner and playing history (called path).
 //!
 //! # Examples
 //! For black-white seperable policy, reference [MultiPolicy](../policy/struct.MultiPolicy.html).
