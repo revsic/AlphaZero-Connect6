@@ -9,7 +9,7 @@ pub type CInt = ::std::os::raw::c_int;
 /// std::os::raw::c_float
 pub type CFloat = ::std::os::raw::c_float;
 
-/// void(int player, float* values, float* board[SIZE][SIZE], int length)
+/// void(int player, float* values, float* board, int length)
 pub type Callback = extern "C" fn(
     CInt,                                    // player
     *mut CFloat,                             // out: value

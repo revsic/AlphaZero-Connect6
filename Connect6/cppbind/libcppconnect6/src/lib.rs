@@ -9,7 +9,7 @@ pub mod cppbind;
 ///
 /// # Arguments
 ///
-/// * `callback` - callback for cppbind, RawResult(int player, int* boards[SIZE][SIZE], int length).
+/// * `callback` - callback for cppbind, void(int player, float* values, float* boards, int length).
 /// * `cpp_alloc_path` - cppbind::RawPath allocator for obtaining memory from cpp ffi.
 /// * `cpp_alloc_result` - cppbind::RawPlayResult allocator for obtaining memory from cpp ffi.
 /// * `num_simulation` - i32, number of simulations for each turn.
