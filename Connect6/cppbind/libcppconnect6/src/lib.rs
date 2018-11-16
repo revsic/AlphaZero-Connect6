@@ -11,7 +11,7 @@ pub mod cppbind;
 ///
 /// * `callback` - callback for cppbind, RawResult(int player, int* boards[SIZE][SIZE], int length).
 /// * `cpp_alloc_path` - cppbind::RawPath allocator for obtaining memory from cpp ffi.
-/// * `cpp_alloc_result` - cppbind::RawRunResult allocator for obtaining memory from cpp ffi.
+/// * `cpp_alloc_result` - cppbind::RawPlayResult allocator for obtaining memory from cpp ffi.
 /// * `num_simulation` - i32, number of simulations for each turn.
 /// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit
 /// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution
@@ -23,14 +23,14 @@ pub mod cppbind;
 pub extern "C" fn cpp_self_play(
     callback: cppbind::Callback,
     cpp_alloc_path: cppbind::AllocatorType<cppbind::RawPath>,
-    cpp_alloc_result: cppbind::AllocatorType<cppbind::RawRunResult>,
+    cpp_alloc_result: cppbind::AllocatorType<cppbind::RawPlayResult>,
     num_simulation: i32,
     epsilon: f32,
     dirichlet_alpha: f64,
     c_puct: f32,
     debug: bool,
     num_game_thread: i32,
-) -> cppbind::RawVec<cppbind::RawRunResult> {
+) -> cppbind::RawVec<cppbind::RawPlayResult> {
     use connect6::{agent, policy};
 
     let param = policy::HyperParameter {
@@ -53,7 +53,7 @@ pub extern "C" fn cpp_self_play(
         };
 
         let result = agent.play().unwrap();
-        vec![cppbind::RawRunResult::with_result(&result, &alloc_path)]
+        vec![cppbind::RawPlayResult::with_result(&result, &alloc_path)]
     } else {
         let policy_gen =
             || policy::AlphaZero::with_param(Box::new(cppbind::CppEval::new(callback)), param);
@@ -66,7 +66,7 @@ pub extern "C" fn cpp_self_play(
         async_agent
             .run(num_game_thread)
             .iter()
-            .map(|x| cppbind::RawRunResult::with_result(x, &alloc_path))
+            .map(|x| cppbind::RawPlayResult::with_result(x, &alloc_path))
             .collect::<Vec<_>>()
     };
 

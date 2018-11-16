@@ -35,9 +35,9 @@ pub struct RawPath {
     col: CInt,
 }
 
-/// RunResult object for c ffi
+/// PlayResult object for c ffi
 #[repr(C)]
-pub struct RawRunResult {
+pub struct RawPlayResult {
     winner: CInt,
     path: *mut RawPath,
     len: CInt,
@@ -87,9 +87,9 @@ impl Default for RawPath {
     }
 }
 
-impl RawRunResult {
-    /// Create RawRunResult from RunResult with given allocator (for C++ new operation)
-    pub fn with_result(result: &agent::RunResult, alloc: &Allocator<RawPath>) -> RawRunResult {
+impl RawPlayResult {
+    /// Create RawPlayResult from PlayResult with given allocator (for C++ new operation)
+    pub fn with_result(result: &agent::PlayResult, alloc: &Allocator<RawPath>) -> RawPlayResult {
         let path = &result.path;
         let len = path.len();
 
@@ -99,7 +99,7 @@ impl RawRunResult {
             *p = i;
         }
 
-        RawRunResult {
+        RawPlayResult {
             winner: result.winner as CInt,
             path: ptr.as_mut_ptr(),
             len: len as CInt,

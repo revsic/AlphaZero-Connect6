@@ -54,7 +54,7 @@ fn test_raw_run_result() {
 
     let result = result.unwrap();
     let alloc = Allocator::new(test_allocator);
-    let raw_result = RawRunResult::with_result(&result, &alloc);
+    let raw_result = RawPlayResult::with_result(&result, &alloc);
 
     assert_eq!(raw_result.winner, result.winner as CInt);
     assert_eq!(raw_result.len, result.path.len() as CInt);
