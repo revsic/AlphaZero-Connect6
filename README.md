@@ -69,5 +69,5 @@ popd
 Sample program play connect6 with AlphaZero policy and random callback.
 ```
 cd Connect6/sample/cpp; ./build.sh && ./build/sample_exe  #for linux
-cd Connect6/sample/cpp; ./build.ps1 && ./build/Release/sample_exe.exe  #for win-x86-msbuild
+cd Connect6/sample/cpp; ./build.ps1 && ./build/Release/sample_exe.exe  #for win-x64-msbuild
 ```
