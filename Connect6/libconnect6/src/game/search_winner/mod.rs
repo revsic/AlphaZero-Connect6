@@ -69,7 +69,7 @@ impl Cumulative {
         }
     }
 
-    /// Get a sum mutable reference of specific path
+    /// Get a mutable reference of cell with specific path
     ///
     /// # Examples
     /// ```rust
