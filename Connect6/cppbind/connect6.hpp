@@ -207,8 +207,9 @@ namespace Connect6 {
 
         for (size_t i = 0; i < len; ++i) {
             game_result.emplace_back(result.vec[i]);
+            delete[] result.vec[i].paths;
         }
-
+        delete[] result.vec;
         return game_result;
     }
 }
