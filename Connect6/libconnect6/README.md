@@ -1,3 +1,3 @@
- # Connect6
- 
- Rust implementation of game Connect6 with self-playing agent and predefined policies.
+# LibConnect6
+
+Rust implementation of game Connec6 with self-play agent and some predefined policies.
