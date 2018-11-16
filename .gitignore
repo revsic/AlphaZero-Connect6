@@ -5,3 +5,4 @@ ckpt
 summary
 *.pb
 *cmake-build-debug*
+.vscode
