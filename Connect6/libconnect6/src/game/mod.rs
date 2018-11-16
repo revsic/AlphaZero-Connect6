@@ -7,7 +7,7 @@
 //! # extern crate connect6;
 //! # use connect6::game::{Game, Player};
 //! let mut game = Game::new();
-//! let result = game.play((0, 0)).unwrap();
+//! let result = game.set((0, 0)).unwrap();
 //! let winner = game.is_game_end();
 //! assert_eq!(winner, Player::None);
 //! ```

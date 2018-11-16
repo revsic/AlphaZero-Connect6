@@ -7,7 +7,7 @@
 //! # extern crate connect6;
 //! # use connect6::game::{Game, Player};
 //! let mut game = Game::new();
-//! let result = game.play((0, 0));
+//! let result = game.set((0, 0));
 //! let winner = game.is_game_end();
 //! assert_eq!(winner, Player::None);
 //! ```
@@ -70,7 +70,7 @@ type Msg = &'static str;
 /// # extern crate connect6;
 /// # use connect6::game::{Game, Player};
 /// let mut game = Game::new();
-/// let result = game.play((0, 0));
+/// let result = game.set((0, 0));
 /// game.print(&mut std::io::stdout()).unwrap();
 ///
 /// let winner = game.is_game_end();
@@ -99,7 +99,7 @@ impl Game {
     /// # extern crate connect6;
     /// # use connect6::game::{Game, Player, SetResult};
     /// let mut game = Game::new();
-    /// let result = game.play((3, 4));
+    /// let result = game.set((3, 4));
     /// let expected = SetResult{ player: Player::Black, num_remain: 0, position: (3, 4) };
     /// assert_eq!(result.unwrap(), expected);
     /// ```
@@ -152,8 +152,8 @@ impl Game {
     /// # extern crate connect6;
     /// # use connect6::game::Game;
     /// let mut game = Game::new();
-    /// let result = game.play((3, 4)).unwrap(); // black
-    /// let result = game.play((3, 3)).unwrap(); // white
+    /// let result = game.set((3, 4)).unwrap(); // black
+    /// let result = game.set((3, 3)).unwrap(); // white
     ///
     /// game.print(&mut std::io::stdout());
     /// ```
@@ -205,7 +205,7 @@ impl Game {
     /// # extern crate connect6;
     /// # use connect6::game::{Game, Player};
     /// let mut game = Game::new();
-    /// game.play((3, 4)).unwrap();
+    /// game.set((3, 4)).unwrap();
     /// assert_eq!(game.is_game_end(), Player::None);
     /// ```
     pub fn is_game_end(&self) -> Player {

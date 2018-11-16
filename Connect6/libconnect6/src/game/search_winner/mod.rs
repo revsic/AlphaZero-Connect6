@@ -8,7 +8,7 @@
 //! # extern crate connect6;
 //! # use connect6::game::{Game, Player, search};
 //! let mut game = Game::new();
-//! game.play((3, 4)).unwrap();
+//! game.set((3, 4)).unwrap();
 //!
 //! let winner = search(game.get_board());
 //! assert_eq!(winner, Player::None);
@@ -193,7 +193,7 @@ impl Block {
 /// # extern crate connect6;
 /// # use connect6::game::{Game, Player, search};
 /// let mut game = Game::new();
-/// game.play((3, 4)).unwrap();
+/// game.set((3, 4)).unwrap();
 ///
 /// let winner = search(game.get_board());
 /// assert_eq!(winner, Player::None);
