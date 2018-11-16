@@ -64,6 +64,7 @@ pub fn pylist_from_multiple(py: Python, boards: &Vec<Board>) -> PyObject {
     PyList::new(py, lists.as_slice()).into_object()
 }
 
+/// connect6::agent::Path wrapper for Python object conversion
 pub struct PathWrapper<'a>(pub &'a agent::Path);
 
 impl<'a> ToPyObject for PathWrapper<'a> {
@@ -84,6 +85,7 @@ impl<'a> ToPyObject for PathWrapper<'a> {
     }
 }
 
+/// connect6::agent::PlayResult wrapper for Python object conversion
 pub struct RunResultWrapper<'a>(pub &'a agent::PlayResult);
 
 impl<'a> ToPyObject for RunResultWrapper<'a> {

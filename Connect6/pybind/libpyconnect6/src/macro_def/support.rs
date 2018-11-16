@@ -2,6 +2,7 @@ use super::*;
 
 use rand;
 
+/// Python random policy
 py_class!(pub class PyPolicy |py| {
     def __call__(&self, _turn: PyObject, boards: PyObject) -> PyResult<PyObject> {
         let len = boards.cast_into::<PyList>(py)?.len(py);
@@ -23,7 +24,7 @@ py_class!(pub class PyPolicy |py| {
     }
 });
 
-// used in macro py_policy
+/// py_policy generator
 #[allow(dead_code)]
 pub fn create_pypolicy(py: Python) -> PyResult<PyPolicy> {
     PyPolicy::create_instance(py)

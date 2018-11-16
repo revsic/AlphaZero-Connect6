@@ -1,3 +1,4 @@
+//! Macro definition
 pub use self::support::{create_pypolicy, PyPolicy};
 
 use connect6::BOARD_CAPACITY;
@@ -16,7 +17,7 @@ macro_rules! must {
     };
 }
 
-/// Create random python policy for testing policy AlphaZero
+/// Create random python policy for testing AlphaZero
 ///
 /// # Examples
 /// ```rust
