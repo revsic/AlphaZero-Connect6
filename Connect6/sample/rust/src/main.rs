@@ -1,3 +1,4 @@
+//! Rust sample usage of connect6.
 extern crate connect6;
 
 use connect6::{agent, game::Player, policy};
