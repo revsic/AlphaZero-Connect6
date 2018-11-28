@@ -1,5 +1,5 @@
 use connect6::{agent, game::Player, BOARD_CAPACITY, BOARD_SIZE};
-use cppbind::{CInt, RawPath};
+use cppbind::{Allocator, AllocatorType, CInt, RawPath, RawPlayResult, RawVec};
 
 #[no_mangle]
 pub extern "C" fn test_new_raw_path() -> RawPath {
@@ -46,18 +46,34 @@ pub extern "C" fn test_echo_raw_path(
     }
 }
 
+// #[no_mangle]
+// pub extern "C" fn test_with_raw_play_result() -> RawPlayResult {
+
+// }
+
+// #[no_mangle]
+// pub extern "C" fn test_echo_raw_play_result() -> RawPlayResult {
+
+// }
+
 #[no_mangle]
-pub extern "C" fn test_sample_raw_path() -> RawPath {
-    let mut board = [[0; BOARD_SIZE]; BOARD_SIZE];
-    for i in 0..BOARD_SIZE {
-        for j in 0..BOARD_SIZE {
-            board[i][j] = (i * BOARD_SIZE + j) as CInt;
-        }
+pub extern "C" fn test_with_raw_vec(allocator: AllocatorType<CInt>) -> RawVec<CInt> {
+    let vec = vec![0, 1, 2, 3, 4, 5];
+    let alloc = Allocator::new(allocator);
+    RawVec::with_vec(vec, &alloc)
+}
+
+#[no_mangle]
+pub extern "C" fn test_echo_raw_vec(
+    ptr: *const CInt,
+    len: CInt,
+    allocator: AllocatorType<CInt>,
+) -> RawVec<CInt> {
+    let raw_slice = unsafe { ::std::slice::from_raw_parts(ptr, len as usize) };
+    let mut vec = Vec::new();
+    for i in 0..len {
+        vec.push(raw_slice[i as usize]);
     }
-    RawPath {
-        turn: Player::Black as CInt,
-        board,
-        row: 0,
-        col: (BOARD_SIZE - 1) as CInt,
-    }
+    let alloc = Allocator::new(allocator);
+    RawVec::with_vec(vec, &alloc)
 }
