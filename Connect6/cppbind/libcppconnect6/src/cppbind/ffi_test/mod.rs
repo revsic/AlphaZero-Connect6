@@ -1,5 +1,5 @@
-use connect6::{agent, game::Player, BOARD_CAPACITY, BOARD_SIZE};
-use cppbind::{Allocator, AllocatorType, CInt, RawPath, RawPlayResult, RawVec};
+use connect6::{BOARD_CAPACITY, BOARD_SIZE, agent, game::Player, policy::Evaluator};
+use cppbind::*;
 
 #[no_mangle]
 pub extern "C" fn test_new_raw_path() -> RawPath {
@@ -125,4 +125,56 @@ pub extern "C" fn test_echo_raw_vec(
     }
     let alloc = Allocator::new(allocator);
     RawVec::with_vec(vec, &alloc)
+}
+
+#[no_mangle]
+pub extern "C" fn test_echo_cppeval(
+    turn: CInt,
+    boards: *const CInt,
+    len: CInt,
+    callback: Callback, 
+    allocator: AllocatorType<CFloat>,
+) -> RawVec<CFloat> {
+    let turn = Player::from(turn);
+    let len = len as usize;
+
+    let boards = unsafe{ ::std::slice::from_raw_parts(boards, len * BOARD_CAPACITY) };
+
+    let mut cnt = 0;
+    let mut vec = Vec::new();
+    for _ in 0..len {
+        let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
+        for r in 0..BOARD_SIZE {
+            for c in 0..BOARD_SIZE {
+                board[r][c] = Player::from(boards[cnt]);
+                cnt += 1;
+            }
+        }
+        vec.push(board);
+    }
+
+    let cppeval = CppEval::new(callback);
+    let res = cppeval.eval(turn, &vec);
+
+    assert!(res.is_some());
+    let (vals, policies) = res.unwrap();
+
+    assert_eq!(vals.len(), len);
+    assert_eq!(policies.len(), len);
+
+    let mut ret = Vec::new();
+    for val in vals {
+        ret.push(val);
+    }
+
+    for policy in policies {
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                ret.push(policy[i][j]);
+            }
+        }
+    }
+
+    let alloc = Allocator::new(allocator);
+    RawVec::with_vec(ret, &alloc)
 }
