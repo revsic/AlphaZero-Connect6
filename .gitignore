@@ -6,3 +6,5 @@ summary
 *.pb
 *cmake-build-debug*
 .vscode
+build
+third_party
