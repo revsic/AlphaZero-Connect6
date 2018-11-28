@@ -67,6 +67,13 @@ namespace Connect6_RustFFI {
 
             VecInt test_with_raw_vec(AllocatorType<int> allocator);
             VecInt test_echo_raw_vec(int* ptr, int len, AllocatorType<int> allocator);
+
+            struct VecFloat {
+                float* vec;
+                int len;
+            };
+
+            VecFloat test_echo_cppeval(int turn, int* boards, int len, Callback callback, AllocatorType<float> allocator);
         }
     }
 }
