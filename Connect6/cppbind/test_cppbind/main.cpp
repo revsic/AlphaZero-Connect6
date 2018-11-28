@@ -111,13 +111,58 @@ TEST_CASE("RawPlayResult::with_result", "[RawPlayResult]") {
         for (size_t j = 0; j < i + 1; ++j) {
             REQUIRE(res.paths[i].board[j][j] == static_cast<int>(i + j) % 3 - 1);
         }
-        delete[] res.paths[i];
     }
     delete[] res.paths;
 }
 
 TEST_CASE("Echo RawPlayResult", "[RawPlayResult]") {
-    
+    using namespace Connect6_RustFFI;
+
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+
+    auto rand_player = [&]{ return gen() % 3 - 1; };
+    auto rand_position = [&]{ return gen() % BOARD_SIZE; };
+
+    int winner = rand_player();
+    int len = gen() % 150 + 100;
+
+    Path* paths = new Path[len];
+    for (size_t i = 0; i < len; ++i) {
+        paths[i].turn = rand_player();
+        paths[i].row = rand_position();
+        paths[i].col = rand_position();
+
+        for (size_t r = 0; r < BOARD_SIZE; ++r) {
+            for (size_t c = 0; c < BOARD_SIZE; ++c) {
+                paths[i].board[r][c] = 0;
+            }
+        }
+
+        int iter_len = gen() % BOARD_CAPACITY;
+        for (size_t j = 0; j < iter_len; ++j) {
+            size_t row = rand_position();
+            size_t col = rand_position();
+            paths[i].board[row][col] = rand_player();
+        }
+    }
+
+    PlayResult res = Test_FFI::test_echo_raw_play_result(winner, paths, len, &allocator<Path>);
+    REQUIRE(res.winner == winner);
+    REQUIRE(res.len == len);
+
+    for (size_t i = 0; i < len; ++i) {
+        REQUIRE(res.paths[i].turn == paths[i].turn);
+        REQUIRE(res.paths[i].row == paths[i].row);
+        REQUIRE(res.paths[i].col == paths[i].col);
+
+        for (size_t r = 0; r < BOARD_SIZE; ++r) {
+            for (size_t c = 0; c < BOARD_SIZE; ++c) {
+                REQUIRE(res.paths[i].board[r][c] == paths[i].board[r][c]);
+            }
+        }
+    }
+    delete[] res.paths;
 }
 
 TEST_CASE("RawVec::with_vec", "[RawVec]") {
