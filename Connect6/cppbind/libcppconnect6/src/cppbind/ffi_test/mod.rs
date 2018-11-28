@@ -1,4 +1,4 @@
-use connect6::{BOARD_CAPACITY, BOARD_SIZE, game::Player};
+use connect6::{game::Player, BOARD_CAPACITY, BOARD_SIZE};
 use cppbind::{CInt, RawPath};
 
 #[no_mangle]
