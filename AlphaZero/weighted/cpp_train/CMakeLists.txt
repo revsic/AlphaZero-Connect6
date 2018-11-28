@@ -14,7 +14,6 @@ endif()
 add_executable(cpp_weighted main.cpp)
 target_link_libraries(cpp_weighted ${LIBCONNECT6})
 target_include_directories(cpp_weighted PRIVATE ${LIBCONNECT6_PATH}/cppbind)
-target_include_directories(cpp_weighted PRIVATE ${THIRD_PARTY}/tensorflow)
 
 if(APPLE)
     target_link_libraries(cpp_weighted "-framework Security")
