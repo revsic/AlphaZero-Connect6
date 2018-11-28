@@ -5,5 +5,7 @@
 pub use self::cppeval::*;
 pub use self::rawobj::*;
 
+pub mod ffi_test;
+
 mod cppeval;
 mod rawobj;
