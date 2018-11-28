@@ -78,26 +78,39 @@ namespace Connect6 {
 
     class Path {
     public:
-        Path() : turn(Player::None), position(std::make_tuple(0, 0)) {
+        Path() : turn(Player::None), position(std::make_tuple(0, 0)), board(nullptr) {
             // Do Nothing
         }
 
-        Path(Player turn, const std::tuple<size_t, size_t>& position, int board_[BOARD_SIZE][BOARD_SIZE]) :
-            turn(turn), position(position)
+        Path(Player turn, 
+             const std::tuple<size_t, size_t>& position, 
+             int board_[BOARD_SIZE][BOARD_SIZE]) :
+            turn(turn), position(position), 
+            board(std::make_unique<int[]>(BOARD_CAPACITY))
         {
-            std::memcpy(board, board_, BOARD_CAPACITY);
+            std::memcpy(board.get(), board_, BOARD_CAPACITY);
         }
 
         Path(const Connect6_RustFFI::Path& path) :
-            turn(static_cast<Player>(path.turn)), position(std::make_tuple(path.row, path.col))
+            turn(static_cast<Player>(path.turn)), 
+            position(std::make_tuple(path.row, path.col)),
+            board(std::make_unique<int[]>(BOARD_CAPACITY))
         {
-            std::memcpy(board, path.board, BOARD_CAPACITY);
+            std::memcpy(board.get(), path.board, BOARD_CAPACITY);
         }
 
-        Path& operator=(const Path& other) {
+        Path(const Path&) = delete;
+        Path(Path&& other) : 
+            turn(other.turn), position(other.position), board(std::move(other.board))
+        {
+            // Do Nothing
+        }
+
+        Path& operator=(const Path&) = delete;
+        Path& operator=(Path&& other) {
             turn = other.turn;
             position = other.position;
-            std::memcpy(board, other.board, BOARD_CAPACITY);
+            board = std::move(other.board);
             return *this;
         }
 
@@ -110,17 +123,17 @@ namespace Connect6 {
         };
 
         int* operator[](size_t idx) {
-            return board[idx];
+            return &board[idx * BOARD_SIZE];
         }
 
         const int* operator[](size_t idx) const {
-            return board[idx];
+            return &board[idx * BOARD_SIZE];
         }
 
     private:
         Player turn;
         std::tuple<size_t, size_t> position;
-        int board[BOARD_SIZE][BOARD_SIZE];
+        std::unique_ptr<int[]> board;
     };
 
     class GameResult {
