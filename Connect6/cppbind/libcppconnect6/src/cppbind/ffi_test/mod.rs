@@ -1,4 +1,4 @@
-use connect6::{BOARD_CAPACITY, BOARD_SIZE, agent, game::Player, policy::Evaluator};
+use connect6::{agent, game::Player, policy::Evaluator, BOARD_CAPACITY, BOARD_SIZE};
 use cppbind::*;
 
 #[no_mangle]
@@ -53,7 +53,7 @@ pub extern "C" fn test_with_raw_play_result(allocator: AllocatorType<RawPath>) -
 
     for i in 0..10 {
         let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
-        for j in 0..i+1 {
+        for j in 0..i + 1 {
             board[j][j] = Player::from(((i + j) % 3) as i32 - 1);
         }
         vec.push(agent::Path {
@@ -99,7 +99,10 @@ pub extern "C" fn test_echo_raw_play_result(
         });
     }
 
-    let result = agent::PlayResult { winner: Player::from(winner), path: vec };
+    let result = agent::PlayResult {
+        winner: Player::from(winner),
+        path: vec,
+    };
 
     let alloc = Allocator::new(allocator);
     RawPlayResult::with_result(&result, &alloc)
@@ -132,13 +135,13 @@ pub extern "C" fn test_echo_cppeval(
     turn: CInt,
     boards: *const CInt,
     len: CInt,
-    callback: Callback, 
+    callback: Callback,
     allocator: AllocatorType<CFloat>,
 ) -> RawVec<CFloat> {
     let turn = Player::from(turn);
     let len = len as usize;
 
-    let boards = unsafe{ ::std::slice::from_raw_parts(boards, len * BOARD_CAPACITY) };
+    let boards = unsafe { ::std::slice::from_raw_parts(boards, len * BOARD_CAPACITY) };
 
     let mut cnt = 0;
     let mut vec = Vec::new();
