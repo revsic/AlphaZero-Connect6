@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(cpp_weighted)
 
 set(CMAKE_CXX_STANDARD 17)
-set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../Connect6)
+set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../../Connect6)
+set(THIRD_PARTY ${CMAKE_SOURCE_DIR}/../../../third_party)
 
 if(WIN32)
     set(LIBCONNECT6 ${LIBCONNECT6_PATH}/target/cppconnect6.lib)
@@ -12,7 +13,8 @@ endif()
 
 add_executable(cpp_weighted main.cpp)
 target_link_libraries(cpp_weighted ${LIBCONNECT6})
-target_include_directories(cpp_weighted ${LIBCONNECT6_PATH}/cppbind)
+target_include_directories(cpp_weighted PRIVATE ${LIBCONNECT6_PATH}/cppbind)
+target_include_directories(cpp_weighted PRIVATE ${THIRD_PARTY}/tensorflow)
 
 if(APPLE)
     target_link_libraries(cpp_weighted "-framework Security")

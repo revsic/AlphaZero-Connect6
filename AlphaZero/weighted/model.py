@@ -34,14 +34,15 @@ class WeightedPolicy(object):
         self.momentum = momentum
 
         board_capacity = board_size ** 2
-        self.plc_player = tf.placeholder(tf.float32, [None])
-        self.plc_board = tf.placeholder(tf.float32, [None, board_capacity])
+        self.plc_player = tf.placeholder(tf.float32, [None], name='plc_player')
+        self.plc_board = tf.placeholder(tf.float32, [None, board_capacity], name='plc_board')
 
-        self.plc_value = tf.placeholder(tf.float32, [None])
-        self.plc_policy = tf.placeholder(tf.int32, [None])
+        self.plc_value = tf.placeholder(tf.float32, [None], name='plc_value')
+        self.plc_policy = tf.placeholder(tf.int32, [None], name='plc_policy')
 
         self.value, self.policy = self._get_model()
-        self.output_policy = tf.nn.softmax(self.policy)
+        self.value = tf.identity(self.value, name='value')
+        self.output_policy = tf.nn.softmax(self.policy, name='policy')
         self.value_loss, self.policy_loss = self._get_loss()
         self.loss = self.value_loss + self.policy_loss
 
