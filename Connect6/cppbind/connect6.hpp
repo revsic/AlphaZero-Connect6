@@ -188,12 +188,16 @@ namespace Connect6 {
             return winner;
         }
 
-        const Path& operator[](size_t idx) const {
+        size_t GetSize() const {
+            return size;
+        }
+
+        Path& operator[](size_t idx) {
             return paths[idx];
         }
 
-        size_t GetSize() const {
-            return size;
+        const Path& operator[](size_t idx) const {
+            return paths[idx];
         }
 
         Path* begin() {
@@ -204,12 +208,20 @@ namespace Connect6 {
             return paths.get();
         }
 
+        const Path* cbegin() const {
+            return paths.get();
+        }
+
         Path* end() {
             return paths.get() + size;
         }
 
         const Path* end() const {
             return paths.get() + size;
+        }
+
+        const Path* cend() const {
+            return paths.get();
         }
 
     private:
