@@ -4,6 +4,7 @@ extern crate connect6;
 extern crate rand;
 
 pub mod cppbind;
+pub use cppbind::ffi_test::*;
 
 /// Return Connect6 self-playing results with given cpp callback and hyperparameters
 ///
