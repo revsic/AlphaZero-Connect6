@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.10)
+project(cpp_weighted)
+
+set(CMAKE_CXX_STANDARD 17)
+set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../Connect6)
+
+if(WIN32)
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/target/cppconnect6.lib)
+else()
+    set(LIBCONNECT6 ${LIBCONNECT6_PATH}/target/libcppconnect6.a)
+endif()
+
+add_executable(cpp_weighted main.cpp)
+target_link_libraries(cpp_weighted ${LIBCONNECT6})
+target_include_directories(cpp_weighted ${LIBCONNECT6_PATH}/cppbind)
+
+if(APPLE)
+    target_link_libraries(cpp_weighted "-framework Security")
+elseif(UNIX)
+    target_link_libraries(cpp_weighted dl)
+    target_link_libraries(cpp_weighted pthread)
+else()
+    target_link_libraries(cpp_weighted ws2_32)
+    target_link_libraries(cpp_weighted userenv)
+endif()
