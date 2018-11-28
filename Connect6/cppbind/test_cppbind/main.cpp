@@ -33,6 +33,36 @@ TEST_CASE("Check result length", "[RandomPolicy]") {
     REQUIRE(result.size() == 2);
 }
 
+TEST_CASE("RawPath::new", "[RawPath]") {
+    using namespace Connect6_RustFFI;
+
+    Path path = Test_FFI::test_new_raw_path();
+    REQUIRE(path.turn == 0);
+    REQUIRE(path.row == 0);
+    REQUIRE(path.col == 0);
+
+    for (size_t i = 0; i < BOARD_SIZE; ++i) {
+        for (size_t j = 0; j < BOARD_SIZE; ++j) {
+            REQUIRE(path.board[i][j] == 0);
+        }
+    }
+}
+
+TEST_CASE("RawPath::with_path", "[RawPath]") {
+    using namespace Connect6_RustFFI;
+
+    Path path = Test_FFI::test_with_raw_path();
+    REQUIRE(path.turn == static_cast<int>(Connect6::Player::White));
+    REQUIRE(path.row == 0);
+    REQUIRE(path.col == BOARD_SIZE % 5 + 1);
+
+    for (size_t i = 0; i < BOARD_SIZE; ++i) {
+        for (size_t j = 0; j < BOARD_SIZE; ++j) {
+            REQUIRE(path.board[i][j] == static_cast<int>(i * BOARD_SIZE + j) % 3 - 1);
+        }
+    }
+}
+
 TEST_CASE("Echo RawPath", "[RawPath]") {
     using namespace Connect6_RustFFI;
 

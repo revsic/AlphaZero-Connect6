@@ -53,6 +53,8 @@ namespace Connect6_RustFFI {
 
     namespace Test_FFI {
         extern "C" {
+            Path test_new_raw_path();
+            Path test_with_raw_path();
             Path test_echo_raw_path(int turn, int* board, int row, int col);
             Path test_sample_raw_path();
         }
