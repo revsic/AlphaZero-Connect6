@@ -29,25 +29,25 @@ impl<T> Allocator<T> {
 #[repr(C)]
 #[derive(Clone)]
 pub struct RawPath {
-    turn: CInt,
-    board: [[CInt; BOARD_SIZE]; BOARD_SIZE],
-    row: CInt,
-    col: CInt,
+    pub turn: CInt,
+    pub board: [[CInt; BOARD_SIZE]; BOARD_SIZE],
+    pub row: CInt,
+    pub col: CInt,
 }
 
 /// PlayResult object for c ffi
 #[repr(C)]
 pub struct RawPlayResult {
-    winner: CInt,
-    path: *mut RawPath,
-    len: CInt,
+    pub winner: CInt,
+    pub path: *mut RawPath,
+    pub len: CInt,
 }
 
 /// Vector object for c ffi
 #[repr(C)]
 pub struct RawVec<T> {
-    vec: *mut T,
-    len: CInt,
+    pub vec: *mut T,
+    pub len: CInt,
 }
 
 impl RawPath {
