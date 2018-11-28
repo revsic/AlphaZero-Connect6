@@ -95,6 +95,31 @@ TEST_CASE("Echo RawPath", "[RawPath]") {
     }
 }
 
+TEST_CASE("RawPlayResult::with_result", "[RawPlayResult]") {
+    using namespace Connect6_RustFFI;
+
+    PlayResult res = Test_FFI::test_with_raw_play_result(&allocator<Path>);
+
+    REQUIRE(res.len == 10);
+    REQUIRE(res.winner == static_cast<int>(Connect6::Player::Black));
+
+    for (size_t i = 0; i < 10; ++i) {
+        REQUIRE(res.paths[i].turn == (i % 2 == 0 ? -1 : 1));
+        REQUIRE(res.paths[i].row == i);
+        REQUIRE(res.paths[i].col == i + 1);
+
+        for (size_t j = 0; j < i + 1; ++j) {
+            REQUIRE(res.paths[i].board[j][j] == static_cast<int>(i + j) % 3 - 1);
+        }
+        delete[] res.paths[i];
+    }
+    delete[] res.paths;
+}
+
+TEST_CASE("Echo RawPlayResult", "[RawPlayResult]") {
+    
+}
+
 TEST_CASE("RawVec::with_vec", "[RawVec]") {
     using namespace Connect6_RustFFI;
 

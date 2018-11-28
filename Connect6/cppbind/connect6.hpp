@@ -57,6 +57,9 @@ namespace Connect6_RustFFI {
             Path test_with_raw_path();
             Path test_echo_raw_path(int turn, int* board, int row, int col);
 
+            PlayResult test_with_raw_play_result(AllocatorType<Path> allocator);
+            PlayResult test_echo_raw_play_result(int winner, Path* path, int len, AllocatorType<Path> allocator);
+
             struct VecInt {
                 int* vec;
                 int len;
