@@ -95,18 +95,38 @@ TEST_CASE("Echo RawPath", "[RawPath]") {
     }
 }
 
-TEST_CASE("Sample RawPath", "[RawPath]") {
+TEST_CASE("RawVec::with_vec", "[RawVec]") {
     using namespace Connect6_RustFFI;
 
-    Path path = Test_FFI::test_sample_raw_path();
+    Test_FFI::VecInt res = Test_FFI::test_with_raw_vec(&allocator<int>);
 
-    REQUIRE(path.turn == static_cast<int>(Connect6::Player::Black));
-    REQUIRE(path.row == 0);
-    REQUIRE(path.col == BOARD_SIZE - 1);
-
-    for (size_t i = 0; i < BOARD_SIZE; ++i) {
-        for (size_t j = 0; j < BOARD_SIZE; ++j) {
-            REQUIRE(path.board[i][j] == i * BOARD_SIZE + j);
-        }
+    REQUIRE(res.len ==  6);
+    for (size_t i = 0; i < 6; ++i) {
+        REQUIRE(res.vec[i] == i);
     }
+    delete[] res.vec;
+}
+
+TEST_CASE("Echo RawVec", "[RawVec]") {
+    using namespace Connect6_RustFFI;
+
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+
+    int len = gen() % 100 + 50;
+    int* ptr = new int[len];
+
+    for (size_t i = 0; i < len; ++i) {
+        ptr[i] = gen() % 100 + 50;
+    }
+
+    Test_FFI::VecInt res = Test_FFI::test_echo_raw_vec(ptr, len, &allocator<int>);
+
+    REQUIRE(res.len == len);
+    for (size_t i = 0; i < len; ++i) {
+        REQUIRE(res.vec[i] == ptr[i]);
+    }
+    
+    delete[] res.vec;
+    delete[] ptr;
 }

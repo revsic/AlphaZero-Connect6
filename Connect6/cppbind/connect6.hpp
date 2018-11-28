@@ -56,7 +56,14 @@ namespace Connect6_RustFFI {
             Path test_new_raw_path();
             Path test_with_raw_path();
             Path test_echo_raw_path(int turn, int* board, int row, int col);
-            Path test_sample_raw_path();
+
+            struct VecInt {
+                int* vec;
+                int len;
+            };
+
+            VecInt test_with_raw_vec(AllocatorType<int> allocator);
+            VecInt test_echo_raw_vec(int* ptr, int len, AllocatorType<int> allocator);
         }
     }
 }
