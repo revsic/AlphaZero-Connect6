@@ -50,6 +50,13 @@ namespace Connect6_RustFFI {
                           bool debug,
                           int num_game_thread);
     }
+
+    namespace Test_FFI {
+        extern "C" {
+            Path test_echo_raw_path(int turn, int* board, int row, int col);
+            Path test_sample_raw_path();
+        }
+    }
 }
 
 namespace Connect6 {
