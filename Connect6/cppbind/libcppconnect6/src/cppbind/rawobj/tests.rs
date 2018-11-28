@@ -47,7 +47,7 @@ fn test_raw_path() {
 }
 
 #[test]
-fn test_raw_run_result() {
+fn test_raw_play_result() {
     let mut policy = policy::RandomPolicy::new();
     let result = agent::Agent::new(&mut policy).play();
     assert!(result.is_ok());
