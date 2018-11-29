@@ -7,4 +7,4 @@ summary
 *cmake-build-debug*
 .vscode
 build
-third_party
+dist
