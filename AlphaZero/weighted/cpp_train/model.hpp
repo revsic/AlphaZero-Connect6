@@ -1,13 +1,9 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
-#include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/lib/io/path.h"
-#include "tensorflow/core/platform/env.h"
-#include "tensorflow/core/platform/init_main.h"
-#include "tensorflow/core/platform/logging.h"
-#include "tensorflow/core/platform/types.h"
-#include "tensorflow/core/public/session.h"
+#define NOMINMAX
+
+#include <tensorflow/core/public/session.h>
 
 struct ModelConfig {
     std::string init = "init";
@@ -21,13 +17,16 @@ struct ModelConfig {
     std::string plc_value = "plc_value";
     std::string plc_policy = "plc_policy";
 
-    std::string value = "value"
-    std::string policy = "policy"
+    std::string value = "value";
+    std::string policy = "policy";
+
+    static ModelConfig DefaultConfig;
 };
+ModelConfig ModelConfig::DefaultConfig;
 
 class Model {
 public:
-    Model(std::string const& graph_def_filename, ModelConfig const& config) :
+    Model(std::string const& graph_def_filename, ModelConfig const& config = ModelConfig::DefaultConfig) :
         m_sess(nullptr), m_config(config)
     {
         tensorflow::GraphDef graph_def;
@@ -43,7 +42,7 @@ public:
         TF_CHECK_OK(m_sess->Run({}, {}, { m_config.init }, nullptr));
     }
 
-    void Restore(std::String const& ckpt_prefix) {
+    void Restore(std::string const& ckpt_prefix) {
         CkptOp(ckpt_prefix, m_config.restore_ckpt);
     }
 
@@ -85,7 +84,7 @@ private:
     void CkptOp(std::string const& ckpt_prefix, std::string const& op_name) {
         tensorflow::Tensor t(tensorflow::DT_STRING, tensorflow::TensorShape());
         t.scalar<std::string>()() = ckpt_prefix;
-        TF_CHECK_OK(m_sess->Run({{ m_config.save_ckpt }}, {}, { op_name }, nullptr));
+        TF_CHECK_OK(m_sess->Run({{ m_config.save_ckpt, t }}, {}, { op_name }, nullptr));
     }
 };
 
