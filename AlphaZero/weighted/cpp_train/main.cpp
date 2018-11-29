@@ -8,27 +8,27 @@ void callback(int player, float* values, float* policies, int len) {
     using Connect6::BOARD_CAPACITY;
 
     tensorflow::Tensor player_tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape({ len }));
-    auto& vec = player_tensor.vec<float>();
+    auto tplayer = player_tensor.flat<float>().data();
     for (int i = 0; i < len; ++i) {
-        vec(i) = player;
+        tplayer[i] = player;
     }
 
     tensorflow::Tensor board_tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape({ len, BOARD_CAPACITY }));
-    auto& flat = board_tensor.flat<float>();
+    auto tboard = board_tensor.flat<float>().data();
     for (int i = 0; i < len * BOARD_CAPACITY; ++i) {
-        flat(i) = policies[i];
+        tboard[i] = policies[i];
     }
 
     std::vector<tensorflow::Tensor> res = model.Inference(player_tensor, board_tensor);
-    auto const& value_res = res[0].vec<float>();
-    auto const& policy_res = res[1].flat<float>();
+    auto value_res = res[0].flat<float>().data();
+    auto policy_res = res[1].flat<float>().data();
 
     for (int i = 0; i < len; ++i) {
-        values[i] = value_res(i);
+        values[i] = value_res[i];
     }
 
     for (int i = 0; i < len * BOARD_CAPACITY; ++i) {
-        policies[i] = policy_res(i);
+        policies[i] = policy_res[i];
     }
 }
 
