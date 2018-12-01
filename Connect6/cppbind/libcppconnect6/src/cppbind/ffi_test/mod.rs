@@ -1,11 +1,20 @@
+//! Test implementation for Rust-C++ FFI.
+//! 
+//! Test method is implemented in Rust, and it could be called on C++.
+//! All functions are not mangled with extern "C" and those are declared in 
+//! [connect6.hpp](https://github.com/revsic/AlphaZero-Connect6/blob/master/Connect6/cppbind/connect6.hpp)
+//! Reference [test_cppbind](https://github.com/revsic/AlphaZero-Connect6/blob/master/Connect6/cppbind/test_cppbind/main.cpp).
+//! 
 use connect6::{agent, game::Player, policy::Evaluator, BOARD_CAPACITY, BOARD_SIZE};
 use cppbind::*;
 
+/// Return `RawPath::new()`;
 #[no_mangle]
 pub extern "C" fn test_new_raw_path() -> RawPath {
     RawPath::new()
 }
 
+/// Generate sample `agent::Path` and return `RawPath::with_path`.
 #[no_mangle]
 pub extern "C" fn test_with_raw_path() -> RawPath {
     let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
@@ -24,6 +33,7 @@ pub extern "C" fn test_with_raw_path() -> RawPath {
     RawPath::with_path(&path)
 }
 
+/// Get path info from C++ and return repackaged one.
 #[no_mangle]
 pub extern "C" fn test_echo_raw_path(
     turn: CInt,
@@ -46,6 +56,7 @@ pub extern "C" fn test_echo_raw_path(
     }
 }
 
+/// Generate sample `agent::PlayResult` and return `RawPlayResult::with_result`.
 #[no_mangle]
 pub extern "C" fn test_with_raw_play_result(allocator: AllocatorType<RawPath>) -> RawPlayResult {
     let mut vec = Vec::new();
@@ -74,6 +85,7 @@ pub extern "C" fn test_with_raw_play_result(allocator: AllocatorType<RawPath>) -
     RawPlayResult::with_result(&result, &alloc)
 }
 
+/// Get play result from C++ and return repackaged one.
 #[no_mangle]
 pub extern "C" fn test_echo_raw_play_result(
     winner: CInt,
@@ -108,6 +120,7 @@ pub extern "C" fn test_echo_raw_play_result(
     RawPlayResult::with_result(&result, &alloc)
 }
 
+/// Generate sample `Vec<i32>` and return `RawVec::with_vec`.
 #[no_mangle]
 pub extern "C" fn test_with_raw_vec(allocator: AllocatorType<CInt>) -> RawVec<CInt> {
     let vec = vec![0, 1, 2, 3, 4, 5];
@@ -115,6 +128,7 @@ pub extern "C" fn test_with_raw_vec(allocator: AllocatorType<CInt>) -> RawVec<CI
     RawVec::with_vec(vec, &alloc)
 }
 
+/// Get int array from C++ and return repackaged one.
 #[no_mangle]
 pub extern "C" fn test_echo_raw_vec(
     ptr: *const CInt,
@@ -130,6 +144,7 @@ pub extern "C" fn test_echo_raw_vec(
     RawVec::with_vec(vec, &alloc)
 }
 
+/// Get boards and callback then return the evaluation from CppEval
 #[no_mangle]
 pub extern "C" fn test_echo_cppeval(
     turn: CInt,
