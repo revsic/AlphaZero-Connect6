@@ -72,6 +72,14 @@ py_module_initializer!(
                 )
             )
         ));
+        try!(m.add(
+            py,
+            "test_echo_pyeval",
+            py_fn!(
+                py,
+                test_echo_pyeval(object: PyObject, player: PyObject, boards: PyObject)
+            )
+        ));
         Ok(())
     }
 );
@@ -183,4 +191,54 @@ fn play_with(
     let mut multi_policy = policy::MultiPolicy::new(&mut py_policy, &mut io_policy);
     let result = agent::Agent::debug(&mut multi_policy).play();
     Ok(pybind::RunResultWrapper(&result.unwrap()).to_py_object(py))
+}
+
+fn test_echo_pyeval(
+    py: Python,
+    object: PyObject,
+    player: PyObject,
+    boards: PyObject,
+) -> PyResult<PyTuple> {
+    use connect6::{game::Player, policy::Evaluator, BOARD_CAPACITY, BOARD_SIZE};
+
+    let player = Player::from(player.extract::<i32>(py).ok().unwrap());
+    let boards = pybind::pyiter_to_vec::<i32>(py, boards).unwrap();
+
+    let len = boards.len() / BOARD_CAPACITY;
+    let mut recovered = Vec::new();
+
+    let mut idx = 0;
+    for _ in 0..len {
+        let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
+        for j in 0..BOARD_SIZE {
+            for k in 0..BOARD_SIZE {
+                board[j][k] = Player::from(boards[idx]);
+                idx += 1;
+            }
+        }
+        recovered.push(board);
+    }
+
+    let pyeval = pybind::PyEval::new(object);
+    let (value, policy) = pyeval.eval(player, &recovered).unwrap();
+
+    let value = value
+        .into_iter()
+        .map(|x| x.to_py_object(py))
+        .collect::<Vec<_>>();
+    let value = value.into_py_object(py).into_object();
+
+    let float_seq = |x: [[f32; BOARD_SIZE]; BOARD_SIZE]| {
+        let mut ordered = Vec::with_capacity(BOARD_CAPACITY);
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                ordered.push(x[i][j].to_py_object(py));
+            }
+        }
+        ordered
+    };
+
+    let policy = policy.into_iter().map(float_seq).collect::<Vec<_>>();
+    let policy = policy.into_py_object(py).into_object();
+    Ok(PyTuple::new(py, vec![value, policy].as_slice()))
 }

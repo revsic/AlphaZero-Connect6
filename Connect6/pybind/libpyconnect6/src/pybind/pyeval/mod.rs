@@ -17,7 +17,7 @@
 //! assert!(result.is_ok());
 //! ```
 //!
-use pybind::{pylist_from_multiple, pyseq_to_vec};
+use pybind::{pyiter_to_vec, pylist_from_multiple};
 
 use connect6::{game, policy, Board, BOARD_SIZE};
 use cpython::{ObjectProtocol, PyObject, PySequence, PyTuple, Python, ToPyObject};
@@ -86,14 +86,14 @@ impl policy::Evaluator for PyEval {
         let policy = pytuple.get_item(py, 1);
 
         // convert python object to proper vector
-        let value_vec = pyseq_to_vec(py, value)?;
+        let value_vec = pyiter_to_vec::<f32>(py, value)?;
         let policy_iter = policy
             .cast_into::<PySequence>(py)
             .ok()?
             .iter(py)
             .ok()?
             .filter_map(|x| x.ok()) // pyiter returns iterator of Result
-            .filter_map(|x| pyseq_to_vec(py, x));
+            .filter_map(|x| pyiter_to_vec::<f32>(py, x));
 
         let mut policy_vec = Vec::with_capacity(board.len());
         for policy in policy_iter {

@@ -8,21 +8,20 @@ use cpython::*;
 #[cfg(test)]
 mod tests;
 
-/// Convert PySequence to Vec<f32>
+/// Convert PyIterator to Vec
 ///
 /// # Panics
-/// - If given `obj` couldn't cast into `PySequence`.
-/// - If casted `obj` couldn't generate `PyIterator`.
-pub fn pyseq_to_vec(py: Python, obj: PyObject) -> Option<Vec<f32>> {
-    let pyseq = must!(
-        obj.cast_into::<PySequence>(py),
-        "pyseq_to_vec couldn't cast obj into pyseq"
-    );
-    let pyiter = must!(pyseq.iter(py), "pyseq_to_vec couldn't get iter from pyseq");
-    let vec = pyiter
+/// - If given `obj` couldn't generate `PyIterator`.
+pub fn pyiter_to_vec<T>(py: Python, obj: PyObject) -> Option<Vec<T>>
+where
+    for<'a> T: FromPyObject<'a>,
+{
+    let vec = obj
+        .iter(py)
+        .ok()?
         .filter_map(|x| x.ok())
-        .filter_map(|x| x.extract::<f32>(py).ok())
-        .collect::<Vec<f32>>();
+        .filter_map(|x| x.extract(py).ok())
+        .collect::<Vec<T>>();
     Some(vec)
 }
 

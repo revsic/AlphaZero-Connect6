@@ -2,7 +2,7 @@ use super::*;
 use connect6::{game::Player, BOARD_CAPACITY};
 
 #[test]
-fn test_pyseq_to_vec() {
+fn test_pyiter_to_vec() {
     let gil = Python::acquire_gil();
     let py = gil.python();
 
@@ -12,14 +12,14 @@ fn test_pyseq_to_vec() {
         .collect::<Vec<PyObject>>();
 
     let list = PyList::new(py, data.as_slice()).into_object();
-    let vec = pyseq_to_vec(py, list);
+    let vec = pyiter_to_vec::<i32>(py, list);
     assert!(vec.is_some());
-    assert_eq!(vec.unwrap(), [1., 2., 3., 4., 5.]);
+    assert_eq!(vec.unwrap(), [1, 2, 3, 4, 5]);
 
     let tuple = PyTuple::new(py, data.as_slice()).into_object();
-    let vec = pyseq_to_vec(py, tuple);
+    let vec = pyiter_to_vec::<i32>(py, tuple);
     assert!(vec.is_some());
-    assert_eq!(vec.unwrap(), [1., 2., 3., 4., 5.]);
+    assert_eq!(vec.unwrap(), [1, 2, 3, 4, 5]);
 }
 
 #[test]
@@ -32,14 +32,14 @@ fn test_pylist_from_board() {
     board[1][0] = Player::Black;
 
     let pylist = pylist_from_board(py, &board);
-    let seq = pyseq_to_vec(py, pylist);
+    let seq = pyiter_to_vec::<i32>(py, pylist);
     assert!(seq.is_some());
 
     let seq = seq.unwrap();
     let mut recovered = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
     for i in 0..BOARD_SIZE {
         for j in 0..BOARD_SIZE {
-            let player = match seq[i * BOARD_SIZE + j] as i32 {
+            let player = match seq[i * BOARD_SIZE + j] {
                 -1 => Player::Black,
                 0 => Player::None,
                 1 => Player::White,
@@ -74,13 +74,13 @@ fn test_pylist_from_multiple() {
     let vec = res
         .unwrap()
         .filter_map(|x| x.ok())
-        .filter_map(|x| pyseq_to_vec(py, x))
+        .filter_map(|x| pyiter_to_vec::<i32>(py, x))
         .collect::<Vec<_>>();
 
     assert_eq!(vec.len(), 2);
     assert_eq!(vec[0].len(), BOARD_CAPACITY);
     assert_eq!(vec[1].len(), BOARD_CAPACITY);
 
-    assert_eq!(vec[0], vec![Player::None as i32 as f32; BOARD_CAPACITY]);
-    assert_eq!(vec[1], vec![Player::Black as i32 as f32; BOARD_CAPACITY]);
+    assert_eq!(vec[0], vec![Player::None as i32; BOARD_CAPACITY]);
+    assert_eq!(vec[1], vec![Player::Black as i32; BOARD_CAPACITY]);
 }
