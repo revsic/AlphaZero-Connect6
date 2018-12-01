@@ -3,6 +3,7 @@ project(test_cppbind)
 
 set(CMAKE_CXX_STANDARD 17)
 set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../target/release)
+set(EXTERNAL_PATH ${CMAKE_SOURCE_DIR}/../../../External)
 
 if(WIN32)
     set(LIBCONNECT6 ${LIBCONNECT6_PATH}/cppconnect6.lib)
@@ -12,6 +13,7 @@ endif()
 
 add_executable(test_cppbind main.cpp)
 target_link_libraries(test_cppbind ${LIBCONNECT6})
+target_include_directories(test_cppbind PRIVATE ${EXTERNAL_PATH}/Catch2/single_include)
 
 if(APPLE)
     target_link_libraries(test_cppbind "-framework Security")

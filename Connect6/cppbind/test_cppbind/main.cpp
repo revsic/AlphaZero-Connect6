@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "../connect6.hpp"
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 #include <random>
 
 void callback(int player, float* values, float* policies, int len_) {
