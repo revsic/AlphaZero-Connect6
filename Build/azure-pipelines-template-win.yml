@@ -15,6 +15,7 @@ jobs:
   - script: |
       git submodule init
       git submodule update
+    displayName: git submodule init
   - script: |
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
