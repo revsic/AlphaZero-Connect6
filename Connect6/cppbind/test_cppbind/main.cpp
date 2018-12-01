@@ -207,7 +207,7 @@ void callback_x2(int player, float* values, float* policies, int len_) {
 
     size_t len = len_;    
     for (size_t i = 0; i < len; ++i) {
-        values[i] = i;
+        values[i] = i + player;
     }
 
     for (size_t i = 0; i < len; ++i) {
@@ -245,7 +245,7 @@ TEST_CASE("Echo CppEval", "[CppEval]") {
     REQUIRE(res.len == len + len * BOARD_CAPACITY);
 
     for (size_t i = 0; i < len; ++i) {
-        REQUIRE(res.vec[i] == i);
+        REQUIRE(res.vec[i] == i + turn);
     }
 
     idx = 0;
