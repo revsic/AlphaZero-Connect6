@@ -1,10 +1,10 @@
 //! Test implementation for Rust-C++ FFI.
-//! 
+//!
 //! Test method is implemented in Rust, and it could be called on C++.
-//! All functions are not mangled with extern "C" and those are declared in 
+//! All functions are not mangled with extern "C" and those are declared in
 //! [connect6.hpp](https://github.com/revsic/AlphaZero-Connect6/blob/master/Connect6/cppbind/connect6.hpp)
 //! Reference [test_cppbind](https://github.com/revsic/AlphaZero-Connect6/blob/master/Connect6/cppbind/test_cppbind/main.cpp).
-//! 
+//!
 use connect6::{agent, game::Player, policy::Evaluator, BOARD_CAPACITY, BOARD_SIZE};
 use cppbind::*;
 
