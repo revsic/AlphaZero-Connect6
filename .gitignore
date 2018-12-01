@@ -8,3 +8,4 @@ summary
 .vscode
 build
 dist
+.pytest_cache
