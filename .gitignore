@@ -1,11 +1,15 @@
-.idea/
+# python
 *.pyd
 __pycache__
+.pytest_cache
+
+# tensorflow
 ckpt
 summary
-*.pb
-*cmake-build-debug*
+
+# vscode
 .vscode
 build
-dist
-.pytest_cache
+
+# libtorch
+External/libtorch/*
