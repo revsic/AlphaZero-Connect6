@@ -1,0 +1,1 @@
+msbuild .\build\cpp_weighted.sln /p:configuration=Release
