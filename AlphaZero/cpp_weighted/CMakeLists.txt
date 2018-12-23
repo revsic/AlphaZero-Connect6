@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(cpp_weighted)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 add_executable(cpp_weighted main.cpp)
 
-set(ROOT_DIR ${CMAKE_SOURCE_DIR}/../../..)
+set(ROOT_DIR ${CMAKE_SOURCE_DIR}/../..)
 set(CONNECT6 ${ROOT_DIR}/Connect6)
 set(TORCH ${ROOT_DIR}/External/libtorch)
 
