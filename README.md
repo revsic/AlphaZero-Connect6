@@ -43,7 +43,7 @@ cd Connect6/pybind/test_pybind; pytest;
 
 Sample program play connect6 with AlphaZero policy and random evaluator.
 
-For more complicated example, reference [weighted](AlphaZero/weighted)
+For more complicated example, reference [weighted](AlphaZero/py_weighted)
 ```
 cd Connect6/sample && python -m python.random_policy
 ```
