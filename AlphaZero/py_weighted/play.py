@@ -3,7 +3,7 @@ import tensorflow as tf
 from datetime import datetime
 
 import pyconnect6
-from weighted.model import WeightedPolicy
+from py_weighted.model import WeightedPolicy
 
 flags = tf.app.flags
 flags.DEFINE_integer('board_size', 15, 'int, size of the board, default 15')

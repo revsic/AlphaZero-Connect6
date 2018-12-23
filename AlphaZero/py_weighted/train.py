@@ -3,8 +3,8 @@ import tensorflow as tf
 from datetime import datetime
 
 import pyconnect6
-from utils.buffer import Buffer
-from weighted.model import WeightedPolicy
+from buffer import Buffer
+from py_weighted.model import WeightedPolicy
 
 flags = tf.app.flags
 flags.DEFINE_float('learning_rate', 1e-3, 'float, learning rate, default 1e-3.')
