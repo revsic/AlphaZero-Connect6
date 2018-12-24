@@ -148,6 +148,14 @@ namespace Connect6 {
             return position;
         };
 
+        int* GetBoard() {
+            return board.get();
+        }
+
+        const int* GetBoard() const {
+            return board.get();
+        }
+
         int* operator[](size_t idx) {
             return &board[idx * BOARD_SIZE];
         }
