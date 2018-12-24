@@ -4,3 +4,6 @@
 [submodule "External/cxxopts"]
 	path = External/cxxopts
 	url = https://github.com/jarro2783/cxxopts
+[submodule "External/json"]
+	path = External/json
+	url = https://github.com/nlohmann/json
