@@ -1,7 +1,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
-#include "connect6.hpp"
+#include <connect6.hpp>
 #include <torch/torch.h>
 
 struct WeightedPolicy : torch::nn::Module {
