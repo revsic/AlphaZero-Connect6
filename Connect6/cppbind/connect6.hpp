@@ -231,25 +231,58 @@ namespace Connect6 {
         std::unique_ptr<Path[]> paths;
     };
 
-    std::vector<GameResult> self_play(Callback callback,
-                                      int num_simulation,
-                                      float epsilon,
-                                      double dirichlet_alpha,
-                                      float c_puct,
-                                      bool debug,
-                                      int num_game_thread)
+    struct Param {
+        int num_simulation = 800;
+        float epsilon = 0.25;
+        double dirichlet_alpha = 0.03;
+        float c_puct = 1;
+        bool debug = false;
+        int num_game_thread = 11;
+
+        Param&& NumSimulation(int num_simulation) && {
+            this->num_simulation = num_simulation;
+            return std::move(*this);
+        }
+
+        Param&& Epsilon(float epsilon) && {
+            this->epsilon = epsilon;
+            return std::move(*this);
+        }
+
+        Param&& DirichletAlpha(double dirichlet_alpha) && {
+            this->dirichlet_alpha = dirichlet_alpha;
+            return std::move(*this);
+        }
+
+        Param&& CPuct(float c_puct) && {
+            this->c_puct = c_puct;
+            return std::move(*this);
+        }
+
+        Param&& Debug(bool debug) && {
+            this->debug = debug;
+            return std::move(*this);
+        }
+
+        Param&& NumGameThread(int num_game_thread) && {
+            this->num_game_thread = num_game_thread;
+            return std::move(*this);
+        }
+    };
+
+    std::vector<GameResult> self_play(Callback callback, const Param& param)
     {
         namespace FFI = Connect6_RustFFI;
         FFI::Vec result = FFI::cpp_self_play(
                 callback,
                 &FFI::allocator<FFI::Path>,
                 &FFI::allocator<FFI::PlayResult>,
-                num_simulation,
-                epsilon,
-                dirichlet_alpha,
-                c_puct,
-                debug,
-                num_game_thread);
+                param.num_simulation,
+                param.epsilon,
+                param.dirichlet_alpha,
+                param.c_puct,
+                param.debug,
+                param.num_game_thread);
 
         size_t len = result.len;
 

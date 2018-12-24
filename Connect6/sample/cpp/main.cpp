@@ -28,7 +28,11 @@ void callback(int player, float* values, float* policies, int len_) {
 }
 
 int main() {
-    auto result = Connect6::self_play(callback, 2, 0.25, 0.03, 1, true, 1);
+    auto param = Connect6::Param()
+        .NumSimulation(2)
+        .NumGameThread(1)
+        .Debug(true);
+    auto result = Connect6::self_play(callback, param);
     std::cout << "Winner : " << to_string(result[0].GetWinner()) << std::endl;
 
     return 0;

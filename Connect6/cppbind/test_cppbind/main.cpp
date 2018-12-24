@@ -29,7 +29,10 @@ void callback(int player, float* values, float* policies, int len_) {
 }
 
 TEST_CASE("Check result length", "[RandomPolicy]") {
-    auto result = Connect6::self_play(callback, 2, 0.25, 0.03, 1, false, 2);
+    auto param = Connect6::Param()
+        .NumSimulation(2)
+        .NumGameThread(2);
+    auto result = Connect6::self_play(callback, param);
     REQUIRE(result.size() == 2);
 }
 
