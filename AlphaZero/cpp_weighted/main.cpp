@@ -3,8 +3,10 @@
 
 #include <connect6.hpp>
 #include <cxxopts.hpp>
+#include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 
 WeightedPolicy model;
@@ -42,6 +44,29 @@ void log(T&&... msg) {
     (std::cout << ... << std::forward<T>(msg)) << std::endl;
 }
 
+void dump_param(const std::string& path, const Connect6::Param& param) {
+    std::ofstream(path + ".json") << nlohmann::json {
+        { "num_simulation", param.num_simulation },
+        { "epsilon", param.epsilon },
+        { "dirichlet_alpha", param.dirichlet_alpha },
+        { "c_puct", param.c_puct },
+        { "debug", param.debug },
+        { "num_game_thread", param.num_game_thread }
+    };
+}
+
+Connect6::Param load_param(const std::string& path) {
+    nlohmann::json loaded;
+    std::ifstream(path + ".json") >> loaded;
+    return Connect6::Param()
+        .NumSimulation(loaded["num_simulation"])
+        .Epsilon(loaded["epsilon"])
+        .DirichletAlpha(loaded["dirichlet_alpha"])
+        .CPuct(loaded["c_puct"])
+        .Debug(loaded["debug"])
+        .NumGameThread(loaded["num_game_thread"]);
+}
+
 void test() {
     torch::manual_seed(0);
 
@@ -56,11 +81,24 @@ void test() {
 }
 
 void train(const cxxopts::ParseResult& result) {
+    namespace fs = std::filesystem;
+
     model.train();
 
     int load_ckpt = result["load_ckpt"].as<int>();
-    if (load_ckpt > 0) {
-        // TODO : load ckpt (result["load_ckpt"], result["ckpt_dir"], result["name"])
+    std::string name = result["name"].as<std::string>();
+    fs::path ckpt_path = fs::path(result["ckpt_dir"].as<std::string>()) / name;
+
+    Connect6::Param param;
+    int num_game_thread = result["num_game_thread"].as<int>();
+
+    if (load_ckpt > 0 && fs::exists(ckpt_path)) {
+        param = load_param(ckpt_path.string());
+        torch::load(model, ckpt_path.string() + std::to_string(load_ckpt) + ".pt");
+    }
+    else {
+        param.num_simulation = result["num_simulation"].as<int>();
+        param.num_game_thread = num_game_thread;
     }
 
     torch::optim::SGD optimizer(
@@ -69,13 +107,8 @@ void train(const cxxopts::ParseResult& result) {
     
     ReplayBuffer buffer(result["max_buffer"].as<int>(), result["mini_batch"].as<int>());
 
-    int num_game_thread = result["num_game_thread"].as<int>();
-    auto param = Connect6::Param()
-        .NumSimulation(result["num_simulation"].as<int>())
-        .NumGameThread(num_game_thread);
-
     int num_game = 0;
-    int epoch = 0;
+    int epoch = load_ckpt;
 
     int start_train = result["start_train"].as<int>();
     int batch_size = result["batch_size"].as<int>();
@@ -104,7 +137,9 @@ void train(const cxxopts::ParseResult& result) {
             // TODO : create summary (result["summary_dir"], result["name"])
 
             if (epoch % ckpt_interval == 0) {
-                // TODO : create checkpoint (result["ckpt_dir"], result["name"])
+                torch::save(model, ckpt_path.string() + std::to_string(epoch) + ".pt");
+                dump_param(ckpt_path.string(), param);
+                log("ckpt saved");
             }
 
             log("epoch#", epoch);
