@@ -1,5 +1,10 @@
-#include "connect6.hpp"
 #include "model.hpp"
+#include "ReplayBuffer.hpp"
+
+#include <connect6.hpp>
+#include <cxxopts.hpp>
+
+#include <chrono>
 #include <iostream>
 
 WeightedPolicy model;
@@ -28,17 +33,129 @@ void callback(int player, float* values, float* policies, int len) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    torch::manual_seed(0);
+template <typename... T>
+void log(T&&... msg) {
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
 
-    if (torch::cuda::is_available()) {
-        std::cout << "CUDA available! Training on GPU" << std::endl;
-        device = torch::Device(torch::kCUDA);
-    }
-    model.to(device);
+    std::cout << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S] ");
+    (std::cout << ... << std::forward<T>(msg)) << std::endl;
+}
+
+void test() {
+    torch::manual_seed(0);
 
     torch::NoGradGuard no_grad;
     model.eval();
 
-    Connect6::self_play(callback, 2, 0.25, 0.03, 1, true, 1);
+    auto param = Connect6::Param()
+        .NumSimulation(2)
+        .Debug(true)
+        .NumGameThread(11);
+    Connect6::self_play(callback, param);
+}
+
+void train(const cxxopts::ParseResult& result) {
+    model.train();
+
+    int load_ckpt = result["load_ckpt"].as<int>();
+    if (load_ckpt > 0) {
+        // TODO : load ckpt (result["load_ckpt"], result["ckpt_dir"], result["name"])
+    }
+
+    torch::optim::SGD optimizer(
+        model.parameters(), 
+        torch::optim::SGDOptions(result["lr"].as<float>()).momentum(result["momentum"].as<float>()));
+    
+    ReplayBuffer buffer(result["max_buffer"].as<int>(), result["mini_batch"].as<int>());
+
+    int num_game_thread = result["num_game_thread"].as<int>();
+    auto param = Connect6::Param()
+        .NumSimulation(result["num_simulation"].as<int>())
+        .NumGameThread(num_game_thread);
+
+    int num_game = 0;
+    int epoch = 0;
+
+    int start_train = result["start_train"].as<int>();
+    int batch_size = result["batch_size"].as<int>();
+    int ckpt_interval = result["ckpt_inverval"].as<int>();
+
+    while (true) {
+        num_game += num_game_thread;
+        auto results = Connect6::self_play(callback, param);
+        for (Connect6::GameResult& res : results) {
+            buffer.push_game(std::move(res));
+        }
+
+        log("self-play async game#", num_game);
+
+        if (buffer.size() > start_train) {
+            epoch += 1;
+            for (int i = 0; i < batch_size; ++i) {
+                auto[winners, players, boards, poses] = buffer.sample(device);
+                
+                optimizer.zero_grad();
+                auto loss = model.loss(winners, players, boards, poses);
+                loss.backward();
+                optimizer.step();
+            }
+
+            // TODO : create summary (result["summary_dir"], result["name"])
+
+            if (epoch % ckpt_interval == 0) {
+                // TODO : create checkpoint (result["ckpt_dir"], result["name"])
+            }
+
+            log("epoch#", epoch);
+        }
+    }
+}
+
+void play(const cxxopts::ParseResult& result) {
+
+}
+
+int main(int argc, char* argv[]) {
+    cxxopts::Options options("cpp_weighted", "torch c++ implementation of combined mcts policy");
+    options.add_options()
+        ("test", "run cpp_weighted in test mode")
+        ("train", "run cpp_weighted in train mode")
+        ("play", "play with cpp_weighted")
+        ("c, cuda", "use cuda for torch")
+        ("lr", "float, learning rate, default 1e-3", cxxopts::value<float>()->default_value("1e-3"))
+        ("momentum", "float, momentum, default 0.9", cxxopts::value<float>()->default_value("0.9"))
+        ("num_simulation", "int, number of simulation in mcts, default 800", cxxopts::value<int>()->default_value("800"))
+        ("num_game_thread", "int, number of game threads, default 11", cxxopts::value<int>()->default_value("11"))
+        ("max_buffer", "int, max size of buffer, default 100000", cxxopts::value<int>()->default_value("100000"))
+        ("start_train", "int, start train when sizeof buffer over given, default 40000", cxxopts::value<int>()->default_value("40000"))
+        ("batch_size", "int, size of batch, default 1024", cxxopts::value<int>()->default_value("1024"))
+        ("mini_batch", "int, size of mini-batch, default 2048", cxxopts::value<int>()->default_value("2048"))
+        ("ckpt_interval", "int, interval for writing checkpoint, default 10", cxxopts::value<int>()->default_value("10"))
+        ("load_ckpt", "int, load ckpt with given epoch, if zero, train new, default 0", cxxopts::value<int>()->default_value("0"))
+        ("name", "string, name of model, default weighted", cxxopts::value<std::string>()->default_value("weighted"))
+        ("summary_dir", "string, dirname for saving summary, default ./summary", cxxopts::value<std::string>()->default_value("./summary"))
+        ("ckpt_dir", "string, dirname for saving checkpoint, default ./ckpt_dir", cxxopts::value<std::string>()->default_value("./ckpt_dir"))
+    ;
+
+    auto result = options.parse(argc, argv);
+    if (result.count("cuda") > 0 && torch::cuda::is_available()) {
+        std::cout << "Cuda available, run on cuda" << std::endl;
+        device = torch::Device(torch::kCUDA);
+    }
+    model.to(device);
+
+    if (result.count("test")) {
+        test();
+    }
+
+    if (result.count("train")) {
+        train(result);
+    }
+
+    if (result.count("play")) {
+        play(result);
+    }
+
+    return 0;
 }
