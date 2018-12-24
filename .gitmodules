@@ -1,3 +1,6 @@
 [submodule "External/Catch2"]
 	path = External/Catch2
 	url = https://github.com/catchorg/Catch2
+[submodule "External/cxxopts"]
+	path = External/cxxopts
+	url = https://github.com/jarro2783/cxxopts
