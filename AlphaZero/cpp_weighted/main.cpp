@@ -8,7 +8,7 @@
 #include <chrono>
 #include <iostream>
 
-WeightedPolicy model;
+torch::nn::ModuleHolder<WeightedPolicy> model;
 torch::Device device(torch::kCPU);
 
 void callback(int player, float* values, float* policies, int len) {
@@ -21,7 +21,7 @@ void callback(int player, float* values, float* policies, int len) {
     torch::Tensor board_tensor = 
         torch::from_blob(policies, { len, static_cast<int>(BOARD_CAPACITY) }, torch::kFloat32).to(device);
 
-    auto[policy_res, value_res] = model.forward(player_tensor, board_tensor);
+    auto[policy_res, value_res] = model->forward(player_tensor, board_tensor);
 
     float* value_ptr = value_res.to(torch::kCPU).data<float>();
     for (size_t i = 0; i < len; ++i) {
@@ -78,7 +78,7 @@ void test() {
     torch::manual_seed(0);
 
     torch::NoGradGuard no_grad;
-    model.eval();
+    model->eval();
 
     auto param = Connect6::Param()
         .NumSimulation(2)
@@ -88,7 +88,7 @@ void test() {
 }
 
 void train(const cxxopts::ParseResult& result) {
-    model.train();
+    model->train();
 
     int load_ckpt = result["load_ckpt"].as<int>();
     std::string name = result["name"].as<std::string>();
@@ -107,7 +107,7 @@ void train(const cxxopts::ParseResult& result) {
     }
 
     torch::optim::SGD optimizer(
-        model.parameters(), 
+        model->parameters(), 
         torch::optim::SGDOptions(result["lr"].as<float>()).momentum(result["momentum"].as<float>()));
     
     ReplayBuffer buffer(result["max_buffer"].as<int>(), result["mini_batch"].as<int>());
@@ -134,7 +134,7 @@ void train(const cxxopts::ParseResult& result) {
                 auto[winners, players, boards, poses] = buffer.sample(device);
                 
                 optimizer.zero_grad();
-                auto loss = model.loss(winners, players, boards, poses);
+                auto loss = model->loss(winners, players, boards, poses);
                 loss.backward();
                 optimizer.step();
             }
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Cuda available, run on cuda" << std::endl;
         device = torch::Device(torch::kCUDA);
     }
-    model.to(device);
+    model->to(device);
 
     if (result.count("test")) {
         test();
