@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 
 #include <chrono>
-#include <filesystem>
 #include <iostream>
 
 WeightedPolicy model;
@@ -42,6 +41,14 @@ void log(T&&... msg) {
 
     std::cout << std::put_time(std::localtime(&time), "[%Y-%m-%d %H:%M:%S] ");
     (std::cout << ... << std::forward<T>(msg)) << std::endl;
+}
+
+std::string sep() {
+#ifdef __liinux__
+    return "/";
+#else
+    return "\\";
+#endif
 }
 
 void dump_param(const std::string& path, const Connect6::Param& param) {
@@ -81,20 +88,18 @@ void test() {
 }
 
 void train(const cxxopts::ParseResult& result) {
-    namespace fs = std::filesystem;
-
     model.train();
 
     int load_ckpt = result["load_ckpt"].as<int>();
     std::string name = result["name"].as<std::string>();
-    fs::path ckpt_path = fs::path(result["ckpt_dir"].as<std::string>()) / name;
+    std::string ckpt_path = result["ckpt_dir"].as<std::string>() + sep() +  name;
 
     Connect6::Param param;
     int num_game_thread = result["num_game_thread"].as<int>();
 
-    if (load_ckpt > 0 && fs::exists(ckpt_path)) {
-        param = load_param(ckpt_path.string());
-        torch::load(model, ckpt_path.string() + std::to_string(load_ckpt) + ".pt");
+    if (load_ckpt > 0) {
+        param = load_param(ckpt_path);
+        torch::load(model, ckpt_path+ std::to_string(load_ckpt) + ".pt");
     }
     else {
         param.num_simulation = result["num_simulation"].as<int>();
@@ -137,8 +142,8 @@ void train(const cxxopts::ParseResult& result) {
             // TODO : create summary (result["summary_dir"], result["name"])
 
             if (epoch % ckpt_interval == 0) {
-                torch::save(model, ckpt_path.string() + std::to_string(epoch) + ".pt");
-                dump_param(ckpt_path.string(), param);
+                torch::save(model, ckpt_path + std::to_string(epoch) + ".pt");
+                dump_param(ckpt_path, param);
                 log("ckpt saved");
             }
 
