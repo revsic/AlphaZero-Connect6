@@ -8,10 +8,9 @@ set(ROOT_DIR ${CMAKE_SOURCE_DIR}/../..)
 set(CONNECT6 ${ROOT_DIR}/Connect6)
 set(EXTERNAL ${ROOT_DIR}/External)
 
-# Add prefix External
-set(CMAKE_PREFIX_PATH ${EXTERNAL})
-
 # Link LibTorch
+set(CMAKE_PREFIX_PATH ${EXTERNAL}/libtorch)
+
 find_package(Torch REQUIRED)
 target_link_libraries(cpp_weighted ${TORCH_LIBRARIES})
 
