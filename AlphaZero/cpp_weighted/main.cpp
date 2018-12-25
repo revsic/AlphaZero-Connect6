@@ -44,7 +44,7 @@ void log(T&&... msg) {
 }
 
 std::string sep() {
-#ifdef __liinux__
+#ifdef __linux__
     return "/";
 #else
     return "\\";
@@ -177,6 +177,8 @@ int main(int argc, char* argv[]) {
         ("summary_dir", "string, dirname for saving summary, default ./summary", cxxopts::value<std::string>()->default_value("./summary"))
         ("ckpt_dir", "string, dirname for saving checkpoint, default ./ckpt_dir", cxxopts::value<std::string>()->default_value("./ckpt_dir"))
     ;
+
+    std::cout << sep() << std::endl;
 
     auto result = options.parse(argc, argv);
     if (result.count("cuda") > 0 && torch::cuda::is_available()) {
