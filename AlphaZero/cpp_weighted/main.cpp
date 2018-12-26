@@ -163,7 +163,6 @@ void train(const cxxopts::ParseResult& result) {
     
                 optimizer.zero_grad();
                 auto loss = model->loss(winners, players, boards, poses);
-                std::cout << loss << std::endl;
                 loss.backward();
                 optimizer.step();
             }
