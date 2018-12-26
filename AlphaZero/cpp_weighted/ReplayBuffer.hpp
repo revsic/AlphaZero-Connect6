@@ -36,7 +36,7 @@ public:
         return num_data;
     }
 
-    auto sample() {
+    auto sample(const torch::Device& dev = torch::kCPU) {
         int n_sample = static_cast<int>(num_sample);
         auto winners = torch::empty({ n_sample }, torch::kFloat32);
         auto players = torch::empty({ n_sample }, torch::kFloat32);
@@ -61,7 +61,7 @@ public:
             poses[i] = static_cast<int>(row * Connect6::BOARD_SIZE + col);
         }
 
-        return std::make_tuple(winners, players, boards, poses);
+        return std::make_tuple(winners.to(dev), players.to(dev), boards.to(dev), poses.to(dev));
     }
 
 private:
