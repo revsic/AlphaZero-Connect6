@@ -45,14 +45,6 @@ void log(T&&... msg) {
     (std::cout << ... << msg) << std::endl;
 }
 
-std::string sep() {
-#ifdef __linux__
-    return "/";
-#else
-    return "\\";
-#endif
-}
-
 void dump_param(const std::string& path, const Connect6::Param& param) {
     std::ofstream(path + ".json") << nlohmann::json {
         { "num_simulation", param.num_simulation },
@@ -95,8 +87,8 @@ void train(const cxxopts::ParseResult& result) {
 
     int load_ckpt = std::max(result["load_ckpt"].as<int>(), 0);
     std::string name = result["name"].as<std::string>();
-    std::string ckpt_path = result["ckpt_dir"].as<std::string>() + sep() +  name;
-    std::string summary_path = result["summary_dir"].as<std::string>() + sep() + name + "_summary.csv";
+    std::string ckpt_path = result["ckpt_dir"].as<std::string>() + '/' +  name;
+    std::string summary_path = result["summary_dir"].as<std::string>() + '/' + name + "_summary.csv";
 
     std::ofstream summary(summary_path, std::ios::app);
 
