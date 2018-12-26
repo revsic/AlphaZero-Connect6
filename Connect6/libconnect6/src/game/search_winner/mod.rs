@@ -228,12 +228,16 @@ pub fn search(table: &Board) -> Player {
         for col in 0..BOARD_SIZE {
             match table[row][col] {
                 Player::None => continue,
-                Player::Black => if path_iter(&mut black, col) {
-                    return Player::Black;
-                },
-                Player::White => if path_iter(&mut white, col) {
-                    return Player::White;
-                },
+                Player::Black => {
+                    if path_iter(&mut black, col) {
+                        return Player::Black;
+                    }
+                }
+                Player::White => {
+                    if path_iter(&mut white, col) {
+                        return Player::White;
+                    }
+                }
             };
         }
     }

@@ -142,21 +142,23 @@ impl<'a> Agent<'a> {
             });
 
             match game.set(pos) {
-                Ok(result) => if self.debug {
-                    // log the selection info
-                    let (row, col) = result.position;
-                    let row = (row as u8 + 0x61) as char;
-                    let col = (col as u8 + 0x41) as char;
-                    println!(
-                        "{:?} ({}, {}), remain {}, {}.{} elapsed",
-                        result.player,
-                        row,
-                        col,
-                        result.num_remain,
-                        duration.as_secs(),
-                        duration.subsec_millis()
-                    );
-                },
+                Ok(result) => {
+                    if self.debug {
+                        // log the selection info
+                        let (row, col) = result.position;
+                        let row = (row as u8 + 0x61) as char;
+                        let col = (col as u8 + 0x41) as char;
+                        println!(
+                            "{:?} ({}, {}), remain {}, {}.{} elapsed",
+                            result.player,
+                            row,
+                            col,
+                            result.num_remain,
+                            duration.as_secs(),
+                            duration.subsec_millis()
+                        );
+                    }
+                }
                 Err(err) => return Err(format!("agent::play : {}", err)),
             };
 
