@@ -159,16 +159,16 @@ void train(const cxxopts::ParseResult& result) {
             epoch += 1;
             model->to(train_device);
             for (int i = 0; i < batch_size; ++i) {
-                auto[winners, players, boards, poses] = buffer.sample();
+                auto[winners, players, boards, poses] = buffer.sample(train_device);
     
                 optimizer.zero_grad();
-                auto loss = model->loss(winners, players, boards, poses);
+                auto loss = model->loss(winners, players, boards, poses, train_device);
                 loss.backward();
                 optimizer.step();
             }
 
-            auto[winners, players, boards, poses] = buffer.sample();
-            summary << model->loss(winners, players, boards, poses).item() << '\n';
+            auto[winners, players, boards, poses] = buffer.sample(train_device);
+            summary << model->loss(winners, players, boards, poses, train_device).item() << '\n';
 
             if (epoch % ckpt_interval == 0) {
                 torch::save(model, ckpt_path + std::to_string(epoch) + ".pt");
