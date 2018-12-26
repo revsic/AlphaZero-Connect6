@@ -178,8 +178,6 @@ int main(int argc, char* argv[]) {
         ("ckpt_dir", "string, dirname for saving checkpoint, default ./ckpt_dir", cxxopts::value<std::string>()->default_value("./ckpt_dir"))
     ;
 
-    std::cout << sep() << std::endl;
-
     auto result = options.parse(argc, argv);
     if (result.count("cuda") > 0 && torch::cuda::is_available()) {
         std::cout << "Cuda available, run on cuda" << std::endl;
