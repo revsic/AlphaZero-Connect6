@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
         ("load_ckpt", "int, load ckpt with given epoch, if zero, train new, default 0", cxxopts::value<int>()->default_value("0"))
         ("name", "string, name of model, default weighted", cxxopts::value<std::string>()->default_value("weighted"))
         ("summary_dir", "string, dirname for saving summary, default ./summary", cxxopts::value<std::string>()->default_value("./summary"))
-        ("ckpt_dir", "string, dirname for saving checkpoint, default ./ckpt_dir", cxxopts::value<std::string>()->default_value("./ckpt_dir"))
+        ("ckpt_dir", "string, dirname for saving checkpoint, default ./ckpt", cxxopts::value<std::string>()->default_value("./ckpt"))
     ;
 
     auto result = options.parse(argc, argv);
