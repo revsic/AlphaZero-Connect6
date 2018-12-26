@@ -29,11 +29,12 @@ struct WeightedPolicy : torch::nn::Module {
     torch::Tensor loss(torch::Tensor winner, 
                        torch::Tensor player, 
                        torch::Tensor board, 
-                       torch::Tensor policy) 
+                       torch::Tensor policy,
+                       const torch::Device& dev = torch::kCPU) 
     {
         auto[inf_policy, value] = forward(player, board);
         torch::Tensor value_loss = torch::mean((winner - value).pow(2));
-        torch::Tensor one_hot = torch::zeros({policy.size(0), static_cast<int>(Connect6::BOARD_CAPACITY)}).scatter_(1, policy.toType(torch::kLong).view({-1, 1}), 1);
+        torch::Tensor one_hot = torch::zeros({policy.size(0), static_cast<int>(Connect6::BOARD_CAPACITY)}).to(dev).scatter_(1, policy.toType(torch::kLong).view({-1, 1}), 1);
         torch::Tensor policy_loss = -torch::mean(torch::sum(one_hot * torch::log(inf_policy + 1e-7), -1));
         return value_loss + policy_loss;   
     }
