@@ -36,12 +36,12 @@ public:
         return num_data;
     }
 
-    auto sample(const torch::Device& dev) {
+    auto sample() {
         int n_sample = static_cast<int>(num_sample);
-        auto winners = torch::empty({ n_sample }, torch::kFloat32).to(dev);
-        auto players = torch::empty({ n_sample }, torch::kFloat32).to(dev);
-        auto boards = torch::empty({ n_sample, static_cast<int>(Connect6::BOARD_CAPACITY) }, torch::kFloat32).to(dev);
-        auto poses = torch::empty({ n_sample }, torch::kFloat32).to(dev);
+        auto winners = torch::empty({ n_sample }, torch::kFloat32);
+        auto players = torch::empty({ n_sample }, torch::kFloat32);
+        auto boards = torch::empty({ n_sample, static_cast<int>(Connect6::BOARD_CAPACITY) }, torch::kFloat32);
+        auto poses = torch::empty({ n_sample }, torch::kFloat32);
 
         std::random_device rd;
         std::default_random_engine gen(rd());
@@ -51,7 +51,7 @@ public:
             winners[i] = static_cast<int>(win);
             players[i] = static_cast<int>(path.GetTurn());
             
-            boards[i] = torch::from_blob(path.GetBoard(), { static_cast<int>(Connect6::BOARD_CAPACITY) }, torch::kFloat32).to(dev);
+            boards[i] = torch::from_blob(path.GetBoard(), { static_cast<int>(Connect6::BOARD_CAPACITY) }, torch::kFloat32);
 
             auto[row, col] = path.GetPos();
             poses[i] = static_cast<int>(row * Connect6::BOARD_SIZE + col);
