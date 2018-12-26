@@ -46,18 +46,22 @@ public:
         std::random_device rd;
         std::default_random_engine gen(rd());
 
+        float* board_ptr = boards.data<float>();
         for (size_t i = 0; i < num_sample; ++i) {
             auto&[win, path] = paths[gen() % num_data];
             winners[i] = static_cast<int>(win);
             players[i] = static_cast<int>(path.GetTurn());
             
-            boards[i] = torch::from_blob(path.GetBoard(), { static_cast<int>(Connect6::BOARD_CAPACITY) }, torch::kFloat32);
+            int* ptr = path.GetBoard();
+            for (size_t i = 0; i < Connect6::BOARD_CAPACITY; ++i) {
+                *board_ptr++ = static_cast<float>(*ptr++);
+            }
 
             auto[row, col] = path.GetPos();
             poses[i] = static_cast<int>(row * Connect6::BOARD_SIZE + col);
         }
 
-        return std::make_tuple(std::move(winners), std::move(players), std::move(boards), std::move(poses));
+        return std::make_tuple(winners, players, boards, poses);
     }
 
 private:
