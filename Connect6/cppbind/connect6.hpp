@@ -229,7 +229,7 @@ namespace Connect6 {
         }
 
         const Path* cend() const {
-            return paths.get();
+            return paths.get() + size;
         }
 
     private:

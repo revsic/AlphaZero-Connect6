@@ -97,7 +97,7 @@ void train(const cxxopts::ParseResult& result) {
 
     if (load_ckpt > 0) {
         param = load_param(ckpt_path);
-        torch::load(model, ckpt_path+ std::to_string(load_ckpt) + ".pt");
+        torch::load(model, ckpt_path + std::to_string(load_ckpt) + ".pt");
     }
     else {
         param.num_simulation = result["num_simulation"].as<int>();
