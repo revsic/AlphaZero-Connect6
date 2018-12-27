@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 
-torch::nn::ModuleHolder<WeightedPolicy> model;
+torch::nn::ModuleHolder<WeightedPolicy> model(10);
 torch::Device train_device(torch::kCPU);
 torch::Device inf_device(torch::kCPU);
 
