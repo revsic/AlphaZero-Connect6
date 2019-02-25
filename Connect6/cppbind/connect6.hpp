@@ -49,6 +49,13 @@ namespace Connect6_RustFFI {
                           float c_puct,
                           bool debug,
                           int num_game_thread);
+
+        PlayResult cpp_play_with(Callback callback,
+                                 AllocatorType<Path> alloc_path,
+                                 int num_simulation,
+                                 float epsilon,
+                                 double dirichlet_alpha,
+                                 float c_puct);
     }
 
     namespace Test_FFI {
@@ -304,7 +311,20 @@ namespace Connect6 {
         delete[] result.vec;
         return game_result;
     }
-}
 
+    GameResult play_with(Callback callback, const Param& param)
+    {
+        namespace FFI = Connect6_RustFFI;
+        FFI::PlayResult result = FFI::cpp_play_with(
+            callback,
+            &FFI::allocator<FFI::Path>,
+            param.num_simulation,
+            param.epsilon,
+            param.dirichlet_alpha,
+            param.c_puct);
+        
+        return GameResult(result);
+    }
+}
 
 #endif
