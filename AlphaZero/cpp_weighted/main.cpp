@@ -173,8 +173,27 @@ void train(const cxxopts::ParseResult& result) {
     }
 }
 
-void play(const cxxopts::ParseResult& result) {
+Connect6::GameResult play(const cxxopts::ParseResult& result) {
+    model->eval();
+    model->to(inf_device);
 
+    int load_ckpt = std::max(result["load_ckpt"].as<int>(), 0);
+    std::string name = result["name"].as<std::string>();
+    std::string ckpt_path = result["ckpt_dir"].as<std::string>() + '/' +  name;
+
+    Connect6::Param param;
+    int num_game_thread = result["num_game_thread"].as<int>();
+
+    if (load_ckpt > 0) {
+        param = load_param(ckpt_path);
+        torch::load(model, ckpt_path + std::to_string(load_ckpt) + ".pt");
+    }
+    else {
+        param.num_simulation = result["num_simulation"].as<int>();
+        param.num_game_thread = num_game_thread;
+    }
+
+    return Connect6::play_with(callback, param);
 }
 
 int main(int argc, char* argv[]) {
