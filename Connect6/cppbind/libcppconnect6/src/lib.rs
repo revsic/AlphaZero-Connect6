@@ -73,3 +73,46 @@ pub extern "C" fn cpp_self_play(
 
     cppbind::RawVec::with_vec(raw_result, &alloc_result)
 }
+
+/// Returns Connect6 results with given cpp policy and user selection as io_policy
+///
+/// # Arguments
+///
+/// * `callback` - callback for cppbind, void(int player, float* values, float* boards, int length).
+/// * `cpp_alloc_path` - cppbind::RawPath allocator for obtaining memory from cpp ffi.
+/// * `num_simulation` - i32, number of simulations for each turn.
+/// * `epsilon` - f32, ratio for applying exploit, exploration. lower epsilon, more exploit.
+/// * `dirichlet_alpha` - f64, hyperparameter for dirichlet distribution.
+/// * `c_puct` - f32, ratio of q-value and puct, hyperparameter of AlphaZero MCTS.
+///
+#[no_mangle]
+pub extern "C" fn cpp_play_with(
+    callback: cppbind::Callback,
+    cpp_alloc_path: cppbind::AllocatorType<cppbind::RawPath>,
+    num_simulation: i32,
+    epsilon: f32,
+    dirichlet_alpha: f64,
+    c_puct: f32,
+) -> cppbind::RawPlayResult {
+    use connect6::{agent, policy};
+
+    let param = policy::HyperParameter {
+        num_simulation,
+        epsilon,
+        dirichlet_alpha,
+        c_puct,
+    };
+
+    let cppeval = Box::new(cppbind::CppEval::new(callback));
+    let mut cpp_policy = policy::AlphaZero::with_param(cppeval, param);
+
+    let mut stdin = std::io::stdin();
+    let mut stdout = std::io::stdout();
+    let mut io_policy = policy::IoPolicy::new(&mut stdin, &mut stdout);
+
+    let mut multi_policy = policy::MultiPolicy::new(&mut cpp_policy, &mut io_policy);
+    let result = agent::Agent::debug(&mut multi_policy).play();
+
+    let alloc_path = cppbind::Allocator::new(cpp_alloc_path);
+    cppbind::RawPlayResult::with_result(&result.unwrap(), &alloc_path)
+}
