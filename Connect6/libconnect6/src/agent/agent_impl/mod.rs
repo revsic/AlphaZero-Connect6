@@ -22,6 +22,7 @@ use game::{Game, Player};
 use policy::Policy;
 use Board;
 
+use std::error::Error;
 use std::io;
 use std::time::Instant;
 
@@ -117,7 +118,7 @@ impl<'a> Agent<'a> {
     ///
     /// # Errors
     /// if selected position raise Err at [Game::play](../game/struct.Game.html#method.play).
-    pub fn play(&mut self) -> Result<PlayResult, String> {
+    pub fn play(&mut self) -> Result<PlayResult, Box<Error + Send>> {
         let mut winner = Player::None;
         let mut path = Vec::new();
         let game = &mut self.game;
@@ -159,7 +160,7 @@ impl<'a> Agent<'a> {
                         );
                     }
                 }
-                Err(err) => return Err(format!("agent::play : {}", err)),
+                Err(err) => return Err(err),
             };
 
             // if game end, method return the winner, or None.
