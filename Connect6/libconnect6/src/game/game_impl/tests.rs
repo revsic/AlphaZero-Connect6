@@ -29,12 +29,12 @@ fn test_play() {
 
     match game.set((0, 0)) {
         Ok(_) => assert!(false),
-        Err(e) => assert_eq!(e, "game::play already set position"),
+        Err(e) => assert_eq!(e.description(), "already set position"),
     };
 
     match game.set((BOARD_SIZE, BOARD_SIZE)) {
         Ok(_) => assert!(false),
-        Err(e) => assert_eq!(e, "game::play invalid position"),
+        Err(e) => assert_eq!(e.description(), "invalid position"),
     };
 }
 

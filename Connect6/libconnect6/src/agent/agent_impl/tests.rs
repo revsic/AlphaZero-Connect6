@@ -43,10 +43,7 @@ fn test_play_invalid_position() {
 
     match result.unwrap() {
         Ok(_) => assert!(false),
-        Err(err) => assert_eq!(
-            err,
-            String::from("agent::play : game::play invalid position")
-        ),
+        Err(err) => assert_eq!(err.description(), "invalid position"),
     }
 }
 
@@ -61,10 +58,7 @@ fn test_play_already_set_position() {
 
     match result.unwrap() {
         Ok(_) => assert!(false),
-        Err(err) => assert_eq!(
-            err,
-            String::from("agent::play : game::play already set position")
-        ),
+        Err(err) => assert_eq!(err.description(), "already set position"),
     }
 }
 
