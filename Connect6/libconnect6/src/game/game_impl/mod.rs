@@ -61,6 +61,7 @@ impl SetResult {
     }
 }
 
+/// Error for invalid position of setting stone on game Connect6.
 #[derive(Debug, Clone, Copy)]
 struct InvalidPositionError {
     row: usize,
@@ -79,6 +80,7 @@ impl error::Error for InvalidPositionError {
     }
 }
 
+/// Error for already set position on game Connect6.
 #[derive(Debug, Clone, Copy)]
 struct AlreadySetPositionError {
     row: usize,
