@@ -14,6 +14,8 @@
 use game::Player;
 use {Board, BOARD_SIZE};
 
+use std::error;
+use std::fmt;
 use std::io;
 
 #[cfg(test)]
@@ -59,7 +61,41 @@ impl SetResult {
     }
 }
 
-type Msg = &'static str;
+#[derive(Debug, Clone, Copy)]
+struct InvalidPositionError {
+    row: usize,
+    col: usize,
+}
+
+impl fmt::Display for InvalidPositionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid position ({}, {})", self.row, self.col)
+    }
+}
+
+impl error::Error for InvalidPositionError {
+    fn description(&self) -> &str {
+        "invalid position"
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AlreadySetPositionError {
+    row: usize,
+    col: usize,
+}
+
+impl fmt::Display for AlreadySetPositionError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "already set position ({}, {})", self.row, self.col)
+    }
+}
+
+impl error::Error for AlreadySetPositionError {
+    fn description(&self) -> &str {
+        "already set position"
+    }
+}
 
 /// Implementation of Game Connect6
 ///
@@ -107,15 +143,15 @@ impl Game {
     /// # Errors
     /// 1. If given position out of board.
     /// 2. If other stone place already in given position.
-    pub fn set(&mut self, pos: (usize, usize)) -> Result<SetResult, Msg> {
+    pub fn set(&mut self, pos: (usize, usize)) -> Result<SetResult, Box<error::Error + Send>> {
         let (row, col) = pos;
         // position param validation
         if row >= BOARD_SIZE || col >= BOARD_SIZE {
-            return Err("game::play invalid position");
+            return Err(Box::new(InvalidPositionError { row, col }));
         }
         // in-board validation
         if self.board[row][col] != Player::None {
-            return Err("game::play already set position");
+            return Err(Box::new(AlreadySetPositionError { row, col }));
         }
         self.board[row][col] = self.turn;
 
