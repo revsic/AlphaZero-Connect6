@@ -196,3 +196,29 @@ pub extern "C" fn test_echo_cppeval(
     let alloc = Allocator::new(allocator);
     RawVec::with_vec(ret, &alloc)
 }
+
+#[no_mangle]
+pub extern "C" fn test_cpp_policy(
+    board_ptr: *const [[CFloat; BOARD_SIZE]; BOARD_SIZE],
+    callback: PolicyCallback,
+    allocator: AllocatorType<CInt>,
+) -> RawVec<CInt> {
+    let board_ref = unsafe { board_ptr.as_ref() }.unwrap();
+    let mut board = [[Player::None; BOARD_SIZE]; BOARD_SIZE];
+
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE {
+            board[i][j] = Player::from(board_ref[i][j] as i32);
+        }
+    }
+
+    let cpp_policy = CppPolicy::new(callback);
+    let res= if let Some((row, col)) = cpp_policy.callback(&board) {
+        vec![row as i32, col as i32]
+    } else {
+        Vec::new()
+    };
+
+    let alloc = Allocator::new(allocator);
+    RawVec::with_vec(res, &alloc)
+}
