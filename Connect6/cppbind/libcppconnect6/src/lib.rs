@@ -6,6 +6,16 @@ extern crate rand;
 pub mod cppbind;
 pub use cppbind::ffi_test::*;
 
+/// Return Connect6 playing results with given cpp callback.
+///
+/// # Arguments
+///
+/// * `callback` - callback for cpp_policy, void(float* boards, int* result).
+/// * `cpp_alloc_path` - cppbind::RawPath allocator for obtaining memory from cpp ffi.
+/// * `cpp_alloc_result` - cppbind::RawPlayResult allocator for obtaining memory from cpp ffi.
+/// * `debug` - bool, enable debug mode. if enable, selection and board status will be printed
+/// * `num_game_thread` - i32, number of threads asynchronously self-playing connect6
+///
 #[no_mangle]
 pub extern "C" fn cpp_play(
     callback: cppbind::PolicyCallback,
