@@ -6,6 +6,47 @@ extern crate rand;
 pub mod cppbind;
 pub use cppbind::ffi_test::*;
 
+#[no_mangle]
+pub extern "C" fn cpp_play(
+    callback: cppbind::PolicyCallback,
+    cpp_alloc_path: cppbind::AllocatorType<cppbind::RawPath>,
+    cpp_alloc_result: cppbind::AllocatorType<cppbind::RawPlayResult>,
+    debug: bool,
+    num_game_thread: i32,
+) -> cppbind::RawVec<cppbind::RawPlayResult> {
+    use connect6::agent;
+
+    let alloc_path = cppbind::Allocator::new(cpp_alloc_path);
+    let alloc_result = cppbind::Allocator::new(cpp_alloc_result);
+
+    let raw_result = if num_game_thread == 1 {
+        let mut cpp_policy = cppbind::CppPolicy::new(callback);
+        let mut agent = if debug {
+            agent::Agent::debug(&mut cpp_policy)
+        } else {
+            agent::Agent::new(&mut cpp_policy)
+        };
+
+        let result = agent.play().unwrap();
+        vec![cppbind::RawPlayResult::with_result(&result, &alloc_path)]
+    } else {
+        let policy_gen = || cppbind::CppPolicy::new(callback);
+        let agent = if debug {
+            agent::AsyncAgent::debug(policy_gen)
+        } else {
+            agent::AsyncAgent::new(policy_gen)
+        };
+
+        agent
+            .run(num_game_thread)
+            .iter()
+            .map(|x| cppbind::RawPlayResult::with_result(x, &alloc_path))
+            .collect::<Vec<_>>()
+    };
+
+    cppbind::RawVec::with_vec(raw_result, &alloc_result)
+}
+
 /// Return Connect6 self-playing results with given cpp callback and hyperparameters
 ///
 /// # Arguments
