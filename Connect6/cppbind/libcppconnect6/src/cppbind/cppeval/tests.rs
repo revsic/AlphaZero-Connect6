@@ -35,7 +35,7 @@ fn test_convert_to_c_float() {
     board[BOARD_SIZE - 1][BOARD_SIZE - 1] = Player::Black;
     board[BOARD_SIZE - 1][0] = Player::White;
 
-    let result = convert_to_c_float(&board);
+    let result = board_to_float(&board);
 
     assert_eq!(result[0][0], -1.);
     assert_eq!(result[0][BOARD_SIZE - 1], 1.);
