@@ -19,7 +19,7 @@ impl CppPolicy {
     }
 
     /// Call callback method with given board and return position.
-    fn callback(&self, board: &Board) -> Option<(usize, usize)> {
+    pub fn callback(&self, board: &Board) -> Option<(usize, usize)> {
         let mut res: [CInt; 2] = [-1; 2];
         let board_f = board_to_float(board);
 
