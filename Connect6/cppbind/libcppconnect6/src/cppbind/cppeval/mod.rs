@@ -1,13 +1,8 @@
 use connect6::{game::Player, policy, Board, BOARD_SIZE};
+use cppbind::{board_to_float, CFloat, CInt};
 
 #[cfg(test)]
 mod tests;
-
-/// std::os::raw::c_int
-pub type CInt = ::std::os::raw::c_int;
-
-/// std::os::raw::c_float
-pub type CFloat = ::std::os::raw::c_float;
 
 /// void(int player, float* values, float* board, int length)
 pub type Callback = extern "C" fn(
@@ -20,17 +15,6 @@ pub type Callback = extern "C" fn(
 /// AlphaZero value, policy approximator with c ffi callback
 pub struct CppEval {
     callback: Callback,
-}
-
-/// Convert Player:Board to CFloat:Board
-fn convert_to_c_float(board: &Board) -> [[CFloat; BOARD_SIZE]; BOARD_SIZE] {
-    let mut converted = [[0.; BOARD_SIZE]; BOARD_SIZE];
-    for i in 0..BOARD_SIZE {
-        for j in 0..BOARD_SIZE {
-            converted[i][j] = board[i][j] as i32 as CFloat;
-        }
-    }
-    converted
 }
 
 impl CppEval {
@@ -48,7 +32,7 @@ impl CppEval {
         let len = board.len();
         let player = turn as CInt;
         let mut values = vec![0.; len];
-        let mut policies = board.iter().map(convert_to_c_float).collect::<Vec<_>>();
+        let mut policies = board.iter().map(board_to_float).collect::<Vec<_>>();
 
         (self.callback)(
             player,
