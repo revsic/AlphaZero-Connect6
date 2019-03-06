@@ -2,10 +2,14 @@
 //!
 //! It provides `extern "C"` based bindings for some utilities to implement policy `AlphaZero` eval.
 //!
+pub use self::cpp_policy::*;
+pub use self::cpp_support::*;
 pub use self::cppeval::*;
 pub use self::rawobj::*;
 
 pub mod ffi_test;
 
+mod cpp_policy;
+mod cpp_support;
 mod cppeval;
 mod rawobj;
