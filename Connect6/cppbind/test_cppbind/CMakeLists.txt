@@ -11,7 +11,7 @@ else()
     set(LIBCONNECT6 ${LIBCONNECT6_PATH}/libcppconnect6.a)
 endif()
 
-add_executable(test_cppbind main.cpp)
+add_executable(test_cppbind main.cpp cpp_policy.cpp cppeval.cpp rawobj.cpp)
 target_link_libraries(test_cppbind ${LIBCONNECT6})
 target_include_directories(test_cppbind PRIVATE ${EXTERNAL_PATH}/Catch2/single_include)
 
