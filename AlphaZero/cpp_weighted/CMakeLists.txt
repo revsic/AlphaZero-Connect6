@@ -28,7 +28,7 @@ else()
 endif()
 
 target_link_libraries(cpp_weighted ${LIBCONNECT6})
-target_include_directories(cpp_weighted PRIVATE ${CONNECT6}/cppbind)
+target_include_directories(cpp_weighted PRIVATE ${CONNECT6}/cppbind/headers)
 
 if(APPLE)
     target_link_libraries(cpp_weighted "-framework Security")

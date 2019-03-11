@@ -13,7 +13,7 @@ endif()
 
 add_executable(sample_cpp main.cpp)
 
-include_directories(sample_cpp PRIVATE ${CPPBIND})
+include_directories(sample_cpp PRIVATE ${CPPBIND}/headers)
 target_link_libraries(sample_cpp ${LIBCONNECT6})
 
 if(APPLE)
