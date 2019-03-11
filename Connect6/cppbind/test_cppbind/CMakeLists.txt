@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(test_cppbind)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CPPBIND ${CMAKE_SOURCE_DIR}/../../cppbind)
 set(LIBCONNECT6_PATH ${CMAKE_SOURCE_DIR}/../../target/release)
 set(EXTERNAL_PATH ${CMAKE_SOURCE_DIR}/../../../External)
 
@@ -13,6 +14,7 @@ endif()
 
 add_executable(test_cppbind main.cpp cpp_policy.cpp cppeval.cpp rawobj.cpp)
 target_link_libraries(test_cppbind ${LIBCONNECT6})
+target_include_directories(test_cppbind PRIVATE ${CPPBIND}/headers)
 target_include_directories(test_cppbind PRIVATE ${EXTERNAL_PATH}/Catch2/single_include)
 
 if(APPLE)
