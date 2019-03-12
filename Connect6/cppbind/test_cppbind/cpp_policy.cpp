@@ -30,7 +30,7 @@ TEST_CASE("Evaluate CppPolicy", "[CppPolicy]") {
     std::random_device rd;
     std::default_random_engine gen(rd());
 
-    auto rand_player = [&]{ return static_cast<int>(gen()) % 3 - 1; };
+    auto rand_player = [&]{ return static_cast<int>(gen() % 3) - 1; };
 
     for (size_t i = 0; i < BOARD_SIZE; ++i) {
         for (size_t j = 0; j < BOARD_SIZE; ++j) {
