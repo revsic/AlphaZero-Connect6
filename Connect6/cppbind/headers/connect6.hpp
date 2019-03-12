@@ -41,11 +41,11 @@ namespace Connect6_RustFFI {
             int len;
         };
 
-        // Vec cpp_play(PolicyCallback callback,
-        //              AllocatorType<Path> alloc_path,
-        //              AllocatorType<PlayResult> alloc_result,
-        //              bool debug,
-        //              int num_game_thread);
+        Vec cpp_play(PolicyCallback callback,
+                     AllocatorType<Path> alloc_path,
+                     AllocatorType<PlayResult> alloc_result,
+                     bool debug,
+                     int num_game_thread);
 
         Vec cpp_self_play(Callback callback,
                           AllocatorType<Path> alloc_path,
@@ -308,19 +308,19 @@ namespace Connect6 {
         }
     };
 
-    // std::vector<GameResult> play(PolicyCallback callback, bool debug, int num_game_thread)
-    // {
-    //     namespace FFI = Connect6_RustFFI;
-    //     FFI::Vec result = FFI::cpp_play(
-    //         callback,
-    //         &FFI::allocator<FFI::Path>,
-    //         &FFI::allocator<FFI::PlayResult>,
-    //         debug,
-    //         num_game_thread
-    //     );
+    std::vector<GameResult> play(PolicyCallback callback, bool debug, int num_game_thread)
+    {
+        namespace FFI = Connect6_RustFFI;
+        FFI::Vec result = FFI::cpp_play(
+            callback,
+            &FFI::allocator<FFI::Path>,
+            &FFI::allocator<FFI::PlayResult>,
+            debug,
+            num_game_thread
+        );
 
-    //     return GameResult::from_vec(result);
-    // }
+        return GameResult::from_vec(result);
+    }
 
     std::vector<GameResult> self_play(Callback callback, const Param& param)
     {
