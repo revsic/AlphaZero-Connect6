@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["PyInit_pyconnect6",""]],"macro":[["must","Panic with given error string if given Result is Err"],["py_policy","Create random python policy for testing AlphaZero"]],"mod":[["macro_def","Macro definition"],["pybind","Rust bindings for python interface and impl of AlphaZero policy evaluator"]]});

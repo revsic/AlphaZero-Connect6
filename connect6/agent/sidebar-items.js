@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Agent","Loop based single policy agent."],["AsyncAgent","Agent for playing multiple games asynchronously."],["Path","Unit of playing history, turn, board and selected position."],["PlayResult","Result of playing game, consists of winner and path (history of game)."]]});
