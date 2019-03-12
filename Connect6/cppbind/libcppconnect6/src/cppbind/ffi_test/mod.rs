@@ -213,7 +213,7 @@ pub extern "C" fn test_cpp_policy(
     }
 
     let cpp_policy = CppPolicy::new(callback);
-    let res= if let Some((row, col)) = cpp_policy.callback(&board) {
+    let res = if let Some((row, col)) = cpp_policy.callback(&board) {
         vec![row as i32, col as i32]
     } else {
         Vec::new()
