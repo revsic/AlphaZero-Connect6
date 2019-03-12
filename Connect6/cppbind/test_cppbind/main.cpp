@@ -28,10 +28,30 @@ void main_callback(int player, float* values, float* policies, int len_) {
     }
 }
 
-TEST_CASE("Check result length", "[RandomPolicy]") {
+void main_policy(float* boards, int* position) {
+    using Connect6::BOARD_SIZE;
+    using Connect6::BOARD_CAPACITY;
+
+    for (size_t i = 0; i < BOARD_CAPACITY; ++i) {
+        if (boards[i] == 0) {
+            int row = i / BOARD_SIZE;
+            int col = i % BOARD_SIZE;
+
+            position[0] = row;
+            position[1] = col;
+        }
+    }
+}
+
+TEST_CASE("Check Connect6::self_play", "[Connect6]") {
     auto param = Connect6::Param()
         .NumSimulation(2)
         .NumGameThread(2);
     auto result = Connect6::self_play(main_callback, param);
+    REQUIRE(result.size() == 2);
+}
+
+TEST_CASE("Check Connect6::play", "[Connect6]") {
+    auto result = Connect6::play(main_policy, false, 2);
     REQUIRE(result.size() == 2);
 }
